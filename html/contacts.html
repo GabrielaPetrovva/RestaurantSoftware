@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контакти - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .contact-main {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('../images/backgr.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 8rem 2rem 4rem;
+        }
+
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .contact-info {
+            background-color: rgba(44, 24, 16, 0.9);
+            padding: 3rem;
+            border-radius: 15px;
+            border: 2px solid #ff8c00;
+        }
+
+        .hours-info {
+            background-color: rgba(44, 24, 16, 0.9);
+            padding: 3rem;
+            border-radius: 15px;
+            border: 2px solid #ff8c00;
+        }
+
+        .hours-info h2 {
+            color: #ff8c00;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+        }
+
+        .contact-info h2 {
+            color: #ff8c00;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+        }
+
+        .contact-item {
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+
+        .contact-icon {
+            font-size: 1.5rem;
+            color: #ff8c00;
+            min-width: 30px;
+        }
+
+        .contact-details h3 {
+            color: #ff8c00;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-details p {
+            color: #ccc;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .contact-details a {
+            color: #ff8c00;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .contact-details a:hover {
+            color: #ff6b00;
+        }
+
+        .contact-form {
+            background-color: rgba(44, 24, 16, 0.9);
+            padding: 3rem;
+            border-radius: 15px;
+            border: 2px solid #ff8c00;
+        }
+
+        .contact-form h2 {
+            color: #ff8c00;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ff8c00;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #4a3a2a;
+            border-radius: 8px;
+            background-color: #1a0f0a;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff8c00;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: #ff8c00;
+            color: #2c1810;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #ff6b00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+        }
+
+        .hours-section {
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .hours-table {
+            width: 100%;
+            color: #ccc;
+        }
+
+        .hours-table tr {
+            border-bottom: 1px solid #4a3a2a;
+        }
+
+        .hours-table td {
+            padding: 0.5rem 0;
+        }
+
+        .hours-table td:first-child {
+            color: #ff8c00;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .contact-info,
+            .hours-info {
+                padding: 2rem;
+            }
+
+            .contact-info h2,
+            .hours-info h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="software"></span>
+        </div>
+        <nav class="nav">
+            <a href="../index.html">Начало</a>
+            <a href="../html/menu.html">Меню</a>
+            <a href="#about">За нас</a>
+            <a href="contacts.html">Контакти</a>
+        </nav>
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <div class="order-icon" onclick="toggleOrderSummary()">
+                <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                <span class="order-badge" id="order-count">0</span>
+            </div>
+            <div class="search-icon">
+                <img src="../images/search.png" alt="Search">
+            </div>
+        </div>
+    </header>
+
+    <!-- Contact Section -->
+    <main class="contact-main">
+        <div class="contact-container">
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h2>Свържете се с нас</h2>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <div class="contact-details">
+                        <h3>Адрес</h3>
+                        <p>ул. Примерна 123<br>София 1000<br>България</p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <div class="contact-details">
+                        <h3>Телефон</h3>
+                        <p><a href="tel:+359123456789">+359 123 456 789</a></p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">✉️</div>
+                    <div class="contact-details">
+                        <h3>Имейл</h3>
+                        <p><a href="mailto:info@restaurant.bg">info@restaurant.bg</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Working Hours -->
+            <div class="hours-info">
+                <h2>Работно време</h2>
+                <div class="hours-section">
+                    <table class="hours-table">
+                        <tr>
+                            <td>Понеделник - Петък</td>
+                            <td>11:00 - 23:00</td>
+                        </tr>
+                        <tr>
+                            <td>Събота</td>
+                            <td>12:00 - 24:00</td>
+                        </tr>
+                        <tr>
+                            <td>Неделя</td>
+                            <td>12:00 - 22:00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-column">
+            <h3>Услуги</h3>
+            <ul>
+                <li><a href="#">Магазин</a></li>
+                <li><a href="#">Поръчай предварително</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                <li><a href="#">Нашата история</a></li>
+                <li><a href="#">Намерете локация</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="search-modal">
+        <div class="search-modal-content">
+            <span class="search-close">&times;</span>
+            <h2 style="color: white; margin-bottom: 1rem;">Търсене</h2>
+            <input type="text" id="searchInput" class="search-input" placeholder="Търсене на ястия, напитки или услуги...">
+            <div id="searchResults" class="search-results"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleOrderSummary() {
+            // Order summary functionality if needed
+        }
+    </script>
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/search.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+
