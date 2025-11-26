@@ -11,9 +11,13 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            
             <span class="software"></span>
         </div>
+        <button class="menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
         <nav class="nav">
             <a href="../index.html">Начало</a>
             <a href="menu.html">Меню</a>
@@ -25,12 +29,13 @@
                 <img src="../images/shopping-cart.png" alt="Shopping Cart">
                 <span class="order-badge" id="order-count">0</span>
             </div>
-            <div class="search-icon">
-                <img src="../images/search.png" alt="Search">
-            </div>
         </div>
     </header>
 
+    <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
     <!-- Category Section -->
     <main class="category-main">
         <div class="category-header">
@@ -207,37 +212,19 @@
             </ul>
         </div>
         
-        <div class="footer-column">
-            <h3>Услуги</h3>
-            <ul>
-                <li><a href="#">Магазин</a></li>
-                <li><a href="#">Поръчай предварително</a></li>
-            </ul>
-        </div>
+        
         
         <div class="footer-column">
             <h3>За нас</h3>
             <ul>
                 <li><a href="#">За нас</a></li>
-                <li><a href="#">Нашата история</a></li>
-                <li><a href="#">Намерете локация</a></li>
+                
             </ul>
         </div>
     </footer>
 
-    <!-- Search Modal -->
-    <div id="searchModal" class="search-modal">
-        <div class="search-modal-content">
-            <span class="search-close">&times;</span>
-            <h2 style="color: white; margin-bottom: 1rem;">Търсене</h2>
-            <input type="text" id="searchInput" class="search-input" placeholder="Търсене на ястия, напитки или услуги...">
-            <div id="searchResults" class="search-results"></div>
-        </div>
-    </div>
-
     <script src="../js/script.js"></script>
     <script src="../js/category.js"></script>
-    <script src="../js/search.js"></script>
     <script src="../js/cookie-consent.js"></script>
 </body>
 </html>

@@ -13,6 +13,10 @@
             background-attachment: fixed;
             min-height: 100vh;
             padding: 8rem 2rem 4rem;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
 
         .contact-container {
@@ -21,6 +25,10 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 3rem;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
 
         .contact-info {
@@ -180,6 +188,11 @@
         }
 
         @media (max-width: 768px) {
+            .contact-main {
+                padding: 100px 1rem 3rem;
+                background-attachment: scroll;
+            }
+
             .contact-container {
                 grid-template-columns: 1fr;
                 gap: 2rem;
@@ -194,6 +207,43 @@
             .hours-info h2 {
                 font-size: 2rem;
             }
+
+            .contact-item {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .contact-icon {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contact-main {
+                padding: 80px 0.75rem 2rem;
+            }
+
+            .contact-info,
+            .hours-info {
+                padding: 1.5rem;
+            }
+
+            .contact-info h2,
+            .hours-info h2 {
+                font-size: 1.5rem;
+            }
+
+            .contact-details h3 {
+                font-size: 1.1rem;
+            }
+
+            .contact-details p {
+                font-size: 0.9rem;
+            }
+
+            .hours-table {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -203,6 +253,11 @@
         <div class="logo">
             <span class="software"></span>
         </div>
+        <button class="menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
         <nav class="nav">
             <a href="../index.html">Начало</a>
             <a href="../html/menu.html">Меню</a>
@@ -213,9 +268,6 @@
             <div class="order-icon" onclick="toggleOrderSummary()">
                 <img src="../images/shopping-cart.png" alt="Shopping Cart">
                 <span class="order-badge" id="order-count">0</span>
-            </div>
-            <div class="search-icon">
-                <img src="../images/search.png" alt="Search">
             </div>
         </div>
     </header>
@@ -286,32 +338,14 @@
         </div>
         
         <div class="footer-column">
-            <h3>Услуги</h3>
-            <ul>
-                <li><a href="#">Магазин</a></li>
-                <li><a href="#">Поръчай предварително</a></li>
-            </ul>
-        </div>
-        
-        <div class="footer-column">
             <h3>За нас</h3>
             <ul>
                 <li><a href="#">За нас</a></li>
-                <li><a href="#">Нашата история</a></li>
-                <li><a href="#">Намерете локация</a></li>
+                
+                
             </ul>
         </div>
     </footer>
-
-    <!-- Search Modal -->
-    <div id="searchModal" class="search-modal">
-        <div class="search-modal-content">
-            <span class="search-close">&times;</span>
-            <h2 style="color: white; margin-bottom: 1rem;">Търсене</h2>
-            <input type="text" id="searchInput" class="search-input" placeholder="Търсене на ястия, напитки или услуги...">
-            <div id="searchResults" class="search-results"></div>
-        </div>
-    </div>
 
     <script>
         function toggleOrderSummary() {
@@ -320,7 +354,6 @@
     </script>
     <script src="../js/script.js"></script>
     <script src="../js/category.js"></script>
-    <script src="../js/search.js"></script>
     <script src="../js/cookie-consent.js"></script>
 </body>
 </html>
