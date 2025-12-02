@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Orders — Waiter Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #fbfaf8;
+      --surface: #ffffff;
+      --muted: #8b8b8b;
+      --border: #d6d3cd;
+      --accent-blue: #2b7be9;
+      --accent-green: #2f9a66;
+      --accent-orange: #d99334;
+      --accent-red: #e53935;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    *{box-sizing: border-box}
+    html,body{height:100%;margin:0;padding:0}
+    body{
+      background:var(--bg);
+      color:#111;
+      font-family:'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+      line-height:1.4;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Header */
+    header{
+      height:64px;
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 16px;
+      position:sticky;
+      top:0;
+      z-index:100;
+    }
+    .header-left{display:flex;align-items:center;gap:12px;}
+    .back-btn{
+      width:40px;height:40px;border-radius:10px;
+      background:#f5f5f5;border:1px solid var(--border);
+      font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    }
+    .page-title{font-size:20px;font-weight:800;}
+    select#langSelect{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;font-family:inherit;}
+
+    /* Main */
+    main{
+      padding:16px;
+      overflow-y:auto;
+      height:calc(100vh - 64px);
+      -webkit-overflow-scrolling:touch;
+    }
+
+    /* Order List */
+    .order-list{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}
+    .order-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:transform 0.2s;
+    }
+    .order-card:active{transform:scale(0.98);}
+    .order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+    .order-number{font-size:18px;font-weight:800;}
+    .order-status{
+      padding:6px 12px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
+    }
+    .order-status.pending{background:#fff3cd;color:#856404;}
+    .order-status.preparing{background:#ffecd1;color:#d97706;}
+    .order-status.ready{background:#d4f4e1;color:#047857;}
+    .order-status.completed{background:#e5e7eb;color:#4b5563;}
+
+    .order-meta{display:flex;gap:16px;margin-bottom:12px;font-size:14px;color:var(--muted);}
+    .order-meta span{display:flex;align-items:center;gap:6px;}
+
+    .order-items{border-top:1px solid var(--border);padding-top:12px;}
+    .order-item{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;}
+    .order-item .name{font-weight:600;}
+    .order-item .qty{color:var(--muted);margin-right:8px;}
+    .order-item .price{font-weight:700;color:var(--accent-red);}
+
+    .order-total{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding-top:12px;
+      border-top:2px solid var(--border);
+      margin-top:8px;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    /* Filters */
+    .filters{
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      padding:12px 0;
+      margin-bottom:16px;
+      -webkit-overflow-scrolling:touch;
+    }
+    .filter-btn{
+      padding:10px 16px;
+      border-radius:20px;
+      border:2px solid var(--border);
+      background:var(--surface);
+      font-weight:700;
+      font-size:14px;
+      white-space:nowrap;
+      cursor:pointer;
+      transition:all 0.2s;
+      font-family:inherit;
+    }
+    .filter-btn.active{
+      background:var(--accent-blue);
+      color:#fff;
+      border-color:var(--accent-blue);
+    }
+
+    /* Modal */
+    .modal{
+      display:none;
+      position:fixed;
+      top:0;left:0;right:0;bottom:0;
+      background:rgba(0,0,0,0.5);
+      z-index:200;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .modal.active{display:flex;}
+    .modal-content{
+      background:var(--surface);
+      border-radius:16px;
+      padding:24px;
+      max-width:500px;
+      width:100%;
+      max-height:80vh;
+      overflow-y:auto;
+      box-shadow:0 10px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+    .modal-title{font-size:22px;font-weight:800;margin:0;}
+    .close-modal{
+      width:36px;height:36px;
+      border-radius:50%;
+      border:none;
+      background:#f5f5f5;
+      font-size:20px;
+      cursor:pointer;
+    }
+
+    .detail-section{margin-bottom:20px;}
+    .detail-section h3{font-size:16px;font-weight:700;margin:0 0 12px 0;}
+    .detail-row{
+      display:flex;
+      justify-content:space-between;
+      padding:10px 0;
+      border-bottom:1px solid #f0f0f0;
+    }
+
+    /* Action buttons */
+    .action-buttons{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:20px;
+    }
+    .btn{
+      padding:14px 20px;
+      border-radius:12px;
+      border:none;
+      font-weight:700;
+      font-size:15px;
+      cursor:pointer;
+      transition:all 0.2s;
+      font-family:inherit;
+    }
+    .btn:active{transform:scale(0.96);}
+    .btn-primary{background:var(--accent-blue);color:#fff;}
+    .btn-success{background:var(--accent-green);color:#fff;}
+    .btn-danger{background:var(--accent-red);color:#fff;}
+    .btn-secondary{background:#e5e7eb;color:#374151;}
+
+    /* Empty state */
+    .empty-state{
+      text-align:center;
+      padding:60px 20px;
+      color:var(--muted);
+    }
+    .empty-state .icon{font-size:64px;margin-bottom:16px;opacity:0.5;}
+    .empty-state .message{font-size:18px;font-weight:600;}
+
+    /* Stats bar */
+    .stats-bar{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-bottom:20px;
+    }
+    .stat-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px;
+      text-align:center;
+    }
+    .stat-value{font-size:24px;font-weight:800;color:var(--accent-blue);}
+    .stat-label{font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;}
+  </style>
+</head>
+<body>
+  
+  <header>
+    <div class="header-left">
+      <button class="back-btn" id="backBtn" onclick="history.back()">←</button>
+      <h1 class="page-title" id="pageTitle">Orders</h1>
+    </div>
+    <select id="langSelect">
+      <option value="en">EN</option>
+      <option value="bg">BG</option>
+    </select>
+  </header>
+
+  <main>
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-label" id="labelTotal">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statPending">0</div>
+        <div class="stat-label" id="labelPending">Pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statCompleted">0</div>
+        <div class="stat-label" id="labelCompleted">Completed</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="preparing">Preparing</button>
+      <button class="filter-btn" data-filter="ready">Ready</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+    </div>
+
+    <!-- Orders List -->
+    <div class="order-list" id="orderList">
+      <!-- Orders will be injected here -->
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="icon">📋</div>
+      <div class="message" id="emptyMessage">No orders found</div>
+    </div>
+  </main>
+
+  <!-- Modal for Order Details -->
+  <div class="modal" id="orderModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Order Details</h2>
+        <button class="close-modal" id="closeModal">×</button>
+      </div>
+
+      <div class="detail-section">
+        <h3>Order Information</h3>
+        <div class="detail-row">
+          <span>Order #</span>
+          <strong id="detailOrderNum">-</strong>
+        </div>
+        <div class="detail-row">
+          <span>Table</span>
+          <strong id="detailTable">-</strong>
+        </div>
+        <div class="detail-row">
+          <span>Time</span>
+          <strong id="detailTime">-</strong>
+        </div>
+        <div class="detail-row">
+          <span>Status</span>
+          <strong id="detailStatus">-</strong>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Items</h3>
+        <div id="detailItems"></div>
+      </div>
+
+      <div class="detail-section">
+        <div class="order-total">
+          <span>Total</span>
+          <span id="detailTotal">0.00€</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-secondary" id="btnCancel">Cancel</button>
+        <button class="btn btn-success" id="btnMarkReady">Mark Ready</button>
+      </div>
+      <button class="btn btn-primary" id="btnComplete" style="width:100%;margin-top:12px;">Complete Order</button>
+    </div>
+  </div>
+
+  <script>
+    // Translations
+    const i18n = {
+      en: {
+        Orders: 'Orders',
+        Total: 'Total',
+        Pending: 'Pending',
+        Completed: 'Completed',
+        All: 'All',
+        Preparing: 'Preparing',
+        Ready: 'Ready',
+        'Order Details': 'Order Details',
+        'Order Information': 'Order Information',
+        Table: 'Table',
+        Time: 'Time',
+        Status: 'Status',
+        Items: 'Items',
+        Cancel: 'Cancel',
+        'Mark Ready': 'Mark Ready',
+        'Complete Order': 'Complete Order',
+        'No orders found': 'No orders found'
+      },
+      bg: {
+        Orders: 'Поръчки',
+        Total: 'Общо',
+        Pending: 'Чакащи',
+        Completed: 'Завършени',
+        All: 'Всички',
+        Preparing: 'В процес',
+        Ready: 'Готови',
+        'Order Details': 'Детайли за поръчка',
+        'Order Information': 'Информация',
+        Table: 'Маса',
+        Time: 'Време',
+        Status: 'Статус',
+        Items: 'Артикули',
+        Cancel: 'Отказ',
+        'Mark Ready': 'Маркирай готово',
+        'Complete Order': 'Завърши поръчка',
+        'No orders found': 'Няма намерени поръчки'
+      }
+    };
+
+    let lang = 'en';
+    let currentFilter = 'all';
+    let selectedOrder = null;
+
+    // Mock data
+    const orders = [
+      {
+        id: 101,
+        table: 5,
+        status: 'pending',
+        time: '14:23',
+        items: [
+          { name: 'Margherita Pizza', qty: 1, price: 11.50 },
+          { name: 'Coca-Cola', qty: 2, price: 3.00 }
+        ]
+      },
+      {
+        id: 102,
+        table: 3,
+        status: 'preparing',
+        time: '14:15',
+        items: [
+          { name: 'Pepperoni Pizza', qty: 1, price: 12.50 },
+          { name: 'Caesar Salad', qty: 1, price: 7.50 },
+          { name: 'Water', qty: 2, price: 1.50 }
+        ]
+      },
+      {
+        id: 103,
+        table: 8,
+        status: 'ready',
+        time: '14:10',
+        items: [
+          { name: 'Burger', qty: 2, price: 12.00 },
+          { name: 'Fries', qty: 2, price: 4.00 }
+        ]
+      },
+      {
+        id: 104,
+        table: 12,
+        status: 'completed',
+        time: '13:45',
+        items: [
+          { name: 'Pasta Carbonara', qty: 1, price: 13.00 }
+        ]
+      }
+    ];
+
+    function t(key) {
+      return (i18n[lang] && i18n[lang][key]) ? i18n[lang][key] : key;
+    }
+
+    function updateTexts() {
+      document.getElementById('pageTitle').textContent = t('Orders');
+      document.getElementById('labelTotal').textContent = t('Total');
+      document.getElementById('labelPending').textContent = t('Pending');
+      document.getElementById('labelCompleted').textContent = t('Completed');
+      document.getElementById('emptyMessage').textContent = t('No orders found');
+      document.getElementById('modalTitle').textContent = t('Order Details');
+      
+      // Update filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        const filter = btn.dataset.filter;
+        btn.textContent = t(filter.charAt(0).toUpperCase() + filter.slice(1));
+      });
+    }
+
+    function updateStats() {
+      const total = orders.length;
+      const pending = orders.filter(o => o.status === 'pending' || o.status === 'preparing').length;
+      const completed = orders.filter(o => o.status === 'completed').length;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statCompleted').textContent = completed;
+    }
+
+    function renderOrders() {
+      const list = document.getElementById('orderList');
+      const empty = document.getElementById('emptyState');
+      
+      let filtered = orders;
+      if (currentFilter !== 'all') {
+        filtered = orders.filter(o => o.status === currentFilter);
+      }
+
+      if (filtered.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      list.style.display = 'flex';
+      empty.style.display = 'none';
+      list.innerHTML = '';
+
+      filtered.forEach(order => {
+        const total = order.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        
+        const card = document.createElement('div');
+        card.className = 'order-card';
+        card.onclick = () => openOrderModal(order);
+        
+        card.innerHTML = `
+          <div class="order-header">
+            <div class="order-number">Order #${order.id}</div>
+            <div class="order-status ${order.status}">${order.status}</div>
+          </div>
+          <div class="order-meta">
+            <span>🪑 Table ${order.table}</span>
+            <span>🕐 ${order.time}</span>
+          </div>
+          <div class="order-items">
+            ${order.items.map(item => `
+              <div class="order-item">
+                <div>
+                  <span class="qty">${item.qty}x</span>
+                  <span class="name">${item.name}</span>
+                </div>
+                <div class="price">${(item.price * item.qty).toFixed(2)}€</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="order-total">
+            <span>Total</span>
+            <span>${total.toFixed(2)}€</span>
+          </div>
+        `;
+        
+        list.appendChild(card);
+      });
+    }
+
+    function openOrderModal(order) {
+      selectedOrder = order;
+      const modal = document.getElementById('orderModal');
+      const total = order.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+      document.getElementById('detailOrderNum').textContent = order.id;
+      document.getElementById('detailTable').textContent = order.table;
+      document.getElementById('detailTime').textContent = order.time;
+      document.getElementById('detailStatus').textContent = order.status;
+      document.getElementById('detailTotal').textContent = total.toFixed(2) + '€';
+
+      const itemsContainer = document.getElementById('detailItems');
+      itemsContainer.innerHTML = order.items.map(item => `
+        <div class="detail-row">
+          <span>${item.qty}x ${item.name}</span>
+          <strong>${(item.price * item.qty).toFixed(2)}€</strong>
+        </div>
+      `).join('');
+
+      // Update action buttons based on status
+      const btnMarkReady = document.getElementById('btnMarkReady');
+      const btnComplete = document.getElementById('btnComplete');
+      
+      if (order.status === 'pending') {
+        btnMarkReady.textContent = 'Start Preparing';
+        btnMarkReady.style.display = 'block';
+        btnComplete.style.display = 'none';
+      } else if (order.status === 'preparing') {
+        btnMarkReady.textContent = t('Mark Ready');
+        btnMarkReady.style.display = 'block';
+        btnComplete.style.display = 'none';
+      } else if (order.status === 'ready') {
+        btnMarkReady.style.display = 'none';
+        btnComplete.style.display = 'block';
+      } else {
+        btnMarkReady.style.display = 'none';
+        btnComplete.style.display = 'none';
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('orderModal').classList.remove('active');
+      selectedOrder = null;
+    }
+
+    // Event listeners
+    document.getElementById('langSelect').addEventListener('change', (e) => {
+      lang = e.target.value;
+      updateTexts();
+      renderOrders();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderOrders();
+      });
+    });
+
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    document.getElementById('btnCancel').addEventListener('click', closeModal);
+
+    document.getElementById('btnMarkReady').addEventListener('click', () => {
+      if (!selectedOrder) return;
+      
+      if (selectedOrder.status === 'pending') {
+        selectedOrder.status = 'preparing';
+      } else if (selectedOrder.status === 'preparing') {
+        selectedOrder.status = 'ready';
+      }
+      
+      updateStats();
+      renderOrders();
+      closeModal();
+    });
+
+    document.getElementById('btnComplete').addEventListener('click', () => {
+      if (!selectedOrder) return;
+      selectedOrder.status = 'completed';
+      updateStats();
+      renderOrders();
+      closeModal();
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('orderModal').addEventListener('click', (e) => {
+      if (e.target.id === 'orderModal') {
+        closeModal();
+      }
+    });
+
+    // Initialize
+    updateTexts();
+    updateStats();
+    renderOrders();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-title">Manager Dashboard</div>
+            <div class="user-info">
+                <span class="user-name">Petar Petrov</span>
+                <button class="exit-btn" onclick="logout()">Exit</button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('finance')">Финанси</button>
+            <button class="tab-btn" onclick="switchTab('staff')">Персонал</button>
+            <button class="tab-btn" onclick="switchTab('inventory')">Инвентар</button>
+            <button class="tab-btn" onclick="switchTab('menu')">Меню</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">Анализи</button>
+            <button class="tab-btn" onclick="switchTab('settings')">Настройки</button>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Finance Section -->
+            <div id="finance" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Продажби (Днес)</div>
+                        <div class="stat-value">2,450 лв</div>
+                        <div class="stat-change">↑ 12.5%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Продажби (Седмица)</div>
+                        <div class="stat-value">15,280 лв</div>
+                        <div class="stat-change">↑ 8.3%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Продажби (Месец)</div>
+                        <div class="stat-value">67,420 лв</div>
+                        <div class="stat-change">↑ 15.7%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Среден Чек</div>
+                        <div class="stat-value">28.50 лв</div>
+                        <div class="stat-change">↑ 3.2%</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">Приходи по Категории</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Категория</th>
+                                    <th>Сума</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Храна</td>
+                                    <td>1,680 лв</td>
+                                    <td>68.6%</td>
+                                </tr>
+                                <tr>
+                                    <td>Напитки</td>
+                                    <td>520 лв</td>
+                                    <td>21.2%</td>
+                                </tr>
+                                <tr>
+                                    <td>Доставка</td>
+                                    <td>250 лв</td>
+                                    <td>10.2%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Ключови Показатели</div>
+                        <div style="margin-bottom: 20px;">
+                            <div class="stat-label">Food Cost %</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #4CAF50;">28.5%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 28.5%"></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <div class="stat-label">Labor Cost %</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #ff9800;">32.8%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 32.8%; background: linear-gradient(90deg, #ff9800, #ffa726);"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="stat-label">Gross Margin</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #2196F3;">38.7%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 38.7%; background: linear-gradient(90deg, #2196F3, #42a5f5);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Печалба по Смяна</div>
+                    <div class="chart-bar">
+                        <div class="bar" style="height: 75%;">
+                            <span class="bar-value">850 лв</span>
+                            <span class="bar-label">Сутрин</span>
+                        </div>
+                        <div class="bar" style="height: 60%;">
+                            <span class="bar-value">680 лв</span>
+                            <span class="bar-label">Обяд</span>
+                        </div>
+                        <div class="bar" style="height: 90%;">
+                            <span class="bar-value">920 лв</span>
+                            <span class="bar-label">Вечер</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Section -->
+            <div id="staff" class="section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Активен Персонал</div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-change">от 15 общо</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Работни Часове (Днес)</div>
+                        <div class="stat-value">96 ч</div>
+                        <div class="stat-change">↑ 5 часа</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Средна Производителност</div>
+                        <div class="stat-value">204 лв/ч</div>
+                        <div class="stat-change">↑ 8.5%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Изплатени Бонуси</div>
+                        <div class="stat-value">580 лв</div>
+                        <div class="stat-change">тази седмица</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">Продажби по Сервитьор</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Име</th>
+                                    <th>Продажби</th>
+                                    <th>Маси</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Мария Иванова</td>
+                                    <td>680 лв</td>
+                                    <td>24</td>
+                                    <td><span class="status-badge status-success">Активен</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Георги Петров</td>
+                                    <td>520 лв</td>
+                                    <td>18</td>
+                                    <td><span class="status-badge status-success">Активен</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Елена Димитрова</td>
+                                    <td>450 лв</td>
+                                    <td>16</td>
+                                    <td><span class="status-badge status-warning">Почивка</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Иван Стоянов</td>
+                                    <td>380 лв</td>
+                                    <td>14</td>
+                                    <td><span class="status-badge status-success">Активен</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Производителност Готвачи</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Име</th>
+                                    <th>Време/Блюдо</th>
+                                    <th>Грешки</th>
+                                    <th>KPI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Стефан Колев</td>
+                                    <td>12 мин</td>
+                                    <td>0</td>
+                                    <td><span class="status-badge status-success">Отличен</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Николай Тодоров</td>
+                                    <td>14 мин</td>
+                                    <td>1</td>
+                                    <td><span class="status-badge status-success">Добър</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Петър Георгиев</td>
+                                    <td>16 мин</td>
+                                    <td>2</td>
+                                    <td><span class="status-badge status-warning">Среден</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Присъствия и Работни Часове</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Име</th>
+                                <th>Позиция</th>
+                                <th>Начало</th>
+                                <th>Край</th>
+                                <th>Часове</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Мария Иванова</td>
+                                <td>Сервитьор</td>
+                                <td>09:00</td>
+                                <td>17:00</td>
+                                <td>8 ч</td>
+                                <td><span class="status-badge status-success">Присъства</span></td>
+                            </tr>
+                            <tr>
+                                <td>Георги Петров</td>
+                                <td>Сервитьор</td>
+                                <td>10:00</td>
+                                <td>18:00</td>
+                                <td>8 ч</td>
+                                <td><span class="status-badge status-success">Присъства</span></td>
+                            </tr>
+                            <tr>
+                                <td>Стефан Колев</td>
+                                <td>Готвач</td>
+                                <td>08:00</td>
+                                <td>16:00</td>
+                                <td>8 ч</td>
+                                <td><span class="status-badge status-success">Присъства</span></td>
+                            </tr>
+                            <tr>
+                                <td>Ана Петкова</td>
+                                <td>Барман</td>
+                                <td>12:00</td>
+                                <td>20:00</td>
+                                <td>8 ч</td>
+                                <td><span class="status-badge status-warning">Закъснение</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Inventory Section -->
+            <div id="inventory" class="section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Общо Артикули</div>
+                        <div class="stat-value">156</div>
+                        <div class="stat-change">12 под минимум</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">COGS (Тази Седмица)</div>
+                        <div class="stat-value">4,280 лв</div>
+                        <div class="stat-change">↑ 6.3%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Отпадъци</div>
+                        <div class="stat-value">180 лв</div>
+                        <div class="stat-change class=\"stat-change negative\">↑ 12 лв</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Валидност на Запаси</div>
+                        <div class="stat-value">96%</div>
+                        <div class="stat-change">8 близо до изтичане</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">Критични Наличности</div>
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <div class="item-name">Домати</div>
+                                <div class="item-quantity">Налични: 5 кг / Минимум: 15 кг</div>
+                            </div>
+                            <span class="status-badge status-danger">Критично</span>
+                        </div>
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <div class="item-name">Моцарела</div>
+                                <div class="item-quantity">Налични: 8 кг / Минимум: 20 кг</div>
+                            </div>
+                            <span class="status-badge status-danger">Критично</span>
+                        </div>
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <div class="item-name">Олио</div>
+                                <div class="item-quantity">Налични: 3 л / Минимум: 10 л</div>
+                            </div>
+                            <span class="status-badge status-danger">Критично</span>
+                        </div>
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <div class="item-name">Брашно</div>
+                                <div class="item-quantity">Налични: 12 кг / Минимум: 25 кг</div>
+                            </div>
+                            <span class="status-badge status-warning">Ниско</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Waste & Spoilage Report</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Продукт</th>
+                                    <th>Количество</th>
+                                    <th>Причина</th>
+                                    <th>Стойност</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Салата айсберг</td>
+                                    <td>2 кг</td>
+                                    <td>Изтекъл срок</td>
+                                    <td>12 лв</td>
+                                </tr>
+                                <tr>
+                                    <td>Пилешко филе</td>
+                                    <td>1.5 кг</td>
+                                    <td>Развалено</td>
+                                    <td>24 лв
+                                        </tr>
+                                <tr>
+                                    <td>Мляко</td>
+                                    <td>3 л</td>
+                                    <td>Изтекъл срок</td>
+                                    <td>9 лв</td>
+                                </tr>
+                                <tr>
+                                    <td>Паста</td>
+                                    <td>0.8 кг</td>
+                                    <td>Грешка в готвене</td>
+                                    <td>5 лв</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Текущи Наличности</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Продукт</th>
+                                <th>Категория</th>
+                                <th>Наличност</th>
+                                <th>Единица</th>
+                                <th>Цена/Ед.</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Домати</td>
+                                <td>Зеленчуци</td>
+                                <td>5</td>
+                                <td>кг</td>
+                                <td>3.50 лв</td>
+                                <td><span class="status-badge status-danger">Критично</span></td>
+                            </tr>
+                            <tr>
+                                <td>Моцарела</td>
+                                <td>Млечни</td>
+                                <td>8</td>
+                                <td>кг</td>
+                                <td>12.00 лв</td>
+                                <td><span class="status-badge status-danger">Критично</span></td>
+                            </tr>
+                            <tr>
+                                <td>Пилешко филе</td>
+                                <td>Месо</td>
+                                <td>25</td>
+                                <td>кг</td>
+                                <td>8.50 лв</td>
+                                <td><span class="status-badge status-success">OK</span></td>
+                            </tr>
+                            <tr>
+                                <td>Картофи</td>
+                                <td>Зеленчуци</td>
+                                <td>45</td>
+                                <td>кг</td>
+                                <td>1.20 лв</td>
+                                <td><span class="status-badge status-success">OK</span></td>
+                            </tr>
+                            <tr>
+                                <td>Паста</td>
+                                <td>Сухи продукти</td>
+                                <td>18</td>
+                                <td>кг</td>
+                                <td>4.00 лв</td>
+                                <td><span class="status-badge status-warning">Ниско</span></td>
+                            </tr>
+                            <tr>
+                                <td>Олио</td>
+                                <td>Масла</td>
+                                <td>3</td>
+                                <td>л</td>
+                                <td>6.50 лв</td>
+                                <td><span class="status-badge status-danger">Критично</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Menu Section -->
+            <div id="menu" class="section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Общо Артикули в Меню</div>
+                        <div class="stat-value">68</div>
+                        <div class="stat-change">5 нови този месец</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Среден Марж</div>
+                        <div class="stat-value">68.5%</div>
+                        <div class="stat-change">↑ 2.3%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Топ Продавач</div>
+                        <div class="stat-value">Пица Маргарита</div>
+                        <div class="stat-change">142 продажби</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Най-Нисък Продавач</div>
+                        <div class="stat-value">Крем Брюле</div>
+                        <div class="stat-change">8 продажби</div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">Top 10 Продавачи</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Артикул</th>
+                                    <th>Продажби</th>
+                                    <th>Приход</th>
+                                    <th>Марж</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Пица Маргарита</td>
+                                    <td>142</td>
+                                    <td>1,704 лв</td>
+                                    <td>72%</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Спагети Карбонара</td>
+                                    <td>98</td>
+                                    <td>1,372 лв</td>
+                                    <td>68%</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Цезар салата</td>
+                                    <td>87</td>
+                                    <td>1,044 лв</td>
+                                    <td>75%</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>Бургер Бекон</td>
+                                    <td>76</td>
+                                    <td>1,140 лв</td>
+                                    <td>65%</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>Пилешки крилца</td>
+                                    <td>64</td>
+                                    <td>768 лв</td>
+                                    <td>70%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Ниски Продавачи</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Артикул</th>
+                                    <th>Продажби</th>
+                                    <th>Приход</th>
+                                    <th>Действие</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Крем Брюле</td>
+                                    <td>8</td>
+                                    <td>72 лв</td>
+                                    <td><span class="status-badge status-danger">Премахни</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Тартар от сьомга</td>
+                                    <td>12</td>
+                                    <td>180 лв</td>
+                                    <td><span class="status-badge status-warning">Преразгледай</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Супа от скариди</td>
+                                    <td>15</td>
+                                    <td>195 лв</td>
+                                    <td><span class="status-badge status-warning">Преразгледай</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Ризото с гъби</td>
+                                    <td>18</td>
+                                    <td>288 лв</td>
+                                    <td><span class="status-badge status-info">Наблюдавай</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Menu Engineering Matrix</div>
+                    <div class="menu-matrix">
+                        <div class="matrix-quadrant star">
+                            <h4>⭐ STARS (Висока популярност + Висок марж)</h4>
+                            <ul>
+                                <li>• Пица Маргарита - 142 продажби, 72% марж</li>
+                                <li>• Цезар салата - 87 продажби, 75% марж</li>
+                                <li>• Пилешки крилца - 64 продажби, 70% марж</li>
+                            </ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #4CAF50;">Действие: Запази и промотирай</p>
+                        </div>
+                        <div class="matrix-quadrant plow">
+                            <h4>🐴 PLOWHORSES (Висока популярност + Нисък марж)</h4>
+                            <ul>
+                                <li>• Спагети Карбонара - 98 продажби, 68% марж</li>
+                                <li>• Бургер Бекон - 76 продажби, 65% марж</li>
+                            </ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #ff9800;">Действие: Увеличи цената или намали разходите</p>
+                        </div>
+                        <div class="matrix-quadrant puzzle">
+                            <h4>❓ PUZZLES (Ниска популярност + Висок марж)</h4>
+                            <ul>
+                                <li>• Тартар от сьомга - 12 продажби, 78% марж</li>
+                                <li>• Телешки стек - 24 продажби, 82% марж</li>
+                            </ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #2196F3;">Действие: Промени позицията в менюто или маркетинга</p>
+                        </div>
+                        <div class="matrix-quadrant dog">
+                            <h4>🐕 DOGS (Ниска популярност + Нисък марж)</h4>
+                            <ul>
+                                <li>• Крем Брюле - 8 продажби, 58% марж</li>
+                                <li>• Супа от скариди - 15 продажби, 62% марж</li>
+                            </ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #f44336;">Действие: Премахни от менюто</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">AI Препоръки за Меню</div>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-weight: 600; margin-bottom: 8px; color: #4CAF50;">✓ Препоръка: Добави вегетариански опции</div>
+                        <div style="font-size: 14px; color: #666;">Анализът показва 23% увеличение на търсенето на вегетариански ястия в последните 3 месеца.</div>
+                    </div>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-weight: 600; margin-bottom: 8px; color: #ff9800;">⚠ Предупреждение: Високи разходи за "Супа от скариди"</div>
+                        <div style="font-size: 14px; color: #666;">Food cost 42% - много над препоръчаното. Помисли за замяна на доставчика или премахване.</div>
+                    </div>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <div style="font-weight: 600; margin-bottom: 8px; color: #2196F3;">💡 Възможност: Промоция на "Тартар от сьомга"</div>
+                        <div style="font-size: 14px; color: #666;">Висок марж (78%) но ниски продажби. Препоръчва се като специално предложение.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics" class="section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Пиков Час</div>
+                        <div class="stat-value">19:00-21:00</div>
+                        <div class="stat-change">Средно 45 клиенти</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Най-Натоварен Ден</div>
+                        <div class="stat-value">Петък</div>
+                        <div class="stat-change">+35% над средното</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Среден Rating</div>
+                        <div class="stat-value">4.7 ⭐</div>
+                        <div class="stat-change">от 234 ревюта</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Време за Доставка</div>
+                        <div class="stat-value">28 мин</div>
+                        <div class="stat-change">↓ 3 мин подобрение</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Heatmap - Натоварване по Часове и Дни</div>
+                    <div style="margin: 20px 0;">
+                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 10px;">
+                            <div></div>
+                            <div style="text-align: center; font-size: 12px; font-weight: 600;">Пон</div>
+                            <div style="text-align: center; font-size: 12px; font-weight: 600;">Вто</div>
+                            <div style="text-align: center; font-size: 12px; font-weight: 600;">Сря</div>
+                            <div style="text-align: center; font-size: 12px; font-weight: 600;">Чет</div>
+                            <div style="text-align: center; font-size: 12px; font-weight: 600;">Пет</div>
+                            <div style="text-align: center; font-size: 12px; font-weight: 600;">Съб</div>
+                            <div style="text-align: center; font-size: 12px; font-weight: 600;">Нед</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
+                            <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">12:00-14:00</div>
+                            <div class="heatmap-cell heat-medium">35</div>
+                            <div class="heatmap-cell heat-medium">38</div>
+                            <div class="heatmap-cell heat-medium">42</div>
+                            <div class="heatmap-cell heat-high">48</div>
+                            <div class="heatmap-cell heat-high">52</div>
+                            <div class="heatmap-cell heat-high">58</div>
+                            <div class="heatmap-cell heat-medium">45</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
+                            <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">18:00-20:00</div>
+                            <div class="heatmap-cell heat-medium">42</div>
+                            <div class="heatmap-cell heat-high">48</div>
+                            <div class="heatmap-cell heat-high">51</div>
+                            <div class="heatmap-cell heat-high">55</div>
+                            <div class="heatmap-cell heat-high">68</div>
+                            <div class="heatmap-cell heat-high">72</div>
+                            <div class="heatmap-cell heat-high">65</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px;">
+                            <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">20:00-22:00</div>
+                            <div class="heatmap-cell heat-low">25</div>
+                            <div class="heatmap-cell heat-medium">32</div>
+                            <div class="heatmap-cell heat-medium">35</div>
+                            <div class="heatmap-cell heat-medium">38</div>
+                            <div class="heatmap-cell heat-high">52</div>
+                            <div class="heatmap-cell heat-high">58</div>
+                            <div class="heatmap-cell heat-medium">42</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 20px; height: 20px; background: #90caf9; border-radius: 4px;"></div>
+                            <span>Ниско (0-30)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 20px; height: 20px; background: #ffa726; border-radius: 4px;"></div>
+                            <span>Средно (31-50)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 20px; height: 20px; background: #ef5350; border-radius: 4px;"></div>
+                            <span>Високо (51+)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">Прогноза за Натоварване (Следващи 7 дни)</div>
+                        <div class="chart-bar">
+                            <div class="bar" style="height: 65%;">
+                                <span class="bar-value">52</span>
+                                <span class="bar-label">Пон</span>
+                            </div>
+                            <div class="bar" style="height: 70%;">
+                                <span class="bar-value">56</span>
+                                <span class="bar-label">Вто</span>
+                            </div>
+                            <div class="bar" style="height: 75%;">
+                                <span class="bar-value">60</span>
+                                <span class="bar-label">Сря</span>
+                            </div>
+                            <div class="bar" style="height: 80%;">
+                                <span class="bar-value">64</span>
+                                <span class="bar-label">Чет</span>
+                            </div>
+                            <div class="bar" style="height: 95%;">
+                                <span class="bar-value">76</span>
+                                <span class="bar-label">Пет</span>
+                            </div>
+                            <div class="bar" style="height: 100%;">
+                                <span class="bar-value">80</span>
+                                <span class="bar-label">Съб</span>
+                            </div>
+                            <div class="bar" style="height: 85%;">
+                                <span class="bar-value">68</span>
+                                <span class="bar-label">Нед</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 8px;">
+                            <div style="font-weight: 600; color: #856404; margin-bottom: 5px;">⚠ AI Препоръка</div>
+                            <div style="font-size: 13px; color: #856404;">Очаква се високо натоварване в петък и събота. Препоръчваме +2 сервитьора и +1 готвач.</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">Разходи vs Приходи по Категории</div>
+                        <div style="margin-bottom: 25px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600;">Храна</span>
+                                <span style="font-weight: 600;">1,680 лв / 480 лв</span>
+                            </div>
+                            <div class="progress-bar" style="height: 12px;">
+                                <div style="height: 100%; background: #4CAF50; width: 71.4%; border-radius: 10px; position: relative;">
+                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 28.6%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666;">
+                                <span>Приход: 1,680 лв</span>
+                                <span>Разход: 480 лв (28.6%)</span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 25px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600;">Напитки</span>
+                                <span style="font-weight: 600;">520 лв / 104 лв</span>
+                            </div>
+                            <div class="progress-bar" style="height: 12px;">
+                                <div style="height: 100%; background: #2196F3; width: 80%; border-radius: 10px; position: relative;">
+                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 20%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666;">
+                                <span>Приход: 520 лв</span>
+                                <span>Разход: 104 лв (20%)</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600;">Доставка</span>
+                                <span style="font-weight: 600;">250 лв / 75 лв</span>
+                            </div>
+                            <div class="progress-bar" style="height: 12px;">
+                                <div style="height: 100%; background: #9c27b0; width: 70%; border-radius: 10px; position: relative;">
+                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 30%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666;">
+                                <span>Приход: 250 лв</span>
+                                <span>Разход: 75 лв (30%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Delivery Performance</div>
+                    <div class="stats-grid" style="margin-bottom: 0;">
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Средно Време</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #4CAF50;">28 мин</div>
+                            <div style="font-size: 12px; color: #4CAF50;">↓ 3 мин подобрение</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Рейтинг</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #ff9800;">4.8 ⭐</div>
+                            <div style="font-size: 12px; color: #4CAF50;">↑ 0.2 точки</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Успешни Доставки</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #2196F3;">97.5%</div>
+                            <div style="font-size: 12px; color: #4CAF50;">↑ 1.2%</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Такси за Доставка</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #9c27b0;">75 лв</div>
+                            <div style="font-size: 12px; color: #666;">днес</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings" class="section">
+                <div class="card">
+                    <div class="card-header">Управление на Роли и Достъпи</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Роля</th>
+                                <th>Какво може да вижда</th>
+                                <th>Какво може да прави</th>
+                                <th>Брой потребители</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="status-badge status-info">Сервитьор</span></td>
+                                <td>Маси, поръчки, сметки</td>
+                                <td>Добавя/редактира поръчки, приема плащания</td>
+                                <td>6</td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-badge status-success">Готвач</span></td>
+                                <td>Поръчки за кухнята, таймери</td>
+                                <td>Отбелязва статус на поръчки</td>
+                                <td>4</td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-badge status-warning">Барман</span></td>
+                                <td>Напитки, рецепти, наличности</td>
+                                <td>Маркира готови напитки</td>
+                                <td>3</td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-badge" style="background: #9c27b0; color: white;">Мениджър</span></td>
+                                <td>Всички данни + отчети</td>
+                                <td>Управлява меню, персонал, цени</td>
+                                <td>2</td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-badge" style="background: #212121; color: white;">Собственик</span></td>
+                                <td>Финансови отчети, KPI, прогнози</td>
+                                <td>Променя всичко</td>
+                                <td>1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="content-grid">
+                    <div class="card">
+                        <div class="card-header">Добави/Редактирай Артикул</div>
+                        <form onsubmit="return false;">
+                            <div class="form-group">
+                                <label class="form-label">Име на артикул</label>
+                                <input type="text" class="form-control" placeholder="Напр. Пица Маргарита">
+                                </div>
+                                <div class="form-row">
+                                <div class="form-group">
+                                <label class="form-label">Категория</label>
+                                <select class="form-control">
+                                <option>Основни ястия</option>
+                                <option>Салати</option>
+                                <option>Супи</option>
+                                <option>Десерти</option>
+                                <option>Напитки</option>
+                                </select>
+                                </div>
+                                <div class="form-group">
+                                <label class="form-label">Цена (лв)</label>
+                                <input type="number" class="form-control" placeholder="12.00" step="0.01">
+                                </div>
+                                </div>
+                                <div class="form-row">
+                                <div class="form-group">
+                                <label class="form-label">Себестойност (лв)</label>
+                                <input type="number" class="form-control" placeholder="3.50" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                <label class="form-label">Време за приготвяне (мин)</label>
+                                <input type="number" class="form-control" placeholder="15">
+                                </div>
+                                </div>
+                                <div class="form-group">
+                                <label class="form-label">Описание</label>
+                                <textarea class="form-control" rows="3" placeholder="Кратко описание на артикула..."></textarea>
+                                </div>
+                                <button class="btn btn-primary">Запази Артикул</button>
+                                </form>
+                                </div>
+                                <div class="card">
+                    <div class="card-header">Данъчни Ставки и Отстъпки</div>
+                    <div class="form-group">
+                        <label class="form-label">ДДС (%)</label>
+                        <input type="number" class="form-control" value="20" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Отстъпка за редовни клиенти (%)</label>
+                        <input type="number" class="form-control" value="10" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Минимална сума за безплатна доставка (лв)</label>
+                        <input type="number" class="form-control" value="30" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Такса за доставка (лв)</label>
+                        <input type="number" class="form-control" value="3" step="0.5">
+                    </div>
+                    <button class="btn btn-primary">Запази Настройки</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Интеграции</div>
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">POS Система</div>
+                            <div style="font-size: 13px; color: #666;">Свързана с главния касов апарат</div>
+                        </div>
+                        <span class="status-badge status-success">Активна</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">Счетоводна Система</div>
+                            <div style="font-size: 13px; color: #666;">Автоматично синхронизиране на данни</div>
+                        </div>
+                        <span class="status-badge status-success">Активна</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">Платформа за Доставка</div>
+                            <div style="font-size: 13px; color: #666;">Foodpanda, Glovo, Bolt Food</div>
+                        </div>
+                        <span class="status-badge status-success">Активна</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 5px;">Email Notifications</div>
+                            <div style="font-size: 13px; color: #666;">Автоматични имейли за отчети</div>
+                        </div>
+                        <span class="status-badge status-warning">Настройва се</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Системни Логове</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Дата/Час</th>
+                            <th>Потребител</th>
+                            <th>Действие</th>
+                            <th>Детайли</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>01.12.2025 14:35</td>
+                            <td>Petar Petrov</td>
+                            <td>Промяна на цена</td>
+                            <td>Пица Маргарита: 11 лв → 12 лв</td>
+                        </tr>
+                        <tr>
+                            <td>01.12.2025 13:20</td>
+                            <td>Maria Ivanova</td>
+                            <td>Добавяне на артикул</td>
+                            <td>Нов артикул: Цезар Салата</td>
+                        </tr>
+                        <tr>
+                            <td>01.12.2025 12:15</td>
+                            <td>Georgi Petrov</td>
+                            <td>Редакция на меню</td>
+                            <td>Премахване: Крем Брюле</td>
+                        </tr>
+                        <tr>
+                            <td>01.12.2025 10:45</td>
+                            <td>System</td>
+                            <td>Автоматичен отчет</td>
+                            <td>Генериран дневен финансов отчет</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+   <script src="js/script.js"></script>
