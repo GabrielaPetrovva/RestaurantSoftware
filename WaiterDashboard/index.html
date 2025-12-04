@@ -422,7 +422,7 @@
         </div>
 
         <div class="payments-block">
-          <h3 style="text-align:center; margin:0 0 8px 0; font-size:16px;">Payments</h3>
+          <h3 id="paymentsBlockTitle" style="text-align:center; margin:0 0 8px 0; font-size:16px;">Payments</h3>
 
           <div class="payment-types" id="paymentTypes">
             <button class="pay-btn" data-type="cash">Cash</button>
@@ -445,7 +445,7 @@
           </div>
 
           <div style="margin-top:8px;"><strong id="labelComments">Comments</strong></div>
-          <textarea id="comments" placeholder="Notes to kitchen/bar"></textarea>
+          <textarea id="comments" data-placeholder-en="Notes to kitchen/bar" data-placeholder-bg="Бележки към кухнята/бара" placeholder="Notes to kitchen/bar"></textarea>
 
           <button id="completePayment">Complete Payment</button>
         </div>
@@ -454,9 +454,9 @@
       <div class="card menu">
         <h2 id="menuTitle">Menu</h2>
         <div class="categories" id="categoryRow">
-          <button class="cat-btn active" data-cat="pizzas" data-i18n="Pizzas">Pizzas</button>
-          <button class="cat-btn" data-cat="drinks" data-i18n="Drinks">Drinks</button>
-          <button class="cat-btn" data-cat="sides" data-i18n="Sides">Sides</button>
+          <button class="cat-btn active" data-cat="pizzas" data-i18n="Pizzas" id="catPizzas">Pizzas</button>
+          <button class="cat-btn" data-cat="drinks" data-i18n="Drinks" id="catDrinks">Drinks</button>
+          <button class="cat-btn" data-cat="sides" data-i18n="Sides" id="catSides">Sides</button>
         </div>
         <div class="menu-items" id="menuItems"></div>
       </div>
@@ -486,10 +486,10 @@
       <div class="card">
         <h2 id="statsTitle">Statistics</h2>
         <div class="stats-list" style="margin-top:10px;">
-          <div><span>Sales this shift</span><strong id="statSales">0.00€</strong></div>
-          <div><span>Average check</span><strong id="statAvg">0.00€</strong></div>
-          <div><span>Served tables</span><strong id="statTables">0</strong></div>
-          <div><span>Tips (total)</span><strong id="statTips">0.00€</strong></div>
+          <div><span id="statSalesLabel">Sales this shift</span><strong id="statSales">0.00€</strong></div>
+          <div><span id="statAvgLabel">Average check</span><strong id="statAvg">0.00€</strong></div>
+          <div><span id="statTablesLabel">Served tables</span><strong id="statTables">0</strong></div>
+          <div><span id="statTipsLabel">Tips (total)</span><strong id="statTips">0.00€</strong></div>
         </div>
       </div>
     </section>
@@ -507,7 +507,7 @@
     </button>
     <button data-view="payments">
       <span class="icon">💳</span>
-      <span>Pay</span>
+      <span id="navPay">Pay</span>
     </button>
     <button data-view="delivery">
       <span class="icon">🚚</span>
@@ -532,7 +532,7 @@
         <div class="mname">Name</div>
         <div class="mprice muted">1.00€</div>
       </div>
-      <button class="add">+ Add</button>
+      <button class="add" data-i18n-add="Add">+ Add</button>
     </div>
   </template>
 
@@ -574,7 +574,29 @@ const i18n = {
     'Print Orders': 'Print Orders',
     'Preparing': 'Preparing',
     'Ready': 'Ready',
-    'Picked up': 'Picked up'
+    'Picked up': 'Picked up',
+    'Waiter Dashboard': 'Waiter Dashboard',
+    'Exit': 'Exit',
+    'Pay': 'Pay',
+    'Pizzas': 'Pizzas',
+    'Drinks': 'Drinks',
+    'Sides': 'Sides',
+    'Sales this shift': 'Sales this shift',
+    'Average check': 'Average check',
+    'Served tables': 'Served tables',
+    'Tips (total)': 'Tips (total)',
+    'Margherita': 'Margherita',
+    'Pepperoni': 'Pepperoni',
+    'Quattro Formaggi': 'Quattro Formaggi',
+    'Coca-Cola': 'Coca-Cola',
+    'Water': 'Water',
+    'Orange Juice': 'Orange Juice',
+    'Fries': 'Fries',
+    'Green Salad': 'Green Salad',
+    'Garlic Bread': 'Garlic Bread',
+    'Open checks and payment history': 'Open checks and payment history',
+    'Add': 'Add',
+    'Notes to kitchen/bar': 'Notes to kitchen/bar'
   },
   bg: {
     Tables: 'Маси',
@@ -596,7 +618,29 @@ const i18n = {
     'Print Orders': 'Принтирай поръчки',
     'Preparing': 'В процес',
     'Ready': 'Готово',
-    'Picked up': 'Взето'
+    'Picked up': 'Взето',
+    'Waiter Dashboard': 'Табло на сервитьор',
+    'Exit': 'Изход',
+    'Pay': 'Плащане',
+    'Pizzas': 'Пици',
+    'Drinks': 'Напитки',
+    'Sides': 'Гарнитури',
+    'Sales this shift': 'Продажби тази смяна',
+    'Average check': 'Средна сметка',
+    'Served tables': 'Обслужени маси',
+    'Tips (total)': 'Бакшиш (общо)',
+    'Margherita': 'Маргарита',
+    'Pepperoni': 'Пеперони',
+    'Quattro Formaggi': 'Кватро Формаджи',
+    'Coca-Cola': 'Кока-Кола',
+    'Water': 'Вода',
+    'Orange Juice': 'Портокалов сок',
+    'Fries': 'Пържени картофи',
+    'Green Salad': 'Зелена салата',
+    'Garlic Bread': 'Чеснов хляб',
+    'Open checks and payment history': 'Отворени сметки и история на плащанията',
+    'Add': 'Добави',
+    'Notes to kitchen/bar': 'Бележки към кухнята/бара'
   }
 };
 
@@ -773,26 +817,61 @@ function renderNavLabels() {
     if (labelEl) labelEl.textContent = t(key);
   });
   
+  // Header title
+  const appTitle = document.getElementById('appTitle');
+  if (appTitle) appTitle.textContent = t('Waiter Dashboard');
+  
+  // Exit button
+  const exitBtn = document.getElementById('exitBtn');
+  if (exitBtn) exitBtn.textContent = t('Exit');
+  
+  // Pay button in navigation
+  const navPay = document.getElementById('navPay');
+  if (navPay) navPay.textContent = t('Pay');
+  
   document.getElementById('tablesTitle').textContent = t('Tables');
   document.getElementById('tablesSubtitle').textContent = t('Tap a table to open or create an order');
   document.getElementById('quickTitle').textContent = t('Quick Actions');
   document.getElementById('labelTotal').textContent = t('Total');
+  document.getElementById('labelAmount').textContent = t('Amount');
   document.getElementById('labelTip').textContent = t('Tip');
   document.getElementById('labelComments').textContent = t('Comments');
   document.getElementById('completePayment').textContent = t('Complete Payment');
   document.getElementById('menuTitle').textContent = t('Menu');
   
+  // Category buttons
+  const catPizzas = document.getElementById('catPizzas');
+  if (catPizzas) catPizzas.textContent = t('Pizzas');
+  const catDrinks = document.getElementById('catDrinks');
+  if (catDrinks) catDrinks.textContent = t('Drinks');
+  const catSides = document.getElementById('catSides');
+  if (catSides) catSides.textContent = t('Sides');
+  
   const deliverySubtitle = document.querySelector('#view-delivery .muted');
   if (deliverySubtitle) deliverySubtitle.textContent = t('Incoming Orders');
   
   document.getElementById('btnPrintOrders').textContent = t('Print Orders');
+  
   // section titles
   const paymentsTitle = document.getElementById('paymentsTitle');
   if (paymentsTitle) paymentsTitle.textContent = t('Payments');
+  const paymentsSubtitle = document.querySelector('#view-payments .muted');
+  if (paymentsSubtitle) paymentsSubtitle.textContent = t('Open checks and payment history');
+  
   const deliveryTitle = document.getElementById('deliveryTitle');
   if (deliveryTitle) deliveryTitle.textContent = t('Delivery/Takeaway');
   const statsTitle = document.getElementById('statsTitle');
   if (statsTitle) statsTitle.textContent = t('Statistics');
+  
+  // Statistics labels
+  const statSalesLabel = document.getElementById('statSalesLabel');
+  if (statSalesLabel) statSalesLabel.textContent = t('Sales this shift');
+  const statAvgLabel = document.getElementById('statAvgLabel');
+  if (statAvgLabel) statAvgLabel.textContent = t('Average check');
+  const statTablesLabel = document.getElementById('statTablesLabel');
+  if (statTablesLabel) statTablesLabel.textContent = t('Served tables');
+  const statTipsLabel = document.getElementById('statTipsLabel');
+  if (statTipsLabel) statTipsLabel.textContent = t('Tips (total)');
 
   // quick actions labels
   document.querySelectorAll('.qa-label').forEach(el => {
@@ -807,6 +886,22 @@ function renderNavLabels() {
     const labelKey = type ? type.charAt(0).toUpperCase() + type.slice(1) : '';
     if (labelKey) btn.textContent = t(labelKey);
   });
+  
+  // Payments block title
+  const paymentsBlockTitle = document.getElementById('paymentsBlockTitle');
+  if (paymentsBlockTitle) paymentsBlockTitle.textContent = t('Payments');
+  
+  // Comments textarea placeholder
+  const commentsInput = document.getElementById('comments');
+  if (commentsInput) {
+    commentsInput.placeholder = t('Notes to kitchen/bar');
+  }
+  
+  // Custom tip input placeholder
+  const customTipInput = document.getElementById('customTip');
+  if (customTipInput) {
+    customTipInput.placeholder = lang === 'bg' ? '€ 0,00' : '€ 0.00';
+  }
 
   // ensure language select matches the current lang
   if (langSelect) langSelect.value = lang;
@@ -846,9 +941,15 @@ function renderMenu(cat = 'pizzas') {
   menuItemsEl.innerHTML = '';
   menu[cat].forEach(mi => {
     const el = tplMenuItem.content.firstElementChild.cloneNode(true);
-    el.querySelector('.mname').textContent = mi.name;
+    // Translate menu item name
+    const translatedName = t(mi.name) || mi.name;
+    el.querySelector('.mname').textContent = translatedName;
     el.querySelector('.mprice').textContent = mi.price.toFixed(2) + '€';
     const addBtn = el.querySelector('button.add');
+    
+    // Translate "Add" button
+    const addBtnText = lang === 'bg' ? '+ ' + t('Add') : '+ ' + t('Add');
+    addBtn.textContent = addBtnText;
     
     addBtn.addEventListener('click', () => {
       if (!currentOrder) {
@@ -861,7 +962,8 @@ function renderMenu(cat = 'pizzas') {
           return;
         }
       }
-      addItemToOrder(currentOrder.id, { name: mi.name, meta: '', price: mi.price });
+      // Store original name for data consistency, but display translated name
+      addItemToOrder(currentOrder.id, { name: mi.name, meta: '', price: mi.price, translatedName: translatedName });
     });
     
     menuItemsEl.appendChild(el);
@@ -887,9 +989,11 @@ function renderOrderPanel() {
   currentOrder.items.forEach((it, idx) => {
     const row = document.createElement('div');
     row.className = 'order-item';
+    // Use translated name if available, otherwise translate the original name
+    const displayName = it.translatedName || t(it.name) || it.name;
     row.innerHTML = `
       <div class="left">
-        <div class="name">${it.name}</div>
+        <div class="name">${displayName}</div>
         <div class="meta">${it.meta || ''}</div>
       </div>
       <div class="right">
@@ -913,7 +1017,8 @@ function renderOrderPanel() {
     btn.addEventListener('click', (e) => {
       const idx = +e.target.dataset.idx;
       const item = currentOrder.items[idx];
-      alert(`${item.name} ${t('sent to kitchen/bar.')}`);
+      const itemName = item.translatedName || t(item.name) || item.name;
+      alert(`${itemName} ${t('sent to kitchen/bar.')}`);
     });
   });
   
@@ -1044,7 +1149,12 @@ function transferItemToTable(idx) {
   renderOrderPanel();
   renderTables();
   renderChecksList();
-  alert(`${t('Item moved to')} ${ttable.name}`);
+  let tableLabel = ttable.name;
+  if (tableLabel && tableLabel.startsWith('Table ')) {
+    const parts = tableLabel.split(' ');
+    tableLabel = `${t('Table')} ${parts.slice(1).join(' ')}`;
+  }
+  alert(`${t('Item moved to')} ${tableLabel}`);
 }
 
 // Payment logic (simulated)
@@ -1117,7 +1227,7 @@ if (paymentTypeButtons.length > 0) {
 // tip buttons
 tipButtons.forEach(b => {
   b.addEventListener('click', () => {
-    if (!currentOrder) return alert('Select an order first');
+    if (!currentOrder) return alert(t('Select an order first'));
     const rate = parseFloat(b.dataset.tip);
     const subtotal = currentOrder.items.reduce((s, i) => s + i.price, 0);
     currentOrder.tip = +(subtotal * rate).toFixed(2);

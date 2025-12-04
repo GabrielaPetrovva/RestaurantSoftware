@@ -556,7 +556,7 @@
     </div>
 
     <script>
-        let currentLang = 'bg';
+        let currentLang = localStorage.getItem('kitchenLang') || 'bg';
         
         const translations = {
             bg: {
@@ -592,7 +592,14 @@
                 avgTimeHeader: 'Средно Време',
                 statusHeader: 'Статус',
                 onTimeLabel: 'Навреме',
-                delayedLabel: 'Забавено'
+                delayedLabel: 'Забавено',
+                // Dish names
+                'Grilled Salmon': 'Печен сьомга',
+                'Margherita Pizza': 'Пица Маргарита',
+                'Caesar Salad': 'Салата Цезар',
+                'Beef Burger': 'Говеждо бургер',
+                'Pasta Carbonara': 'Паста Карбонара',
+                'Chicken Curry': 'Пилешко карри'
             },
             en: {
                 headerTitle: 'Kitchen Statistics',
@@ -627,12 +634,20 @@
                 avgTimeHeader: 'Avg Time',
                 statusHeader: 'Status',
                 onTimeLabel: 'On Time',
-                delayedLabel: 'Delayed'
+                delayedLabel: 'Delayed',
+                // Dish names
+                'Grilled Salmon': 'Grilled Salmon',
+                'Margherita Pizza': 'Margherita Pizza',
+                'Caesar Salad': 'Caesar Salad',
+                'Beef Burger': 'Beef Burger',
+                'Pasta Carbonara': 'Pasta Carbonara',
+                'Chicken Curry': 'Chicken Curry'
             }
         };
 
         function toggleLanguage() {
             currentLang = currentLang === 'bg' ? 'en' : 'bg';
+            localStorage.setItem('kitchenLang', currentLang);
             document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
             updateLanguage();
         }
@@ -694,6 +709,18 @@
             delayedBadges.forEach(badge => {
                 badge.textContent = t.delayedLabel;
             });
+            
+            // Update dish names in table
+            const dishRows = document.querySelectorAll('.table-section tbody tr');
+            dishRows.forEach(row => {
+                const dishCell = row.querySelector('td strong');
+                if (dishCell) {
+                    const dishName = dishCell.textContent.trim();
+                    if (t[dishName]) {
+                        dishCell.textContent = t[dishName];
+                    }
+                }
+            });
         }
 
         function updateStats() {
@@ -702,9 +729,7 @@
         }
 
         function goBack() {
-            if (confirm(currentLang === 'bg' ? 'Връщане към таблото?' : 'Return to dashboard?')) {
-                window.location.href = 'kitchen-dashboard.html';
-            }
+                window.location.href = 'index.html';
         }
 
         function exit() {
@@ -713,7 +738,10 @@
             }
         }
 
-        // Initialize with Bulgarian
+        // Initialize language button text
+        document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+        
+        // Initialize with saved language
         updateLanguage();
     </script>
 </body>

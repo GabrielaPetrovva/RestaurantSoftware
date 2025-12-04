@@ -9,65 +9,57 @@
 <body>
     <div class="dashboard">
         <div class="header">
-            <h1>Kitchen Management Dashboard</h1>
+            <h1 id="headerTitle">Kitchen Management Dashboard</h1>
             <div class="header-right">
                 <div class="live-indicator">
                     <span class="live-dot"></span>
-                    LIVE
+                    <span id="liveText">LIVE</span>
                 </div>
-                <span class="user-name">Petar Petrov - Head Chef</span>
-                <button class="exit-btn" onclick="logout()">Exit</button>
+                <span class="user-name" id="userName">Petar Petrov - Head Chef</span>
+                <button class="lang-btn" onclick="toggleLanguage()" id="langBtn" style="padding: 8px 16px; border: none; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; font-weight: 500; margin-right: 10px;">EN</button>
+                <button class="exit-btn" onclick="logout()" id="exitBtn">Exit</button>
             </div>
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('orders')">Orders</button>
-            <button class="tab" onclick="switchTab('metrics')">
-                Metrics
+            <button class="tab active" onclick="switchTab('orders')" id="tabOrders">Orders</button>
+            <button class="tab" onclick="switchTab('metrics')" id="tabMetrics">
+                <span id="tabMetricsText">Metrics</span>
                 <span class="notification-badge">3</span>
             </button>
-            <button class="tab" onclick="switchTab('menu')">Menu & Profit</button>
-            <button class="tab" onclick="switchTab('inventory')">Inventory</button>
-            <button class="tab" onclick="switchTab('staff')">Staff</button>
-            <button class="tab" onclick="switchTab('reports')">Reports</button>
-            <button class="tab" onclick="switchTab('waste')">Waste Log</button>
+            <button class="tab" onclick="switchTab('menu')" id="tabMenu">Menu & Profit</button>
+            <button class="tab" onclick="switchTab('staff')" id="tabStaff">Staff</button>
         </div>
 
         <!-- ORDERS VIEW -->
         <div id="orders-view" class="view-container active">
             <div class="main-content">
+                <div class="boss-view-only-notice" id="viewOnlyNotice" style="display: none;">
+                    <span data-i18n-view="View Only Mode">View Only Mode</span> - <span data-i18n-view="No actions allowed">No actions allowed</span>
+                </div>
                 <div class="orders-grid">
                     <div class="orders-section">
-                        <div class="filters">
-                            <button class="filter-btn active" onclick="filterOrders('all')">All Orders</button>
-                            <button class="filter-btn" onclick="filterOrders('late')">Late Only</button>
-                            <button class="filter-btn" onclick="filterOrders('priority')">Priority</button>
-                            <button class="filter-btn" onclick="filterOrders('takeaway')">Takeaway</button>
-                            <button class="filter-btn" onclick="filterOrders('delivery')">Delivery</button>
-                            <button class="filter-btn" onclick="filterOrders('station1')">Station 1</button>
-                        </div>
-
                         <div class="order-card">
                             <div class="order-header">
                                 <div class="order-info">
                                     <div class="order-number">
                                         <span class="status-indicator status-received"></span>
-                                        Order #23
+                                        <span data-i18n="Order #">Order #</span>23
                                     </div>
                                     <div class="order-customer">Ivan Ivanov</div>
-                                    <div class="table-info">Table 2 • Dine-in • Station 1</div>
+                                    <div class="table-info"><span data-i18n="Table">Table</span> 2 • <span data-i18n="Dine-in">Dine-in</span> • <span data-i18n="Station">Station</span> 1</div>
                                 </div>
                                 <div class="timer" data-start="300">5:00</div>
                             </div>
                             <div class="order-items">
                                 <div class="order-item">
-                                    Pasta Bolognese
-                                    <div class="item-notes">No cheese</div>
+                                    <span data-menu-item="Pasta Bolognese">Pasta Bolognese</span>
+                                    <div class="item-notes" data-i18n="No cheese">No cheese</div>
                                 </div>
-                                <div class="order-item">Garlic Bread</div>
+                                <div class="order-item"><span data-menu-item="Garlic Bread">Garlic Bread</span></div>
                             </div>
                             <div class="order-actions">
-                                <button class="btn btn-start" onclick="startCooking(23)">Start cooking</button>
+                                <button class="btn btn-start boss-disabled" data-i18n="Start cooking" disabled>Start cooking</button>
                             </div>
                         </div>
 
@@ -77,7 +69,7 @@
                                     <div class="order-number">
                                         <span class="status-indicator status-preparing"></span>
                                         Order #24
-                                        <span class="priority-badge">Priority</span>
+                                        <span class="priority-badge" data-i18n="Priority">Priority</span>
                                     </div>
                                     <div class="order-customer">Aleksandra</div>
                                     <div class="table-info">Table 3 • Dine-in • Station 2</div>
@@ -95,7 +87,7 @@
                                 </div>
                             </div>
                             <div class="order-actions">
-                                <button class="btn btn-ready" onclick="markReady(24)">Ready</button>
+                                <button class="btn btn-ready boss-disabled" data-i18n="Ready" disabled>Ready</button>
                             </div>
                         </div>
 
@@ -105,7 +97,7 @@
                                     <div class="order-number">
                                         <span class="status-indicator status-preparing"></span>
                                         Order #22
-                                        <span class="priority-badge" style="background: #dc3545;">LATE</span>
+                                        <span class="priority-badge" style="background: #dc3545;" data-i18n="LATE">LATE</span>
                                     </div>
                                     <div class="order-customer">Maria Georgieva</div>
                                     <div class="table-info">Table 5 • Dine-in • Station 1</div>
@@ -117,7 +109,7 @@
                                 <div class="order-item">Truffle Fries</div>
                             </div>
                             <div class="order-actions">
-                                <button class="btn btn-ready" onclick="markReady(22)">Ready</button>
+                                <button class="btn btn-ready boss-disabled" disabled>Ready</button>
                             </div>
                         </div>
 
@@ -138,44 +130,44 @@
                                 <div class="order-item">Tiramisu</div>
                             </div>
                             <div class="order-actions">
-                                <button class="btn btn-served" onclick="markServed(21)">Mark Served</button>
+                                <button class="btn btn-served boss-disabled" data-i18n="Mark Served" disabled>Mark Served</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="stats-section">
                         <div class="stat-card">
-                            <div class="stat-label">Average cooking time</div>
+                            <div class="stat-label" data-i18n="Average cooking time">Average cooking time</div>
                             <div class="stat-value">00:47</div>
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-label">Late orders</div>
+                            <div class="stat-label" data-i18n="Late orders">Late orders</div>
                             <div class="stat-value" style="color: #dc3545;">1</div>
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-label">Total orders today</div>
+                            <div class="stat-label" data-i18n="Total orders today">Total orders today</div>
                             <div class="stat-value">14</div>
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-label">Open tickets</div>
+                            <div class="stat-label" data-i18n="Open tickets">Open tickets</div>
                             <div class="stat-value" style="color: #ff9800;">4</div>
                         </div>
 
                         <div class="quick-order">
                             <div class="quick-order-header">
                                 <span class="quick-order-title">Order #33</span>
-                                <span class="type-badge">Takeaway</span>
+                                <span class="type-badge" data-i18n="Takeaway">Takeaway</span>
                             </div>
                             <div class="order-customer" style="margin-bottom: 10px;">Kaloyan</div>
                             <div class="quick-order-items">
                                 <div class="quick-item">Burger</div>
                             </div>
                             <div class="order-actions">
-                                <button class="btn btn-start" style="font-size: 12px; padding: 8px 16px;">Start</button>
-                                <button class="btn btn-served" style="font-size: 12px; padding: 8px 16px;">Served</button>
+                                <button class="btn btn-start boss-disabled" style="font-size: 12px; padding: 8px 16px;" data-i18n="Start cooking" disabled>Start</button>
+                                <button class="btn btn-served boss-disabled" style="font-size: 12px; padding: 8px 16px;" data-i18n="Mark Served" disabled>Served</button>
                             </div>
                         </div>
                     </div>
@@ -188,90 +180,90 @@
             <div class="main-content">
                 <div class="top-bar">
                     <div class="top-stat">
-                        <div class="top-stat-label">Today's Revenue</div>
+                        <div class="top-stat-label" data-i18n="Today's Revenue">Today's Revenue</div>
                         <div class="top-stat-value" style="color: #4caf50;">2,450 лв</div>
                     </div>
                     <div class="top-stat">
-                        <div class="top-stat-label">Covers</div>
+                        <div class="top-stat-label" data-i18n="Covers">Covers</div>
                         <div class="top-stat-value">87</div>
                     </div>
                     <div class="top-stat">
-                        <div class="top-stat-label">Avg Check</div>
+                        <div class="top-stat-label" data-i18n="Avg Check">Avg Check</div>
                     <div class="top-stat-value">28.16 лв</div>
                     </div>
                     <div class="top-stat">
-                    <div class="top-stat-label">Open Tickets</div>
+                    <div class="top-stat-label" data-i18n="Open Tickets">Open Tickets</div>
                     <div class="top-stat-value" style="color: #ff9800;">4</div>
                     </div>
                     <div class="top-stat">
-                    <div class="top-stat-label">Covers/Hour</div>
+                    <div class="top-stat-label" data-i18n="Covers/Hour">Covers/Hour</div>
                     <div class="top-stat-value">12.4</div>
                     </div>
                     </div>
                     <div class="metrics-grid">
                 <div class="metric-card">
-                    <div class="metric-title">Average Ticket Time</div>
+                    <div class="metric-title" data-i18n="Average Ticket Time">Average Ticket Time</div>
                     <div class="metric-value-large">12:34</div>
-                    <div class="metric-subtitle">From order to served</div>
+                    <div class="metric-subtitle" data-i18n="From order to served">From order to served</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Average Cook Time</div>
+                    <div class="metric-title" data-i18n="Average Cook Time">Average Cook Time</div>
                     <div class="metric-value-large">08:47</div>
-                    <div class="metric-subtitle">Kitchen preparation time</div>
+                    <div class="metric-subtitle" data-i18n="Kitchen preparation time">Kitchen preparation time</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">First Time Right</div>
+                    <div class="metric-title" data-i18n="First Time Right">First Time Right</div>
                     <div class="metric-value-large" style="color: #4caf50;">96%</div>
-                    <div class="metric-subtitle">Orders without corrections</div>
+                    <div class="metric-subtitle" data-i18n="Orders without corrections">Orders without corrections</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Order Throughput</div>
+                    <div class="metric-title" data-i18n="Order Throughput">Order Throughput</div>
                     <div class="metric-value-large">18</div>
-                    <div class="metric-subtitle">Orders per hour</div>
+                    <div class="metric-subtitle" data-i18n="Orders per hour">Orders per hour</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Table Turn Time</div>
+                    <div class="metric-title" data-i18n="Table Turn Time">Table Turn Time</div>
                     <div class="metric-value-large">45:20</div>
-                    <div class="metric-subtitle">Average time per table</div>
+                    <div class="metric-subtitle" data-i18n="Average time per table">Average time per table</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Food Cost %</div>
+                    <div class="metric-title" data-i18n="Food Cost %">Food Cost %</div>
                     <div class="metric-value-large" style="color: #ff9800;">32%</div>
-                    <div class="metric-subtitle">Of total revenue</div>
+                    <div class="metric-subtitle" data-i18n="Of total revenue">Of total revenue</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Labor Cost %</div>
+                    <div class="metric-title" data-i18n="Labor Cost %">Labor Cost %</div>
                     <div class="metric-value-large">28%</div>
-                    <div class="metric-subtitle">Of total revenue</div>
+                    <div class="metric-subtitle" data-i18n="Of total revenue">Of total revenue</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Waste %</div>
+                    <div class="metric-title" data-i18n="Waste %">Waste %</div>
                     <div class="metric-value-large" style="color: #dc3545;">3.2%</div>
-                    <div class="metric-subtitle">Of total inventory value</div>
+                    <div class="metric-subtitle" data-i18n="Of total inventory value">Of total inventory value</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Void & Refund Rate</div>
+                    <div class="metric-title" data-i18n="Void & Refund Rate">Void & Refund Rate</div>
                     <div class="metric-value-large" style="color: #ff9800;">1.5%</div>
-                    <div class="metric-subtitle">Of total revenue</div>
+                    <div class="metric-subtitle" data-i18n="Of total revenue">Of total revenue</div>
                 </div>
 
                 <div class="metric-card">
-                    <div class="metric-title">Delivery Cost %</div>
+                    <div class="metric-title" data-i18n="Delivery Cost %">Delivery Cost %</div>
                     <div class="metric-value-large">8.5%</div>
-                    <div class="metric-subtitle">Of delivery revenue</div>
+                    <div class="metric-subtitle" data-i18n="Of delivery revenue">Of delivery revenue</div>
                 </div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Top Selling Items Today</div>
+                <div class="chart-title" data-i18n="Top Selling Items Today">Top Selling Items Today</div>
                 <div class="bar-chart">
                     <div class="bar-item">
                         <div class="bar-label">Burger</div>
@@ -307,7 +299,7 @@
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Revenue by Category</div>
+                <div class="chart-title" data-i18n="Revenue by Category">Revenue by Category</div>
                 <div class="bar-chart">
                     <div class="bar-item">
                         <div class="bar-label">Main Courses</div>
@@ -342,10 +334,10 @@
     <div id="menu-view" class="view-container">
         <div class="main-content">
             <div class="chart-container">
-                <div class="chart-title">Menu Engineering Matrix</div>
+                <div class="chart-title" data-i18n="Menu Engineering Matrix">Menu Engineering Matrix</div>
                 <div class="matrix-grid">
                     <div class="matrix-cell matrix-stars">
-                        <h3>⭐ Stars (High Profit, High Popularity)</h3>
+                        <h3>⭐ <span data-i18n="Stars (High Profit, High Popularity)">Stars (High Profit, High Popularity)</span></h3>
                         <div class="matrix-items">
                             <div class="matrix-item">Grilled Salmon - Margin: 68% - Sales: 145/week</div>
                             <div class="matrix-item">Ribeye Steak - Margin: 65% - Sales: 132/week</div>
@@ -353,14 +345,14 @@
                         </div>
                     </div>
                     <div class="matrix-cell matrix-puzzles">
-                        <h3>❓ Puzzles (High Profit, Low Popularity)</h3>
+                        <h3>❓ <span data-i18n="Puzzles (High Profit, Low Popularity)">Puzzles (High Profit, Low Popularity)</span></h3>
                         <div class="matrix-items">
                             <div class="matrix-item">Lobster Bisque - Margin: 75% - Sales: 23/week</div>
                             <div class="matrix-item">Duck Confit - Margin: 70% - Sales: 18/week</div>
                         </div>
                     </div>
                     <div class="matrix-cell matrix-plowhorses">
-                        <h3>🐴 Plowhorses (Low Profit, High Popularity)</h3>
+                        <h3>🐴 <span data-i18n="Plowhorses (Low Profit, High Popularity)">Plowhorses (Low Profit, High Popularity)</span></h3>
                         <div class="matrix-items">
                             <div class="matrix-item">Burger - Margin: 45% - Sales: 234/week</div>
                             <div class="matrix-item">Margherita Pizza - Margin: 48% - Sales: 187/week</div>
@@ -368,7 +360,7 @@
                         </div>
                     </div>
                     <div class="matrix-cell matrix-dogs">
-                        <h3>🐕 Dogs (Low Profit, Low Popularity)</h3>
+                        <h3>🐕 <span data-i18n="Dogs (Low Profit, Low Popularity)">Dogs (Low Profit, Low Popularity)</span></h3>
                         <div class="matrix-items">
                             <div class="matrix-item">Vegan Bowl - Margin: 38% - Sales: 12/week</div>
                             <div class="matrix-item">Fish & Chips - Margin: 42% - Sales: 15/week</div>
@@ -378,7 +370,7 @@
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Dish Profitability Analysis</div>
+                <div class="chart-title" data-i18n="Dish Profitability Analysis">Dish Profitability Analysis</div>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -442,7 +434,7 @@
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Modifier Impact Analysis</div>
+                <div class="chart-title" data-i18n="Modifier Impact Analysis">Modifier Impact Analysis</div>
                 <div class="bar-chart">
                     <div class="bar-item">
                         <div class="bar-label">Extra Cheese</div>
@@ -685,20 +677,20 @@
     <div id="staff-view" class="view-container">
         <div class="main-content">
             <div class="top-bar">
-                <div class="top-stat">
-                    <div class="top-stat-label">Active Staff</div>
+                    <div class="top-stat">
+                    <div class="top-stat-label" data-i18n="Active Staff">Active Staff</div>
                     <div class="top-stat-value">8</div>
                 </div>
                 <div class="top-stat">
-                    <div class="top-stat-label">Total Labor Cost Today</div>
+                    <div class="top-stat-label" data-i18n="Total Labor Cost Today">Total Labor Cost Today</div>
                     <div class="top-stat-value">686 лв</div>
                 </div>
                 <div class="top-stat">
-                    <div class="top-stat-label">Labor %</div>
+                    <div class="top-stat-label" data-i18n="Labor %">Labor %</div>
                     <div class="top-stat-value">28%</div>
                 </div>
                 <div class="top-stat">
-                    <div class="top-stat-label">Avg Orders/Cook</div>
+                    <div class="top-stat-label" data-i18n="Avg Orders/Cook">Avg Orders/Cook</div>
                     <div class="top-stat-value">17.5</div>
                 </div>
             </div>
@@ -709,7 +701,7 @@
                         <div class="staff-avatar">PP</div>
                         <div class="staff-info">
                             <h3>Petar Petrov</h3>
-                            <div class="staff-role">Head Chef</div>
+                            <div class="staff-role" data-i18n="Head Chef">Head Chef</div>
                         </div>
                     </div>
                     <div class="staff-stats">
@@ -741,7 +733,7 @@
                         <div class="staff-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">II</div>
                         <div class="staff-info">
                             <h3>Ivan Ivanov</h3>
-                            <div class="staff-role">Line Cook</div>
+                            <div class="staff-role" data-i18n="Line Cook">Line Cook</div>
                         </div>
                     </div>
                     <div class="staff-stats">
@@ -773,7 +765,7 @@
                         <div class="staff-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">MG</div>
                         <div class="staff-info">
                             <h3>Maria Georgieva</h3>
-                            <div class="staff-role">Sous Chef</div>
+                            <div class="staff-role" data-i18n="Sous Chef">Sous Chef</div>
                         </div>
                     </div>
                     <div class="staff-stats">
@@ -805,7 +797,7 @@
                         <div class="staff-avatar" style="background: linear-gradient(135deg, #fa709a, #fee140);">GP</div>
                         <div class="staff-info">
                             <h3>Georgi Petkov</h3>
-                            <div class="staff-role">Line Cook</div>
+                            <div class="staff-role" data-i18n="Line Cook">Line Cook</div>
                         </div>
                     </div>
                     <div class="staff-stats">
@@ -837,7 +829,7 @@
                         <div class="staff-avatar" style="background: linear-gradient(135deg, #30cfd0, #330867);">AD</div>
                         <div class="staff-info">
                             <h3>Aleksandrа Dimova</h3>
-                            <div class="staff-role">Pastry Chef</div>
+                            <div class="staff-role" data-i18n="Pastry Chef">Pastry Chef</div>
                         </div>
                     </div>
                     <div class="staff-stats">
@@ -869,7 +861,7 @@
                         <div class="staff-avatar" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">KI</div>
                         <div class="staff-info">
                             <h3>Kaloyan Ivanov</h3>
-                            <div class="staff-role">Prep Cook</div>
+                            <div class="staff-role" data-i18n="Prep Cook">Prep Cook</div>
                         </div>
                     </div>
                     <div class="staff-stats">
@@ -898,7 +890,7 @@
             </div>
 
             <div class="chart-container" style="margin-top: 30px;">
-                <div class="chart-title">Staff Performance Comparison</div>
+                <div class="chart-title" data-i18n="Staff Performance Comparison">Staff Performance Comparison</div>
                 <div class="bar-chart">
                     <div class="bar-item">
                         <div class="bar-label">Petar Petrov</div>
@@ -1489,6 +1481,497 @@
 </div>
 </div>
 </div>
-   <script src="js/script.js"></script>
+   <script src="script.js"></script>
+   <script>
+        // Translation system
+        let currentLang = localStorage.getItem('mainDashboardLang') || 'bg';
+        
+        const translations = {
+            bg: {
+                // Header
+                'Kitchen Management Dashboard': 'Кухненско Управление',
+                'LIVE': 'НА ЖИВО',
+                'Petar Petrov - Head Chef': 'Петър Петров - Главен Готвач',
+                'Exit': 'Изход',
+                // Tabs
+                'Orders': 'Поръчки',
+                'Metrics': 'Статистики',
+                'Menu & Profit': 'Меню & Печалба',
+                'Staff': 'Персонал',
+                // Orders
+                'Order #': 'Поръчка #',
+                'Table': 'Маса',
+                'Dine-in': 'На място',
+                'Takeaway': 'За вкъщи',
+                'Station': 'Станция',
+                'Start cooking': 'Започни готвене',
+                'Ready': 'Готово',
+                'Mark Served': 'Маркирай като сервирано',
+                'Priority': 'Приоритет',
+                'LATE': 'ЗАБАВЕНО',
+                // Stats
+                'Average cooking time': 'Средно време за готвене',
+                'Late orders': 'Забавени поръчки',
+                'Total orders today': 'Общо поръчки днес',
+                'Open tickets': 'Отворени билети',
+                // Metrics
+                'Today\'s Revenue': 'Приходи днес',
+                'Covers': 'Гости',
+                'Avg Check': 'Среден чек',
+                'Open Tickets': 'Отворени билети',
+                'Covers/Hour': 'Гости/Час',
+                'Average Ticket Time': 'Средно време на билет',
+                'From order to served': 'От поръчка до сервиране',
+                'Average Cook Time': 'Средно време за готвене',
+                'Kitchen preparation time': 'Време за подготовка в кухнята',
+                'First Time Right': 'Правилно от първия път',
+                'Orders without corrections': 'Поръчки без корекции',
+                'Order Throughput': 'Пропускателна способност',
+                'Orders per hour': 'Поръчки на час',
+                'Table Turn Time': 'Време за обръщане на маса',
+                'Average time per table': 'Средно време на маса',
+                'Food Cost %': 'Разходи за храна %',
+                'Of total revenue': 'От общите приходи',
+                'Labor Cost %': 'Разходи за труд %',
+                'Waste %': 'Отпадъци %',
+                'Of total inventory value': 'От общата стойност на инвентара',
+                'Void & Refund Rate': 'Анулирания и възстановявания',
+                'Delivery Cost %': 'Разходи за доставка %',
+                'Of delivery revenue': 'От приходите от доставки',
+                'Top Selling Items Today': 'Най-продавани артикули днес',
+                'orders': 'поръчки',
+                'Revenue by Category': 'Приходи по категории',
+                'Main Courses': 'Основни ястия',
+                'Appetizers': 'Предястия',
+                'Desserts': 'Десерти',
+                'Beverages': 'Напитки',
+                // Menu & Profit
+                'Menu Engineering Matrix': 'Матрица на менюто',
+                'Stars (High Profit, High Popularity)': 'Звезди (Висока печалба, Висока популярност)',
+                'Puzzles (High Profit, Low Popularity)': 'Пъзели (Висока печалба, Ниска популярност)',
+                'Plowhorses (Low Profit, High Popularity)': 'Работни коне (Ниска печалба, Висока популярност)',
+                'Dogs (Low Profit, Low Popularity)': 'Кучета (Ниска печалба, Ниска популярност)',
+                'Margin': 'Марж',
+                'Sales': 'Продажби',
+                'week': 'седмица',
+                'Dish Profitability Analysis': 'Анализ на рентабилността на ястията',
+                'Dish Name': 'Име на ястието',
+                'Sale Price': 'Продажна цена',
+                'Cost': 'Разходи',
+                'Gross Profit': 'Брутна печалба',
+                'Margin %': 'Марж %',
+                'Sales (7d)': 'Продажби (7д)',
+                'Total Profit': 'Обща печалба',
+                'Modifier Impact Analysis': 'Анализ на въздействието на модификаторите',
+                'Extra Cheese': 'Допълнително сирене',
+                'No Onions': 'Без лук',
+                'Extra Bacon': 'Допълнителен бекон',
+                'Gluten Free': 'Без глутен',
+                'avg': 'средно',
+                // Staff
+                'Active Staff': 'Активен персонал',
+                'Total Labor Cost Today': 'Общи разходи за труд днес',
+                'Labor %': 'Труд %',
+                'Avg Orders/Cook': 'Средно поръчки/готвач',
+                'Head Chef': 'Главен готвач',
+                'Line Cook': 'Готвач на линия',
+                'Sous Chef': 'Су шеф',
+                'Pastry Chef': 'Кондитор',
+                'Prep Cook': 'Готвач за подготовка',
+                'Orders Completed': 'Завършени поръчки',
+                'Avg Prep Time': 'Средно време за подготовка',
+                'Errors/Returns': 'Грешки/Връщания',
+                'Hours Today': 'Часове днес',
+                'Station': 'Станция',
+                'Grill': 'Грил',
+                'Pasta': 'Паста',
+                'Salads': 'Салати',
+                'Fryer': 'Фритюр',
+                'Desserts': 'Десерти',
+                'Prep': 'Подготовка',
+                'Prep Tasks': 'Задачи за подготовка',
+                'Errors': 'Грешки',
+                'Staff Performance Comparison': 'Сравнение на производителността на персонала',
+                // Menu items
+                'Pasta Bolognese': 'Паста Болонезе',
+                'Garlic Bread': 'Чеснов хляб',
+                'Caesar Salad': 'Салата Цезар',
+                'Grilled Salmon': 'Печен сьомга',
+                'Margherita Pizza': 'Пица Маргарита',
+                'Greek Salad': 'Гръцка салата',
+                'Ribeye Steak': 'Риб ай стейк',
+                'Truffle Fries': 'Трюфелни пържени картофи',
+                'Tiramisu': 'Тирамису',
+                'Burger': 'Бургер',
+                'Pasta Carbonara': 'Паста Карбонара',
+                'Truffle Pasta': 'Трюфелна паста',
+                'Ribeye Steak - Medium Rare': 'Риб ай стейк - Средно прожарен',
+                'Lobster Bisque': 'Омарова супа',
+                'Duck Confit': 'Конфитюр от патица',
+                'Vegan Bowl': 'Веганска купа',
+                'Fish & Chips': 'Риба и пържени картофи',
+                'Chicken Wings': 'Пилешки крилца',
+                // Allergens
+                'GLUTEN': 'ГЛУТЕН',
+                'FISH': 'РИБА',
+                // Notes
+                'No cheese': 'Без сирене',
+                'Extra cheese': 'Допълнително сирене',
+                'No onions': 'Без лук',
+                'Medium rare': 'Средно прожарен',
+                'Spicy': 'Пикантно',
+                'View Only Mode': 'Режим само за преглед',
+                'No actions allowed': 'Действия не са разрешени'
+            },
+            en: {
+                // Header
+                'Kitchen Management Dashboard': 'Kitchen Management Dashboard',
+                'LIVE': 'LIVE',
+                'Petar Petrov - Head Chef': 'Petar Petrov - Head Chef',
+                'Exit': 'Exit',
+                // Tabs
+                'Orders': 'Orders',
+                'Metrics': 'Metrics',
+                'Menu & Profit': 'Menu & Profit',
+                'Staff': 'Staff',
+                // Orders
+                'Order #': 'Order #',
+                'Table': 'Table',
+                'Dine-in': 'Dine-in',
+                'Takeaway': 'Takeaway',
+                'Station': 'Station',
+                'Start cooking': 'Start cooking',
+                'Ready': 'Ready',
+                'Mark Served': 'Mark Served',
+                'Priority': 'Priority',
+                'LATE': 'LATE',
+                // Stats
+                'Average cooking time': 'Average cooking time',
+                'Late orders': 'Late orders',
+                'Total orders today': 'Total orders today',
+                'Open tickets': 'Open tickets',
+                // Metrics
+                'Today\'s Revenue': 'Today\'s Revenue',
+                'Covers': 'Covers',
+                'Avg Check': 'Avg Check',
+                'Open Tickets': 'Open Tickets',
+                'Covers/Hour': 'Covers/Hour',
+                'Average Ticket Time': 'Average Ticket Time',
+                'From order to served': 'From order to served',
+                'Average Cook Time': 'Average Cook Time',
+                'Kitchen preparation time': 'Kitchen preparation time',
+                'First Time Right': 'First Time Right',
+                'Orders without corrections': 'Orders without corrections',
+                'Order Throughput': 'Order Throughput',
+                'Orders per hour': 'Orders per hour',
+                'Table Turn Time': 'Table Turn Time',
+                'Average time per table': 'Average time per table',
+                'Food Cost %': 'Food Cost %',
+                'Of total revenue': 'Of total revenue',
+                'Labor Cost %': 'Labor Cost %',
+                'Waste %': 'Waste %',
+                'Of total inventory value': 'Of total inventory value',
+                'Void & Refund Rate': 'Void & Refund Rate',
+                'Delivery Cost %': 'Delivery Cost %',
+                'Of delivery revenue': 'Of delivery revenue',
+                'Top Selling Items Today': 'Top Selling Items Today',
+                'orders': 'orders',
+                'Revenue by Category': 'Revenue by Category',
+                'Main Courses': 'Main Courses',
+                'Appetizers': 'Appetizers',
+                'Desserts': 'Desserts',
+                'Beverages': 'Beverages',
+                // Menu & Profit
+                'Menu Engineering Matrix': 'Menu Engineering Matrix',
+                'Stars (High Profit, High Popularity)': 'Stars (High Profit, High Popularity)',
+                'Puzzles (High Profit, Low Popularity)': 'Puzzles (High Profit, Low Popularity)',
+                'Plowhorses (Low Profit, High Popularity)': 'Plowhorses (Low Profit, High Popularity)',
+                'Dogs (Low Profit, Low Popularity)': 'Dogs (Low Profit, Low Popularity)',
+                'Margin': 'Margin',
+                'Sales': 'Sales',
+                'week': 'week',
+                'Dish Profitability Analysis': 'Dish Profitability Analysis',
+                'Dish Name': 'Dish Name',
+                'Sale Price': 'Sale Price',
+                'Cost': 'Cost',
+                'Gross Profit': 'Gross Profit',
+                'Margin %': 'Margin %',
+                'Sales (7d)': 'Sales (7d)',
+                'Total Profit': 'Total Profit',
+                'Modifier Impact Analysis': 'Modifier Impact Analysis',
+                'Extra Cheese': 'Extra Cheese',
+                'No Onions': 'No Onions',
+                'Extra Bacon': 'Extra Bacon',
+                'Gluten Free': 'Gluten Free',
+                'avg': 'avg',
+                // Staff
+                'Active Staff': 'Active Staff',
+                'Total Labor Cost Today': 'Total Labor Cost Today',
+                'Labor %': 'Labor %',
+                'Avg Orders/Cook': 'Avg Orders/Cook',
+                'Head Chef': 'Head Chef',
+                'Line Cook': 'Line Cook',
+                'Sous Chef': 'Sous Chef',
+                'Pastry Chef': 'Pastry Chef',
+                'Prep Cook': 'Prep Cook',
+                'Orders Completed': 'Orders Completed',
+                'Avg Prep Time': 'Avg Prep Time',
+                'Errors/Returns': 'Errors/Returns',
+                'Hours Today': 'Hours Today',
+                'Station': 'Station',
+                'Grill': 'Grill',
+                'Pasta': 'Pasta',
+                'Salads': 'Salads',
+                'Fryer': 'Fryer',
+                'Desserts': 'Desserts',
+                'Prep': 'Prep',
+                'Prep Tasks': 'Prep Tasks',
+                'Errors': 'Errors',
+                'Staff Performance Comparison': 'Staff Performance Comparison',
+                // Menu items
+                'Pasta Bolognese': 'Pasta Bolognese',
+                'Garlic Bread': 'Garlic Bread',
+                'Caesar Salad': 'Caesar Salad',
+                'Grilled Salmon': 'Grilled Salmon',
+                'Margherita Pizza': 'Margherita Pizza',
+                'Greek Salad': 'Greek Salad',
+                'Ribeye Steak': 'Ribeye Steak',
+                'Truffle Fries': 'Truffle Fries',
+                'Tiramisu': 'Tiramisu',
+                'Burger': 'Burger',
+                'Pasta Carbonara': 'Pasta Carbonara',
+                'Truffle Pasta': 'Truffle Pasta',
+                'Ribeye Steak - Medium Rare': 'Ribeye Steak - Medium Rare',
+                'Lobster Bisque': 'Lobster Bisque',
+                'Duck Confit': 'Duck Confit',
+                'Vegan Bowl': 'Vegan Bowl',
+                'Fish & Chips': 'Fish & Chips',
+                'Chicken Wings': 'Chicken Wings',
+                // Allergens
+                'GLUTEN': 'GLUTEN',
+                'FISH': 'FISH',
+                // Notes
+                'No cheese': 'No cheese',
+                'Extra cheese': 'Extra cheese',
+                'No onions': 'No onions',
+                'Medium rare': 'Medium rare',
+                'Spicy': 'Spicy',
+                'View Only Mode': 'View Only Mode',
+                'No actions allowed': 'No actions allowed'
+            }
+        };
+        
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+        
+        function toggleLanguage() {
+            currentLang = currentLang === 'bg' ? 'en' : 'bg';
+            localStorage.setItem('mainDashboardLang', currentLang);
+            document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+            updateAllTranslations();
+        }
+        
+        function updateAllTranslations() {
+            // Update header
+            document.getElementById('headerTitle').textContent = t('Kitchen Management Dashboard');
+            document.getElementById('liveText').textContent = t('LIVE');
+            document.getElementById('userName').textContent = t('Petar Petrov - Head Chef');
+            document.getElementById('exitBtn').textContent = t('Exit');
+            
+            // Update tabs
+            document.getElementById('tabOrders').textContent = t('Orders');
+            document.getElementById('tabMetricsText').textContent = t('Metrics');
+            document.getElementById('tabMenu').textContent = t('Menu & Profit');
+            document.getElementById('tabStaff').textContent = t('Staff');
+            
+            // Update all text elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            
+            // Update view-only notice text
+            document.querySelectorAll('[data-i18n-view]').forEach(el => {
+                const key = el.getAttribute('data-i18n-view');
+                el.textContent = t(key);
+            });
+            
+            // Update order items
+            document.querySelectorAll('.order-item').forEach(item => {
+                const text = item.textContent.trim();
+                const parts = text.split('\n');
+                if (parts[0]) {
+                    const translated = t(parts[0].trim());
+                    if (translated !== parts[0].trim()) {
+                        item.innerHTML = item.innerHTML.replace(parts[0].trim(), translated);
+                    }
+                }
+            });
+            
+            // Update menu items with data-menu-item attribute
+            document.querySelectorAll('[data-menu-item]').forEach(el => {
+                const key = el.getAttribute('data-menu-item');
+                el.textContent = t(key);
+            });
+            
+            // Update order items that contain menu item names
+            document.querySelectorAll('.order-item').forEach(item => {
+                const textNodes = Array.from(item.childNodes).filter(n => n.nodeType === 3);
+                textNodes.forEach(node => {
+                    const text = node.textContent.trim();
+                    if (text && translations[currentLang][text]) {
+                        node.textContent = translations[currentLang][text];
+                    }
+                });
+                // Also check for direct text content
+                const directText = item.textContent.trim().split('\n')[0].trim();
+                if (translations[currentLang][directText]) {
+                    const firstChild = item.firstChild;
+                    if (firstChild && firstChild.nodeType === 3) {
+                        firstChild.textContent = translations[currentLang][directText];
+                    }
+                }
+            });
+            
+            // Update menu items in matrix, charts, and tables
+            const menuItemKeys = Object.keys(translations[currentLang]).filter(k => 
+                ['Pasta Bolognese', 'Garlic Bread', 'Caesar Salad', 'Grilled Salmon', 
+                 'Margherita Pizza', 'Greek Salad', 'Ribeye Steak', 'Truffle Fries', 
+                 'Tiramisu', 'Burger', 'Pasta Carbonara', 'Truffle Pasta'].includes(k)
+            );
+            
+            document.querySelectorAll('.matrix-item, .bar-label, td strong, .order-item').forEach(el => {
+                const originalText = el.textContent.trim();
+                menuItemKeys.forEach(key => {
+                    if (originalText.includes(key) || originalText === key) {
+                        const translated = translations[currentLang][key];
+                        if (translated) {
+                            el.innerHTML = el.innerHTML.replace(new RegExp(key, 'g'), translated);
+                        }
+                    }
+                });
+            });
+            
+            // Update metrics labels
+            document.querySelectorAll('.top-stat-label, .metric-label, .stat-label, .chart-title, .metric-title, .metric-subtitle').forEach(el => {
+                const text = el.textContent.trim();
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text];
+                }
+            });
+            
+            // Update staff role labels
+            document.querySelectorAll('.staff-role').forEach(el => {
+                const text = el.textContent.trim();
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text];
+                }
+            });
+            
+            // Update staff stat labels
+            document.querySelectorAll('.staff-stat span').forEach(el => {
+                const text = el.textContent.trim().replace(':', '').trim();
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text] + ':';
+                }
+            });
+            
+            // Update table headers
+            document.querySelectorAll('th').forEach(th => {
+                const text = th.textContent.trim();
+                if (translations[currentLang][text]) {
+                    th.textContent = translations[currentLang][text];
+                }
+            });
+            
+            // Update bar labels in charts
+            document.querySelectorAll('.bar-label').forEach(el => {
+                const text = el.textContent.trim();
+                // Check if it's a menu item
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text];
+                } else {
+                    // Check if it's a category
+                    const categoryMap = {
+                        'Main Courses': 'Main Courses',
+                        'Appetizers': 'Appetizers',
+                        'Desserts': 'Desserts',
+                        'Beverages': 'Beverages'
+                    };
+                    if (translations[currentLang][text]) {
+                        el.textContent = translations[currentLang][text];
+                    }
+                }
+            });
+            
+            // Update matrix items (they contain menu items and text)
+            document.querySelectorAll('.matrix-item').forEach(el => {
+                let text = el.textContent;
+                // Replace menu item names
+                Object.keys(translations[currentLang]).forEach(key => {
+                    if (key.includes('Pasta') || key.includes('Salad') || key.includes('Pizza') || 
+                        key.includes('Burger') || key.includes('Salmon') || key.includes('Steak') ||
+                        key.includes('Truffle') || key.includes('Lobster') || key.includes('Duck') ||
+                        key.includes('Vegan') || key.includes('Fish')) {
+                        if (text.includes(key)) {
+                            text = text.replace(key, translations[currentLang][key]);
+                        }
+                    }
+                });
+                // Replace common words
+                if (text.includes('Margin:')) {
+                    text = text.replace('Margin:', t('Margin') + ':');
+                }
+                if (text.includes('Sales:')) {
+                    text = text.replace('Sales:', t('Sales') + ':');
+                }
+                if (text.includes('/week')) {
+                    text = text.replace('/week', '/' + t('week'));
+                }
+                el.textContent = text;
+            });
+        }
+        
+        // Disable all action buttons for boss view-only mode
+        function disableBossActions() {
+            // Show view-only notice in orders view
+            const notice = document.getElementById('viewOnlyNotice');
+            if (notice) {
+                notice.style.display = 'block';
+                const viewOnlyText = document.querySelector('[data-i18n-view="View Only Mode"]');
+                const noActionsText = document.querySelector('[data-i18n-view="No actions allowed"]');
+                if (viewOnlyText) viewOnlyText.textContent = t('View Only Mode');
+                if (noActionsText) noActionsText.textContent = t('No actions allowed');
+            }
+            
+            // Disable all order action buttons
+            document.querySelectorAll('.order-actions .btn').forEach(btn => {
+                btn.classList.add('boss-disabled');
+                btn.disabled = true;
+                btn.onclick = null;
+                btn.removeAttribute('onclick');
+            });
+            
+            // Disable inventory action buttons if they exist
+            document.querySelectorAll('.inventory-card .btn, .order-actions .btn').forEach(btn => {
+                if (!btn.classList.contains('boss-disabled')) {
+                    btn.classList.add('boss-disabled');
+                    btn.disabled = true;
+                    btn.onclick = null;
+                    btn.removeAttribute('onclick');
+                }
+            });
+            
+            // Orders tab is now clickable, but buttons remain disabled
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+            updateAllTranslations();
+            disableBossActions();
+        });
+    </script>
 </body>
 </html>

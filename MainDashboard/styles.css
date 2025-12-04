@@ -244,6 +244,39 @@
             opacity: 0.9;
             transform: translateY(-1px);
         }
+        
+        /* Boss view-only mode - disabled buttons */
+        .btn:disabled,
+        .btn.boss-disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+        
+        .btn.boss-disabled:hover {
+            transform: none;
+            opacity: 0.5;
+        }
+        
+        .tab.boss-disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+        
+        .boss-view-only-notice {
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            background: #ff9800;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
 
         .stats-section {
             display: flex;

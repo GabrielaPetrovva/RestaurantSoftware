@@ -6,24 +6,64 @@
         tabs.forEach(t => t.classList.remove('active'));
         views.forEach(v => v.classList.remove('active'));
         
-        event.target.classList.add('active');
+        // Find the correct tab button, even if click was on a child element
+        let targetTab = null;
+        if (event && event.target) {
+            // If clicked on a child element (span, badge, etc.), find the parent button
+            targetTab = event.target.closest('.tab');
+            if (!targetTab) {
+                // Fallback: find by tab id
+                targetTab = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+            }
+        } else {
+            // Fallback if event is not available
+            targetTab = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`) || 
+                       document.querySelector(`[onclick*="switchTab('${tab}')"]`);
+        }
+        
+        if (targetTab) {
+            targetTab.classList.add('active');
+        }
+        
         document.getElementById(`${tab}-view`).classList.add('active');
+        
+        // Show/hide view-only notice and disable buttons when switching to orders view
+        const notice = document.getElementById('viewOnlyNotice');
+        if (tab === 'orders') {
+            if (notice) notice.style.display = 'block';
+            // Re-disable buttons when switching to orders view
+            setTimeout(() => {
+                if (typeof disableBossActions === 'function') {
+                    disableBossActions();
+                }
+            }, 100);
+        } else {
+            if (notice) notice.style.display = 'none';
+        }
     }
 
     // Order actions
     function startCooking(orderId) {
-        alert(`Started cooking order #${orderId}`);
+        const lang = localStorage.getItem('mainDashboardLang') || 'bg';
+        const msg = lang === 'bg' ? `Започна готвене на поръчка #${orderId}` : `Started cooking order #${orderId}`;
+        alert(msg);
     }
 
     function markReady(orderId) {
-        if(confirm(`Mark order #${orderId} as ready for pickup?`)) {
-            alert(`Order #${orderId} marked as ready`);
+        const lang = localStorage.getItem('mainDashboardLang') || 'bg';
+        const confirmMsg = lang === 'bg' ? `Маркирай поръчка #${orderId} като готова за вземане?` : `Mark order #${orderId} as ready for pickup?`;
+        const alertMsg = lang === 'bg' ? `Поръчка #${orderId} маркирана като готова` : `Order #${orderId} marked as ready`;
+        if(confirm(confirmMsg)) {
+            alert(alertMsg);
         }
     }
 
     function markServed(orderId) {
-        if(confirm(`Mark order #${orderId} as served?`)) {
-            alert(`Order #${orderId} marked as served`);
+        const lang = localStorage.getItem('mainDashboardLang') || 'bg';
+        const confirmMsg = lang === 'bg' ? `Маркирай поръчка #${orderId} като сервирана?` : `Mark order #${orderId} as served?`;
+        const alertMsg = lang === 'bg' ? `Поръчка #${orderId} маркирана като сервирана` : `Order #${orderId} marked as served`;
+        if(confirm(confirmMsg)) {
+            alert(alertMsg);
         }
     }
 
@@ -70,8 +110,11 @@
 
     // Logout
     function logout() {
-        if(confirm('Are you sure you want to exit?')) {
-            alert('Logging out...');
+        const lang = localStorage.getItem('mainDashboardLang') || 'bg';
+        const confirmMsg = lang === 'bg' ? 'Сигурни ли сте, че искате да излезете?' : 'Are you sure you want to exit?';
+        const alertMsg = lang === 'bg' ? 'Излизане...' : 'Logging out...';
+        if(confirm(confirmMsg)) {
+            alert(alertMsg);
         }
     }
 

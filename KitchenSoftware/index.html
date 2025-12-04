@@ -439,25 +439,46 @@
     </div>
 
     <script>
-        let currentLang = 'bg';
+        let currentLang = localStorage.getItem('kitchenLang') || 'bg';
         const translations = {
             bg: {
-                headerTitle: 'Kitchen Dashboard',
-                waiterName: 'Petar Petrov',
+                headerTitle: 'Кухненско Табло',
+                waiterName: 'Петър Петров',
                 exitBtn: 'Изход',
                 tabOrders: 'Поръчки',
                 tabMetrics: 'Статистики',
                 metricsTitle: 'Средно време за готвене',
+                avgTimeLabel: '',
                 lateOrdersLabel: 'Забавени поръчки',
                 totalOrdersLabel: 'Общо поръчки',
-                takeawayTitle: 'Takeaway / Delivery',
-                btnStart: 'Start cooking',
-                btnReady: 'Ready',
-                btnServed: 'Served',
-                bumpOff: 'Bump off',
+                takeawayTitle: 'За вкъщи / Доставка',
+                btnStart: 'Започни готвене',
+                btnReady: 'Готово',
+                btnServed: 'Сервирано',
+                bumpOff: 'Премахни',
                 priority: 'Приоритет',
-                takeaway: 'Takeaway',
-                table: 'Маса'
+                takeaway: 'За вкъщи',
+                delivery: 'Доставка',
+                table: 'Маса',
+                order: 'Поръчка',
+                // Menu items
+                'Pasta Bolognese': 'Паста Болонезе',
+                'Garlic Bread': 'Чеснов хляб',
+                'Caesar Salad': 'Салата Цезар',
+                'Grilled Salmon': 'Печен сьомга',
+                'Margherita Pizza': 'Пица Маргарита',
+                'Greek Salad': 'Гръцка салата',
+                'Chicken Curry': 'Пилешко карри',
+                'Rice': 'Ориз',
+                'Naan Bread': 'Наан хляб',
+                'Beef Burger': 'Говеждо бургер',
+                'French Fries': 'Пържени картофи',
+                'Seafood Pasta': 'Паста с морски дарове',
+                'Caprese Salad': 'Салата Капрезе',
+                'Burger': 'Бургер',
+                'Rice': 'Ориз',
+                'Naan Bread': 'Наан хляб',
+                'Greek Salad': 'Гръцка салата'
             },
             en: {
                 headerTitle: 'Kitchen Dashboard',
@@ -466,6 +487,7 @@
                 tabOrders: 'Orders',
                 tabMetrics: 'Metrics',
                 metricsTitle: 'Average cooking time',
+                avgTimeLabel: '',
                 lateOrdersLabel: 'Late orders',
                 totalOrdersLabel: 'Total orders',
                 takeawayTitle: 'Takeaway / Delivery',
@@ -475,7 +497,27 @@
                 bumpOff: 'Bump off',
                 priority: 'Priority',
                 takeaway: 'Takeaway',
-                table: 'Table'
+                delivery: 'Delivery',
+                table: 'Table',
+                order: 'Order',
+                // Menu items
+                'Pasta Bolognese': 'Pasta Bolognese',
+                'Garlic Bread': 'Garlic Bread',
+                'Caesar Salad': 'Caesar Salad',
+                'Grilled Salmon': 'Grilled Salmon',
+                'Margherita Pizza': 'Margherita Pizza',
+                'Greek Salad': 'Greek Salad',
+                'Chicken Curry': 'Chicken Curry',
+                'Rice': 'Rice',
+                'Naan Bread': 'Naan Bread',
+                'Beef Burger': 'Beef Burger',
+                'French Fries': 'French Fries',
+                'Seafood Pasta': 'Seafood Pasta',
+                'Caprese Salad': 'Caprese Salad',
+                'Burger': 'Burger',
+                'Rice': 'Rice',
+                'Naan Bread': 'Naan Bread',
+                'Greek Salad': 'Greek Salad'
             }
         };
 
@@ -564,6 +606,7 @@
 
         function toggleLanguage() {
             currentLang = currentLang === 'bg' ? 'en' : 'bg';
+            localStorage.setItem('kitchenLang', currentLang);
             document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
             updateLanguage();
         }
@@ -582,6 +625,11 @@
             
             renderOrders();
             renderTakeaway();
+        }
+        
+        // Helper function to translate menu items
+        function translateMenuItem(name) {
+            return translations[currentLang][name] || name;
         }
 
         function formatTime(seconds) {
@@ -604,7 +652,7 @@
                 <div class="order-card ${order.priority ? 'priority' : ''} ${order.late ? 'late' : ''}">
                     <div class="order-header">
                         <div class="order-info">
-                            <div class="order-number">Order #${order.id}</div>
+                            <div class="order-number">${t.order} #${order.id}</div>
                             <div class="order-waiter">${order.waiter}</div>
                             <div class="order-table">${t.table} ${order.table}</div>
                             ${order.priority ? `<span class="priority-badge">${t.priority}</span>` : ''}
@@ -614,12 +662,15 @@
                         </div>
                     </div>
                     <div class="order-items">
-                        ${order.items.map(item => `
+                        ${order.items.map(item => {
+                            const translatedName = t[item.name] || item.name;
+                            return `
                             <div class="order-item">
-                                <div class="item-name">${item.name}</div>
+                                <div class="item-name">${translatedName}</div>
                                 ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
                             </div>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </div>
                     <div class="order-actions">
                         ${order.status === 'pending' ? `
@@ -638,15 +689,18 @@
             const container = document.getElementById('takeawayOrders');
             const t = translations[currentLang];
             
-            container.innerHTML = takeawayOrders.map(order => `
+            container.innerHTML = takeawayOrders.map(order => {
+                const orderType = order.type === 'Takeaway' ? t.takeaway : (order.type === 'Delivery' ? t.delivery : order.type);
+                const translatedItems = order.items.map(item => t[item] || item).join(', ');
+                return `
                 <div class="takeaway-order">
                     <div class="takeaway-header">
-                        <span class="takeaway-number">Order #${order.id}</span>
-                        <span class="takeaway-type">${order.type}</span>
+                        <span class="takeaway-number">${t.order} #${order.id}</span>
+                        <span class="takeaway-type">${orderType}</span>
                     </div>
                     <div class="takeaway-items">
                         <strong>${order.customer}</strong><br>
-                        ${order.items.join(', ')}
+                        ${translatedItems}
                     </div>
                     <div class="takeaway-actions">
                         ${order.status === 'ready' ? `
@@ -656,7 +710,8 @@
                         `}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function startCooking(orderId) {
@@ -723,9 +778,11 @@
             renderOrders();
         }, 1000);
 
+        // Initialize language button text
+        document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+        
         // Initial render
-        renderOrders();
-        renderTakeaway();
+        updateLanguage();
     </script>
 </body>
 </html>
