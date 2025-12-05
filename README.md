@@ -67,7 +67,7 @@
 
 ## 6. Технологична архитектура
 - **Frontend:** HTML/CSS/JS; QR генериране/сканиране.
-- **Backend:** Firebase.
+- **Backend:** Firebase (Cloud Firestore).
 
 ---
 
