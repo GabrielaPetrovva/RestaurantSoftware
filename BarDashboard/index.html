@@ -1,174 +1,400 @@
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bar Dashboard - Табло на Бармана</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Bar Dashboard</title>
+     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="header">
-        <h1>🍹 Табло на Бармана</h1>
-        <p>Управление на напитки и коктейли в реално време</p>
-    </div>
-
-    <div class="dashboard-grid">
-        <!-- Pending Orders -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Нови Поръчки</h2>
-                <span class="badge badge-pending" id="pendingCount">3</span>
-            </div>
-            <div class="category-tabs">
-                <div class="tab active" onclick="filterCategory('all')">Всички</div>
-                <div class="tab" onclick="filterCategory('alcohol')">Алкохолни</div>
-                <div class="tab" onclick="filterCategory('coffee')">Кафе</div>
-                <div class="tab" onclick="filterCategory('special')">Специалитети</div>
-            </div>
-            <div id="pendingOrders">
-                <div class="order-item" data-category="alcohol">
-                    <div class="order-header">
-                        <span class="order-name">🍸 Mojito</span>
-                        <span class="table-number">Маса 5</span>
-                    </div>
-                    <div class="order-notes">✏️ Без лед, extra мента</div>
-                    <div class="timer">⏱️ 2:15</div>
-                    <div class="order-actions">
-                        <button class="btn btn-start" onclick="startOrder(this)">Започни</button>
-                    </div>
-                </div>
-
-                <div class="order-item" data-category="coffee">
-                    <div class="order-header">
-                        <span class="order-name">☕ Cappuccino</span>
-                        <span class="table-number">Маса 3</span>
-                    </div>
-                    <div class="order-notes">✏️ Double shot</div>
-                    <div class="timer">⏱️ 0:45</div>
-                    <div class="order-actions">
-                        <button class="btn btn-start" onclick="startOrder(this)">Започни</button>
-                    </div>
-                </div>
-
-                <div class="order-item" data-category="special">
-                    <div class="order-header">
-                        <span class="order-name">🍹 Long Island Iced Tea</span>
-                        <span class="table-number">Маса 8</span>
-                    </div>
-                    <div class="order-notes">✏️ Стандартна рецепта</div>
-                    <div class="timer">⏱️ 1:30</div>
-                    <div class="order-actions">
-                        <button class="btn btn-start" onclick="startOrder(this)">Започни</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- In Progress Orders -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">В Процес</h2>
-                <span class="badge badge-progress" id="progressCount">2</span>
-            </div>
-            <div id="progressOrders">
-                <div class="order-item" data-category="alcohol">
-                    <div class="order-header">
-                        <span class="order-name">🍹 Piña Colada</span>
-                        <span class="table-number">Маса 12</span>
-                    </div>
-                    <div class="order-notes">✏️ Без захар</div>
-                    <div class="timer" style="background: rgba(254, 202, 87, 0.2);">⏱️ 3:25</div>
-                    <div class="order-actions">
-                        <button class="btn btn-ready" onclick="markReady(this)">Готово</button>
-                    </div>
-                </div>
-
-                <div class="order-item" data-category="alcohol">
-                    <div class="order-header">
-                        <span class="order-name">🍷 Sangria</span>
-                        <span class="table-number">Маса 7</span>
-                    </div>
-                    <div class="order-notes">✏️ За 2 души</div>
-                    <div class="timer" style="background: rgba(254, 202, 87, 0.2);">⏱️ 5:10</div>
-                    <div class="order-actions">
-                        <button class="btn btn-ready" onclick="markReady(this)">Готово</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ready Orders -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Готови за Сервиране</h2>
-                <span class="badge badge-ready" id="readyCount">1</span>
-            </div>
-            <div id="readyOrders">
-                <div class="order-item" data-category="coffee">
-                    <div class="order-header">
-                        <span class="order-name">☕ Espresso</span>
-                        <span class="table-number">Маса 2</span>
-                    </div>
-                    <div class="order-notes">✏️ Двоен</div>
-                    <div class="timer" style="background: rgba(72, 219, 251, 0.2);">⏱️ 7:50</div>
-                    <div class="order-actions">
-                        <button class="btn btn-served" onclick="markServed(this)">Сервирано</button>
-                    </div>
-                </div>
-            </div>
+        <h1 id="headerTitle">Bar Dashboard</h1>
+        <div class="header-right">
+            <span class="user-name" id="userName">Petar Petrov</span>
+            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn" style="padding: 8px 16px; border: none; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; font-weight: 500; margin-right: 10px;">EN</button>
+            <span class="exit-btn" id="exitBtn">Exit</span>
         </div>
     </div>
 
-    <!-- Statistics Section -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">📊 Статистики</h2>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-value">248</div>
-                <div class="stat-label">Общо напитки</div>
+    <div class="main-container">
+        <div class="left-section">
+            <div class="tabs">
+                <button class="tab active" data-tab="orders" id="tabOrders">Orders</button>
+                <button class="tab metrics" data-tab="metrics" id="tabMetrics">Metrics <span class="notification-badge">3</span></button>
             </div>
-            <div class="stat-box">
-                <div class="stat-value">1,840 лв</div>
-                <div class="stat-label">Приходи днес</div>
+
+            <!-- Orders Section -->
+            <div class="content-section active" id="orders-section">
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <div class="order-number"><span data-i18n="Order #">Order #</span>23</div>
+                            <div class="order-customer">Ivan Ivanov</div>
+                            <div class="table-info"><span data-i18n="Table">Table</span> 2</div>
+                        </div>
+                        <div class="order-time">5:35</div>
+                    </div>
+                    <div class="drink-item">
+                        Mojito
+                        <div class="drink-note" data-i18n="No mint">No mint</div>
+                    </div>
+                    <div class="drink-item">
+                        Espresso
+                    </div>
+                    <button class="btn btn-start" data-i18n="Start preparing">Start preparing</button>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <div class="order-number"><span data-i18n="Order #">Order #</span>24 <span class="priority-badge" data-i18n="Priority">Priority</span></div>
+                            <div class="order-customer">Aleksandar</div>
+                            <div class="table-info"><span data-i18n="Table">Table</span> 3</div>
+                        </div>
+                        <div class="order-time">1:20</div>
+                    </div>
+                    <div class="drink-item">
+                        Margarita
+                        <div class="drink-note" data-i18n="Salt rim">Salt rim</div>
+                    </div>
+                    <div class="drink-item">
+                        Aperol Spritz
+                    </div>
+                    <button class="btn btn-ready" data-i18n="Ready">Ready</button>
+                </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-value">4:32</div>
-                <div class="stat-label">Средно време</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value">92%</div>
-                <div class="stat-label">Ефективност</div>
+
+            <!-- Metrics Section -->
+            <div class="content-section" id="metrics-section">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title" data-i18n="Total Revenue (Today)">Total Revenue (Today)</div>
+                        <div class="metric-value-large">$1,247</div>
+                        <div class="metric-subtitle" data-i18n="+18% from yesterday">+18% from yesterday</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title" data-i18n="Total Drinks Served">Total Drinks Served</div>
+                        <div class="metric-value-large">89</div>
+                        <div class="metric-subtitle" data-i18n="14 in progress">14 in progress</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title" data-i18n="Average Prep Time">Average Prep Time</div>
+                        <div class="metric-value-large">00:47</div>
+                        <div class="metric-subtitle" data-i18n="Target: 01:00">Target: 01:00</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title" data-i18n="Customer Satisfaction">Customer Satisfaction</div>
+                        <div class="metric-value-large">4.8/5</div>
+                        <div class="metric-subtitle" data-i18n="Based on 34 reviews">Based on 34 reviews</div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="section-title" data-i18n="Revenue by Drink Type">Revenue by Drink Type</div>
+                    <div class="chart-container">
+                        <div class="bar-chart">
+                            <div class="bar-item">
+                                <div class="bar-label" data-i18n="Cocktails">Cocktails</div>
+                                <div class="bar-wrapper">
+                                    <div class="bar-fill" style="width: 75%;">$623</div>
+                                </div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label" data-i18n="Coffee">Coffee</div>
+                                <div class="bar-wrapper">
+                                    <div class="bar-fill" style="width: 45%;">$287</div>
+                                </div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label" data-i18n="Beer/Wine">Beer/Wine</div>
+                                <div class="bar-wrapper">
+                                    <div class="bar-fill" style="width: 35%;">$189</div>
+                                </div>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar-label" data-i18n="Soft Drinks">Soft Drinks</div>
+                                <div class="bar-wrapper">
+                                    <div class="bar-fill" style="width: 25%;">$148</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="section-title" data-i18n="Top Selling Drinks">Top Selling Drinks</div>
+                    <div class="top-drinks-list">
+                        <div class="drink-list-item">
+                            <div class="drink-rank">1</div>
+                            <div class="drink-details">
+                                <div class="drink-list-name">Mojito</div>
+                                <div class="drink-category" data-i18n="Cocktails">Cocktails</div>
+                            </div>
+                            <div class="drink-stats">
+                                <div class="drink-count">23</div>
+                                <div class="drink-revenue">$276</div>
+                            </div>
+                        </div>
+                        <div class="drink-list-item">
+                            <div class="drink-rank">2</div>
+                            <div class="drink-details">
+                                <div class="drink-list-name">Espresso</div>
+                                <div class="drink-category" data-i18n="Coffee">Coffee</div>
+                            </div>
+                            <div class="drink-stats">
+                                <div class="drink-count">19</div>
+                                <div class="drink-revenue">$57</div>
+                            </div>
+                        </div>
+                        <div class="drink-list-item">
+                            <div class="drink-rank">3</div>
+                            <div class="drink-details">
+                                <div class="drink-list-name">Margarita</div>
+                                <div class="drink-category" data-i18n="Cocktails">Cocktails</div>
+                            </div>
+                            <div class="drink-stats">
+                                <div class="drink-count">17</div>
+                                <div class="drink-revenue">$221</div>
+                            </div>
+                        </div>
+                        <div class="drink-list-item">
+                            <div class="drink-rank">4</div>
+                            <div class="drink-details">
+                                <div class="drink-list-name">Aperol Spritz</div>
+                                <div class="drink-category" data-i18n="Cocktails">Cocktails</div>
+                            </div>
+                            <div class="drink-stats">
+                                <div class="drink-count">15</div>
+                                <div class="drink-revenue">$195</div>
+                            </div>
+                        </div>
+                        <div class="drink-list-item">
+                            <div class="drink-rank">5</div>
+                            <div class="drink-details">
+                                <div class="drink-list-name">Cappuccino</div>
+                                <div class="drink-category" data-i18n="Coffee">Coffee</div>
+                            </div>
+                            <div class="drink-stats">
+                                <div class="drink-count">14</div>
+                                <div class="drink-revenue">$56</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="section-title" data-i18n="Preparation Time Statistics">Preparation Time Statistics</div>
+                    <div class="time-stats">
+                        <div class="time-card">
+                            <div class="time-label" data-i18n="Fastest">Fastest</div>
+                            <div class="time-value">00:23</div>
+                        </div>
+                        <div class="time-card">
+                            <div class="time-label" data-i18n="Average">Average</div>
+                            <div class="time-value">00:47</div>
+                        </div>
+                        <div class="time-card">
+                            <div class="time-label" data-i18n="Slowest">Slowest</div>
+                            <div class="time-value">02:15</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div style="margin-top: 30px;">
-            <h3 style="margin-bottom: 15px;">🏆 Най-продавани коктейли</h3>
-            <ul class="top-drinks">
-                <li>
-                    <span class="drink-name">🍹 Mojito</span>
-                    <span class="drink-count">42</span>
-                </li>
-                <li>
-                    <span class="drink-name">🍸 Margarita</span>
-                    <span class="drink-count">38</span>
-                </li>
-                <li>
-                    <span class="drink-name">🍷 Aperol Spritz</span>
-                    <span class="drink-count">35</span>
-                </li>
-                <li>
-                    <span class="drink-name">🍹 Piña Colada</span>
-                    <span class="drink-count">29</span>
-                </li>
-                <li>
-                    <span class="drink-name">☕ Espresso Martini</span>
-                    <span class="drink-count">24</span>
-                </li>
-            </ul>
+        <div class="right-section">
+            <div class="stats-card">
+                <div class="stat-row">
+                    <div class="stat-label" data-i18n="Average preparation time">Average preparation time</div>
+                    <div class="stat-value">00:47</div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label" data-i18n="Late orders">Late orders</div>
+                    <div class="stat-value">1</div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label" data-i18n="Total orders">Total orders</div>
+                    <div class="stat-value">14</div>
+                </div>
+            </div>
+
+            <div class="order-quick-card">
+                <div class="quick-header">
+                    <div>
+                        <div class="order-number"><span data-i18n="Order #">Order #</span>33</div>
+                        <div class="order-customer">Kaloyan</div>
+                    </div>
+                    <div class="order-type" data-i18n="Takeaway">Takeaway</div>
+                </div>
+                <div class="drink-name">Burger</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                    <button class="bump-off-btn" data-i18n="Bump off">Bump off</button>
+                    <button class="btn btn-served" style="width: auto; margin: 0;" data-i18n="Served">Served</button>
+                </div>
+            </div>
         </div>
     </div>
-    <script src="js/script.js"></script>
+
+    <script src="script.js"></script>
+    <script>
+        // Translation functionality
+        let currentLang = localStorage.getItem('barDashboardLang') || 'en';
+        
+        const translations = {
+            bg: {
+                // Header
+                'Bar Dashboard': 'Бар Табло',
+                'Petar Petrov': 'Петър Петров',
+                'Exit': 'Изход',
+                // Tabs
+                'Orders': 'Поръчки',
+                'Metrics': 'Метрики',
+                // Orders
+                'Order #': 'Поръчка #',
+                'Table': 'Маса',
+                'Start preparing': 'Започни подготовка',
+                'Ready': 'Готово',
+                'Priority': 'Приоритет',
+                'No mint': 'Без мента',
+                'Salt rim': 'Солен ръб',
+                // Metrics
+                'Total Revenue (Today)': 'Общ приход (Днес)',
+                '+18% from yesterday': '+18% от вчера',
+                'Total Drinks Served': 'Общо сервирани напитки',
+                '14 in progress': '14 в процес',
+                'Average Prep Time': 'Средно време за подготовка',
+                'Target: 01:00': 'Цел: 01:00',
+                'Customer Satisfaction': 'Удовлетвореност на клиентите',
+                'Based on 34 reviews': 'Въз основа на 34 отзива',
+                'Revenue by Drink Type': 'Приход по тип напитка',
+                'Cocktails': 'Коктейли',
+                'Coffee': 'Кафе',
+                'Beer/Wine': 'Бира/Вино',
+                'Soft Drinks': 'Безалкохолни напитки',
+                'Top Selling Drinks': 'Най-продавани напитки',
+                'Preparation Time Statistics': 'Статистика за време на подготовка',
+                'Fastest': 'Най-бързо',
+                'Average': 'Средно',
+                'Slowest': 'Най-бавно',
+                // Stats
+                'Average preparation time': 'Средно време за подготовка',
+                'Late orders': 'Закъснели поръчки',
+                'Total orders': 'Общо поръчки',
+                'Takeaway': 'За вкъщи',
+                'Bump off': 'Премахни',
+                'Served': 'Сервирано',
+                'In Progress': 'В процес'
+            },
+            en: {
+                // Header
+                'Bar Dashboard': 'Bar Dashboard',
+                'Petar Petrov': 'Petar Petrov',
+                'Exit': 'Exit',
+                // Tabs
+                'Orders': 'Orders',
+                'Metrics': 'Metrics',
+                // Orders
+                'Order #': 'Order #',
+                'Table': 'Table',
+                'Start preparing': 'Start preparing',
+                'Ready': 'Ready',
+                'Priority': 'Priority',
+                'No mint': 'No mint',
+                'Salt rim': 'Salt rim',
+                // Metrics
+                'Total Revenue (Today)': 'Total Revenue (Today)',
+                '+18% from yesterday': '+18% from yesterday',
+                'Total Drinks Served': 'Total Drinks Served',
+                '14 in progress': '14 in progress',
+                'Average Prep Time': 'Average Prep Time',
+                'Target: 01:00': 'Target: 01:00',
+                'Customer Satisfaction': 'Customer Satisfaction',
+                'Based on 34 reviews': 'Based on 34 reviews',
+                'Revenue by Drink Type': 'Revenue by Drink Type',
+                'Cocktails': 'Cocktails',
+                'Coffee': 'Coffee',
+                'Beer/Wine': 'Beer/Wine',
+                'Soft Drinks': 'Soft Drinks',
+                'Top Selling Drinks': 'Top Selling Drinks',
+                'Preparation Time Statistics': 'Preparation Time Statistics',
+                'Fastest': 'Fastest',
+                'Average': 'Average',
+                'Slowest': 'Slowest',
+                // Stats
+                'Average preparation time': 'Average preparation time',
+                'Late orders': 'Late orders',
+                'Total orders': 'Total orders',
+                'Takeaway': 'Takeaway',
+                'Bump off': 'Bump off',
+                'Served': 'Served',
+                'In Progress': 'In Progress'
+            }
+        };
+        
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+        
+        function toggleLanguage() {
+            currentLang = currentLang === 'bg' ? 'en' : 'bg';
+            localStorage.setItem('barDashboardLang', currentLang);
+            document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+            updateAllTranslations();
+        }
+        
+        function updateAllTranslations() {
+            // Update header
+            document.getElementById('headerTitle').textContent = t('Bar Dashboard');
+            document.getElementById('userName').textContent = t('Petar Petrov');
+            document.getElementById('exitBtn').textContent = t('Exit');
+            
+            // Update tabs
+            const ordersTab = document.getElementById('tabOrders');
+            if (ordersTab) {
+                ordersTab.childNodes[0].textContent = t('Orders');
+            }
+            const metricsTab = document.getElementById('tabMetrics');
+            if (metricsTab) {
+                // Metrics tab has a badge, so we need to update the first text node
+                const textNodes = Array.from(metricsTab.childNodes).filter(n => n.nodeType === 3);
+                if (textNodes.length > 0) {
+                    textNodes[0].textContent = t('Metrics') + ' ';
+                }
+            }
+            
+            // Update all text elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translated = t(key);
+                
+                // For elements that are just text (no child elements)
+                if (el.children.length === 0) {
+                    el.textContent = translated;
+                } else {
+                    // For elements with children, update only the text nodes that match the key
+                    const textNodes = Array.from(el.childNodes).filter(n => n.nodeType === 3);
+                    textNodes.forEach(node => {
+                        const nodeText = node.textContent.trim();
+                        if (nodeText === key || nodeText.startsWith(key)) {
+                            node.textContent = translated + (nodeText.length > key.length ? nodeText.substring(key.length) : '');
+                        }
+                    });
+                }
+            });
+            
+            // Update buttons that may have been changed to "In Progress"
+            document.querySelectorAll('.btn-ready').forEach(btn => {
+                if (btn.textContent.includes('Progress') || btn.textContent.includes('процес')) {
+                    btn.textContent = t('In Progress');
+                }
+            });
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+            updateAllTranslations();
+        });
+    </script>
 </body>
 </html>

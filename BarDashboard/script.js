@@ -1,91 +1,87 @@
         // Timer functionality
         function updateTimers() {
-            document.querySelectorAll('.timer').forEach(timer => {
-                let text = timer.textContent.trim();
-                let match = text.match(/(\d+):(\d+)/);
-                if (match) {
-                    let minutes = parseInt(match[1]);
-                    let seconds = parseInt(match[2]);
-                    
-                    seconds++;
-                    if (seconds >= 60) {
-                        minutes++;
-                        seconds = 0;
-                    }
-                    
-                    timer.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const timers = document.querySelectorAll('.order-time');
+            timers.forEach(timer => {
+                const time = timer.textContent.split(':');
+                let minutes = parseInt(time[0]);
+                let seconds = parseInt(time[1]);
+                
+                seconds++;
+                if (seconds >= 60) {
+                    seconds = 0;
+                    minutes++;
                 }
+                
+                timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             });
         }
 
         setInterval(updateTimers, 1000);
 
-        // Order management functions
-        function startOrder(btn) {
-            const orderItem = btn.closest('.order-item');
-            const progressOrders = document.getElementById('progressOrders');
-            
-            orderItem.style.animation = 'none';
-            setTimeout(() => {
-                orderItem.remove();
-                progressOrders.insertBefore(orderItem, progressOrders.firstChild);
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
                 
-                btn.textContent = 'Готово';
-                btn.className = 'btn btn-ready';
-                btn.onclick = function() { markReady(this); };
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
                 
-                updateCounts();
-            }, 300);
-        }
-
-        function markReady(btn) {
-            const orderItem = btn.closest('.order-item');
-            const readyOrders = document.getElementById('readyOrders');
-            
-            orderItem.remove();
-            readyOrders.insertBefore(orderItem, readyOrders.firstChild);
-            
-            btn.textContent = 'Сервирано';
-            btn.className = 'btn btn-served';
-            btn.onclick = function() { markServed(this); };
-            
-            updateCounts();
-        }
-
-        function markServed(btn) {
-            const orderItem = btn.closest('.order-item');
-            orderItem.style.transform = 'translateX(100%)';
-            orderItem.style.opacity = '0';
-            
-            setTimeout(() => {
-                orderItem.remove();
-                updateCounts();
-            }, 300);
-        }
-
-        function updateCounts() {
-            document.getElementById('pendingCount').textContent = 
-                document.getElementById('pendingOrders').children.length;
-            document.getElementById('progressCount').textContent = 
-                document.getElementById('progressOrders').children.length;
-            document.getElementById('readyCount').textContent = 
-                document.getElementById('readyOrders').children.length;
-        }
-
-        function filterCategory(category) {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            const orders = document.querySelectorAll('#pendingOrders .order-item');
-            orders.forEach(order => {
-                if (category === 'all' || order.dataset.category === category) {
-                    order.style.display = 'block';
-                } else {
-                    order.style.display = 'none';
-                }
+                // Show corresponding content
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(tabName + '-section').classList.add('active');
             });
-        }
+        });
 
-        // Initialize counts
-        updateCounts();
+        // Button interactions
+        document.querySelectorAll('.btn-start').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lang = localStorage.getItem('barDashboardLang') || 'en';
+                const inProgressText = lang === 'bg' ? 'В процес' : 'In Progress';
+                this.textContent = inProgressText;
+                this.classList.remove('btn-start');
+                this.classList.add('btn-ready');
+                this.style.backgroundColor = '#66BB6A';
+                this.style.color = 'white';
+            });
+        });
+
+        document.querySelectorAll('.btn-ready').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lang = localStorage.getItem('barDashboardLang') || 'en';
+                const alertMsg = lang === 'bg' ? 'Поръчката е маркирана като готова!' : 'Order marked as ready!';
+                alert(alertMsg);
+            });
+        });
+
+        document.querySelectorAll('.btn-served').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.order-quick-card, .order-card').style.opacity = '0.5';
+                setTimeout(() => {
+                    this.closest('.order-quick-card, .order-card').remove();
+                }, 300);
+            });
+        });
+
+        document.querySelector('.exit-btn').addEventListener('click', function() {
+            const lang = localStorage.getItem('barDashboardLang') || 'en';
+            const confirmMsg = lang === 'bg' ? 'Сигурни ли сте, че искате да излезете?' : 'Are you sure you want to exit?';
+            if (confirm(confirmMsg)) {
+                window.location.href = '/';
+            }
+        });
+
+        // Animate bars on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.querySelectorAll('.bar-fill').forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                });
+            }, 500);
+        });

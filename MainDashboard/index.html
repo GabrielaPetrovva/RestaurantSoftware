@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitchen Management Dashboard - Complete System</title>
+    <title>Boss dashboard</title>
         <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="dashboard">
         <div class="header">
-            <h1 id="headerTitle">Kitchen Management Dashboard</h1>
+            <h1 id="headerTitle">Boss dashboard</h1>
             <div class="header-right">
                 <div class="live-indicator">
                     <span class="live-dot"></span>
@@ -22,161 +22,19 @@
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('orders')" id="tabOrders">Orders</button>
-            <button class="tab" onclick="switchTab('metrics')" id="tabMetrics">
+            <button class="tab active" onclick="switchTab('metrics')" id="tabMetrics">
                 <span id="tabMetricsText">Metrics</span>
                 <span class="notification-badge">3</span>
             </button>
             <button class="tab" onclick="switchTab('menu')" id="tabMenu">Menu & Profit</button>
             <button class="tab" onclick="switchTab('staff')" id="tabStaff">Staff</button>
-        </div>
-
-        <!-- ORDERS VIEW -->
-        <div id="orders-view" class="view-container active">
-            <div class="main-content">
-                <div class="boss-view-only-notice" id="viewOnlyNotice" style="display: none;">
-                    <span data-i18n-view="View Only Mode">View Only Mode</span> - <span data-i18n-view="No actions allowed">No actions allowed</span>
-                </div>
-                <div class="orders-grid">
-                    <div class="orders-section">
-                        <div class="order-card">
-                            <div class="order-header">
-                                <div class="order-info">
-                                    <div class="order-number">
-                                        <span class="status-indicator status-received"></span>
-                                        <span data-i18n="Order #">Order #</span>23
-                                    </div>
-                                    <div class="order-customer">Ivan Ivanov</div>
-                                    <div class="table-info"><span data-i18n="Table">Table</span> 2 • <span data-i18n="Dine-in">Dine-in</span> • <span data-i18n="Station">Station</span> 1</div>
-                                </div>
-                                <div class="timer" data-start="300">5:00</div>
-                            </div>
-                            <div class="order-items">
-                                <div class="order-item">
-                                    <span data-menu-item="Pasta Bolognese">Pasta Bolognese</span>
-                                    <div class="item-notes" data-i18n="No cheese">No cheese</div>
-                                </div>
-                                <div class="order-item"><span data-menu-item="Garlic Bread">Garlic Bread</span></div>
-                            </div>
-                            <div class="order-actions">
-                                <button class="btn btn-start boss-disabled" data-i18n="Start cooking" disabled>Start cooking</button>
-                            </div>
-                        </div>
-
-                        <div class="order-card priority">
-                            <div class="order-header">
-                                <div class="order-info">
-                                    <div class="order-number">
-                                        <span class="status-indicator status-preparing"></span>
-                                        Order #24
-                                        <span class="priority-badge" data-i18n="Priority">Priority</span>
-                                    </div>
-                                    <div class="order-customer">Aleksandra</div>
-                                    <div class="table-info">Table 3 • Dine-in • Station 2</div>
-                                </div>
-                                <div class="timer warning" data-start="80">1:20</div>
-                            </div>
-                            <div class="order-items">
-                                <div class="order-item">
-                                    Caesar Salad
-                                    <span class="allergen-warning">⚠ GLUTEN</span>
-                                </div>
-                                <div class="order-item">
-                                    Grilled Salmon
-                                    <span class="allergen-warning">⚠ FISH</span>
-                                </div>
-                            </div>
-                            <div class="order-actions">
-                                <button class="btn btn-ready boss-disabled" data-i18n="Ready" disabled>Ready</button>
-                            </div>
-                        </div>
-
-                        <div class="order-card late">
-                            <div class="order-header">
-                                <div class="order-info">
-                                    <div class="order-number">
-                                        <span class="status-indicator status-preparing"></span>
-                                        Order #22
-                                        <span class="priority-badge" style="background: #dc3545;" data-i18n="LATE">LATE</span>
-                                    </div>
-                                    <div class="order-customer">Maria Georgieva</div>
-                                    <div class="table-info">Table 5 • Dine-in • Station 1</div>
-                                </div>
-                                <div class="timer danger" data-start="942">15:42</div>
-                            </div>
-                            <div class="order-items">
-                                <div class="order-item">Ribeye Steak - Medium Rare</div>
-                                <div class="order-item">Truffle Fries</div>
-                            </div>
-                            <div class="order-actions">
-                                <button class="btn btn-ready boss-disabled" disabled>Ready</button>
-                            </div>
-                        </div>
-
-                        <div class="order-card">
-                            <div class="order-header">
-                                <div class="order-info">
-                                    <div class="order-number">
-                                        <span class="status-indicator status-ready"></span>
-                                        Order #21
-                                    </div>
-                                    <div class="order-customer">Georgi Petkov</div>
-                                    <div class="table-info">Table 7 • Dine-in • Station 2</div>
-                                </div>
-                                <div class="timer" data-start="420">7:00</div>
-                            </div>
-                            <div class="order-items">
-                                <div class="order-item">Margherita Pizza</div>
-                                <div class="order-item">Tiramisu</div>
-                            </div>
-                            <div class="order-actions">
-                                <button class="btn btn-served boss-disabled" data-i18n="Mark Served" disabled>Mark Served</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stats-section">
-                        <div class="stat-card">
-                            <div class="stat-label" data-i18n="Average cooking time">Average cooking time</div>
-                            <div class="stat-value">00:47</div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-label" data-i18n="Late orders">Late orders</div>
-                            <div class="stat-value" style="color: #dc3545;">1</div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-label" data-i18n="Total orders today">Total orders today</div>
-                            <div class="stat-value">14</div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-label" data-i18n="Open tickets">Open tickets</div>
-                            <div class="stat-value" style="color: #ff9800;">4</div>
-                        </div>
-
-                        <div class="quick-order">
-                            <div class="quick-order-header">
-                                <span class="quick-order-title">Order #33</span>
-                                <span class="type-badge" data-i18n="Takeaway">Takeaway</span>
-                            </div>
-                            <div class="order-customer" style="margin-bottom: 10px;">Kaloyan</div>
-                            <div class="quick-order-items">
-                                <div class="quick-item">Burger</div>
-                            </div>
-                            <div class="order-actions">
-                                <button class="btn btn-start boss-disabled" style="font-size: 12px; padding: 8px 16px;" data-i18n="Start cooking" disabled>Start</button>
-                                <button class="btn btn-served boss-disabled" style="font-size: 12px; padding: 8px 16px;" data-i18n="Mark Served" disabled>Served</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <button class="tab" onclick="switchTab('kitchen')" id="tabKitchen" data-i18n="Kitchen Dashboard">Kitchen Dashboard</button>
+            <button class="tab" onclick="switchTab('bar')" id="tabBar" data-i18n="Bar Dashboard">Bar Dashboard</button>
+            <button class="tab" onclick="switchTab('waiter')" id="tabWaiter" data-i18n="Waiter Dashboard">Waiter Dashboard</button>
         </div>
 
         <!-- METRICS VIEW -->
-        <div id="metrics-view" class="view-container">
+        <div id="metrics-view" class="view-container active">
             <div class="main-content">
                 <div class="top-bar">
                     <div class="top-stat">
@@ -1425,6 +1283,29 @@
             </div>
         </div>
     </div>
+
+    <!-- KITCHEN DASHBOARD VIEW -->
+    <div id="kitchen-view" class="view-container">
+        <div class="main-content" style="padding: 0; height: calc(100vh - 120px);">
+            <iframe src="../KitchenSoftware/index.html" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+        </div>
+    </div>
+
+    <!-- BAR DASHBOARD VIEW -->
+    <div id="bar-view" class="view-container">
+        <div class="main-content" style="padding: 0; height: calc(100vh - 120px);">
+            <iframe src="../BarDashboard/index.html" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+        </div>
+    </div>
+
+    <!-- WAITER DASHBOARD VIEW -->
+    <div id="waiter-view" class="view-container">
+        <div class="main-content waiter-dashboard-wrapper" style="padding: 0; height: calc(100vh - 120px); overflow: auto;">
+            <div class="waiter-iframe-container">
+                <iframe src="../WaiterDashboard/index.html" id="waiterDashboardIframe" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Recipe Detail Modal -->
@@ -1489,7 +1370,7 @@
         const translations = {
             bg: {
                 // Header
-                'Kitchen Management Dashboard': 'Кухненско Управление',
+                'Boss dashboard': 'Boss dashboard',
                 'LIVE': 'НА ЖИВО',
                 'Petar Petrov - Head Chef': 'Петър Петров - Главен Готвач',
                 'Exit': 'Изход',
@@ -1498,6 +1379,9 @@
                 'Metrics': 'Статистики',
                 'Menu & Profit': 'Меню & Печалба',
                 'Staff': 'Персонал',
+                'Kitchen Dashboard': 'Кухненско Табло',
+                'Bar Dashboard': 'Бар Табло',
+                'Waiter Dashboard': 'Табло на Сервитьор',
                 // Orders
                 'Order #': 'Поръчка #',
                 'Table': 'Маса',
@@ -1625,7 +1509,7 @@
             },
             en: {
                 // Header
-                'Kitchen Management Dashboard': 'Kitchen Management Dashboard',
+                'Boss dashboard': 'Boss dashboard',
                 'LIVE': 'LIVE',
                 'Petar Petrov - Head Chef': 'Petar Petrov - Head Chef',
                 'Exit': 'Exit',
@@ -1634,6 +1518,9 @@
                 'Metrics': 'Metrics',
                 'Menu & Profit': 'Menu & Profit',
                 'Staff': 'Staff',
+                'Kitchen Dashboard': 'Kitchen Dashboard',
+                'Bar Dashboard': 'Bar Dashboard',
+                'Waiter Dashboard': 'Waiter Dashboard',
                 // Orders
                 'Order #': 'Order #',
                 'Table': 'Table',
@@ -1774,16 +1661,30 @@
         
         function updateAllTranslations() {
             // Update header
-            document.getElementById('headerTitle').textContent = t('Kitchen Management Dashboard');
+            document.getElementById('headerTitle').textContent = t('Boss dashboard');
             document.getElementById('liveText').textContent = t('LIVE');
             document.getElementById('userName').textContent = t('Petar Petrov - Head Chef');
             document.getElementById('exitBtn').textContent = t('Exit');
             
             // Update tabs
-            document.getElementById('tabOrders').textContent = t('Orders');
             document.getElementById('tabMetricsText').textContent = t('Metrics');
             document.getElementById('tabMenu').textContent = t('Menu & Profit');
             document.getElementById('tabStaff').textContent = t('Staff');
+            const tabKitchen = document.getElementById('tabKitchen');
+            if (tabKitchen) {
+                const key = tabKitchen.getAttribute('data-i18n');
+                if (key) tabKitchen.textContent = t(key);
+            }
+            const tabBar = document.getElementById('tabBar');
+            if (tabBar) {
+                const key = tabBar.getAttribute('data-i18n');
+                if (key) tabBar.textContent = t(key);
+            }
+            const tabWaiter = document.getElementById('tabWaiter');
+            if (tabWaiter) {
+                const key = tabWaiter.getAttribute('data-i18n');
+                if (key) tabWaiter.textContent = t(key);
+            }
             
             // Update all text elements with data-i18n attribute
             document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -1970,7 +1871,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
             updateAllTranslations();
-            disableBossActions();
         });
     </script>
 </body>

@@ -26,20 +26,6 @@
         }
         
         document.getElementById(`${tab}-view`).classList.add('active');
-        
-        // Show/hide view-only notice and disable buttons when switching to orders view
-        const notice = document.getElementById('viewOnlyNotice');
-        if (tab === 'orders') {
-            if (notice) notice.style.display = 'block';
-            // Re-disable buttons when switching to orders view
-            setTimeout(() => {
-                if (typeof disableBossActions === 'function') {
-                    disableBossActions();
-                }
-            }, 100);
-        } else {
-            if (notice) notice.style.display = 'none';
-        }
     }
 
     // Order actions
