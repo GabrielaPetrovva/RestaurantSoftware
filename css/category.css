@@ -34,6 +34,29 @@
     font-style: italic;
 }
 
+.category-subsection {
+    width: 100%;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(255, 140, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-column: 1 / -1; /* Make header span all columns in the grid */
+}
+
+.subsection-title {
+    font-size: 2rem;
+    color: #ff8c00;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    text-align: center;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    width: 100%;
+}
+
 /* Back arrow placed directly under the navbar on category pages */
 .back-arrow {
     display: flex;
@@ -224,7 +247,6 @@
     box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    cursor: pointer;
 }
 
 .salad-card:hover {
@@ -339,6 +361,30 @@
 }
 
 .add-to-order-btn:active {
+    transform: translateY(0);
+}
+
+.add-to-cart-btn {
+    width: 100%;
+    background-color: #ff8c00;
+    color: white;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.add-to-cart-btn:hover {
+    background-color: #ff6b00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+}
+
+.add-to-cart-btn:active {
     transform: translateY(0);
 }
 

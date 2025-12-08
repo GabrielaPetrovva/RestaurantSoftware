@@ -10,9 +10,6 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="logo">
-            <span class="software"></span>
-        </div>
         <button class="menu-toggle" aria-label="Toggle menu">
             <span></span>
             <span></span>
@@ -30,6 +27,15 @@
             </div>
         </div>
     </header>
+    
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <nav class="mobile-nav">
+            <a href="../index.html" class="mobile-nav-link">Начало</a>
+            <a href="../html/menu.html" class="mobile-nav-link">Меню</a>
+            <a href="contacts.html" class="mobile-nav-link">Контакти</a>
+        </nav>
+    </div>
 
     <!-- Menu Section -->
     <main class="menu-main">
@@ -38,42 +44,42 @@
         <div class="digital-menu-board">
             <!-- Top Row -->
             <div class="menu-row top-row">
-                <div class="menu-card" onclick="window.location.href='salads.html'">
+                <div class="menu-card" style="--card-index: 0;" onclick="window.location.href='salads.html'">
                     <div class="card-image">
                         <img src="../images/categories/salad.jpg" alt="САЛАТИ">
                     </div>
                     <div class="card-label">САЛАТИ</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='starters.html'">
+                <div class="menu-card" style="--card-index: 1;" onclick="window.location.href='starters.html'">
                     <div class="card-image">
                         <img src="../images/categories/starter.jpg" alt="СТАРТЕРИ">
                     </div>
                     <div class="card-label">ПРЕДЯСТИЯ</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='fish.html'">
+                <div class="menu-card" style="--card-index: 2;" onclick="window.location.href='fish.html'">
                     <div class="card-image">
                         <img src="../images/categories/fish.jpg" alt="РИБНИ">
                     </div>
                     <div class="card-label">РИБНИ</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='pasta.html'">
+                <div class="menu-card" style="--card-index: 3;" onclick="window.location.href='pasta.html'">
                     <div class="card-image">
                         <img src="../images/categories/pasta.jpg" alt="ПАСТА И РИЗОТО">
                     </div>
                     <div class="card-label">ПАСТА И РИЗОТО</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='chicken.html'">
+                <div class="menu-card" style="--card-index: 4;" onclick="window.location.href='chicken.html'">
                     <div class="card-image">
                         <img src="../images/categories/chicken.jpg" alt="ПИЛЕ">
                     </div>
                     <div class="card-label">ПИЛЕ</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='pork.html'">
+                <div class="menu-card" style="--card-index: 5;" onclick="window.location.href='pork.html'">
                     <div class="card-image">
                         <img src="../images/categories/pork.jpg" alt="СВИНСКО">
                     </div>
@@ -83,46 +89,53 @@
 
             <!-- Bottom Row -->
             <div class="menu-row bottom-row">
-                <div class="menu-card" onclick="window.location.href='veal.html'">
+                <div class="menu-card" style="--card-index: 6;" onclick="window.location.href='veal.html'">
                     <div class="card-image">
                         <img src="../images/categories/veal.jpg" alt="ТЕЛЕШКО">
                     </div>
                     <div class="card-label">ТЕЛЕШКО</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='saj.html'">
+                <div class="menu-card" style="--card-index: 7;" onclick="window.location.href='saj.html'">
                     <div class="card-image">
                         <img src="../images/categories/saj.jpg" alt="САЧОВЕ">
                     </div>
                     <div class="card-label">САЧОВЕ</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='pizza.html'">
+                <div class="menu-card" style="--card-index: 8;" onclick="window.location.href='pizza.html'">
                     <div class="card-image">
                         <img src="../images/categories/pizza.jpg" alt="ПИЦИ">
                     </div>
                     <div class="card-label">ПИЦИ</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='bread.html'">
+                <div class="menu-card" style="--card-index: 9;" onclick="window.location.href='bread.html'">
                     <div class="card-image">
                         <img src="../images/categories/bread.jpg" alt="ПЪРЛЕНКИ И ХЛЕБЧЕТА">
                     </div>
                     <div class="card-label">ПЪРЛЕНКИ И ХЛЕБЧЕТА</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='burger.html'">
+                <div class="menu-card" style="--card-index: 10;" onclick="window.location.href='burger.html'">
                     <div class="card-image">
                         <img src="../images/categories/burger.jpg" alt="БУРГЕР И ТОРТИЛА">
                     </div>
                     <div class="card-label">БУРГЕР И ТОРТИЛА</div>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='desserts.html'">
+                <div class="menu-card" style="--card-index: 11;" onclick="window.location.href='desserts.html'">
                     <div class="card-image">
                         <img src="../images/categories/dessert.jpg" alt="ДЕСЕРТИ">
                     </div>
                     <div class="card-label">ДЕСЕРТИ</div>
+                </div>
+
+                <div class="menu-card" style="--card-index: 12;" onclick="window.location.href='drinks.html'">
+                    <div class="card-image">
+                        <img src="../images/drink.jpg" alt="НАПИТКИ">
+                    </div>
+                    <div class="card-label">НАПИТКИ</div>
                 </div>
             </div>
         </div>

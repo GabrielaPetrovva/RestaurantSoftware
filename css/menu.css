@@ -14,6 +14,32 @@
     max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
+    animation: fadeInBackground 1s ease;
+}
+
+@keyframes fadeInBackground {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Add subtle floating animation for menu board */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@media (min-width: 1200px) {
+    .digital-menu-board {
+        animation: slideIn 0.6s ease, float 6s ease-in-out infinite 1s;
+    }
 }
 
 /* Digital Menu Board Container */
@@ -26,6 +52,18 @@
     max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
+    animation: slideIn 0.6s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Menu Rows */
@@ -39,6 +77,16 @@
     max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .top-row {
@@ -49,24 +97,32 @@
     margin-bottom: 0;
 }
 
-/* Menu Cards - Exact Design from Image */
+/* Menu Cards - Enhanced with Animations */
 .menu-card {
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: none;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     border: 2px solid transparent;
     width: 180px;
     height: 240px;
     position: relative;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+    animation-delay: calc(var(--card-index, 0) * 0.1s);
 }
 
-.menu-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-    border-color: #ff8c00;
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Card Image */
@@ -80,16 +136,13 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: none;
+    filter: brightness(1);
 }
 
-.menu-card:hover .card-image img {
-    transform: scale(1.05);
-}
-
-/* Card Label - Exact styling from image */
+/* Card Label - Enhanced styling */
 .card-label {
-    background-color: rgb(236, 213, 188);
+    background: linear-gradient(135deg, rgb(236, 213, 188) 0%, rgb(255, 230, 200) 100%);
     color: rgb(0, 0, 0);
     padding: 0.8rem;
     text-align: center;
@@ -103,6 +156,9 @@
     align-items: center;
     justify-content: center;
     line-height: 1.2;
+    position: relative;
+    z-index: 2;
+    transition: none;
 }
 
 /* Order Summary Button */
@@ -112,7 +168,7 @@
 }
 
 .order-summary-btn {
-    background-color: #ff8c00;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
     color: #2c1810;
     padding: 1rem 2rem;
     border: none;
@@ -122,12 +178,36 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.order-summary-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.order-summary-btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .order-summary-btn:hover {
-    background-color: #ff6b00;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(255, 140, 0, 0.4);
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(255, 140, 0, 0.5);
+}
+
+.order-summary-btn:active {
+    transform: translateY(-1px);
 }
 
 /* Order Summary Modal */
@@ -140,6 +220,20 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.8);
+    animation: fadeInModal 0.3s ease;
+}
+
+.order-summary-modal[style*="display: block"] {
+    animation: fadeInModal 0.3s ease;
+}
+
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .order-summary-content {
@@ -151,6 +245,19 @@
     max-width: 600px;
     position: relative;
     border: 2px solid #ff8c00;
+    animation: slideUpModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideUpModal {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .order-close {
@@ -162,10 +269,24 @@
     position: absolute;
     right: 1rem;
     top: 1rem;
+    transition: all 0.3s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 140, 0, 0.1);
 }
 
 .order-close:hover {
     color: #ff6b00;
+    background: rgba(255, 140, 0, 0.2);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.order-close:active {
+    transform: rotate(90deg) scale(0.9);
 }
 
 .order-summary-content h2 {
@@ -197,6 +318,25 @@
     background-color: #1a0f0a;
     margin-bottom: 0.5rem;
     border-radius: 5px;
+    transition: all 0.3s ease;
+    animation: slideInItem 0.3s ease;
+}
+
+@keyframes slideInItem {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.order-item:hover {
+    background-color: #2c1810;
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.2);
 }
 
 .order-item-name {
@@ -226,7 +366,7 @@
 
 .generate-qr-btn {
     width: 100%;
-    background-color: #ff8c00;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
     color: #2c1810;
     padding: 1rem;
     border: none;
@@ -235,11 +375,34 @@
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+}
+
+.generate-qr-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.generate-qr-btn:hover::before {
+    left: 100%;
 }
 
 .generate-qr-btn:hover {
-    background-color: #ff6b00;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(255, 140, 0, 0.5);
+}
+
+.generate-qr-btn:active {
+    transform: translateY(-1px);
 }
 
 /* Category Details Modal */
@@ -277,6 +440,8 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
+    animation: slideUpModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .category-close {
@@ -288,10 +453,24 @@
     position: absolute;
     right: 1rem;
     top: 1rem;
+    transition: all 0.3s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 140, 0, 0.1);
 }
 
 .category-close:hover {
     color: #ff6b00;
+    background: rgba(255, 140, 0, 0.2);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.category-close:active {
+    transform: rotate(90deg) scale(0.9);
 }
 
 .category-details-content h2 {
@@ -323,14 +502,32 @@
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: 2px solid transparent;
+    opacity: 0;
+    animation: fadeInScale 0.5s ease forwards;
+    animation-delay: calc(var(--dish-index, 0) * 0.1s);
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .dish-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(255, 140, 0, 0.2);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 32px rgba(255, 140, 0, 0.3), 0 0 25px rgba(255, 140, 0, 0.15);
     border-color: #ff8c00;
+}
+
+.dish-card:active {
+    transform: translateY(-4px) scale(0.98);
 }
 
 .dish-image {
@@ -454,7 +651,7 @@
 
 .add-to-order-btn {
     width: 100%;
-    background-color: #ff8c00;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
     color: #2c1810;
     padding: 0.8rem;
     border: none;
@@ -463,16 +660,38 @@
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.add-to-order-btn::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+    opacity: 0;
 }
 
 .add-to-order-btn:hover {
-    background-color: #ff6b00;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(255, 140, 0, 0.4);
+}
+
+.add-to-order-btn:hover::after {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
 }
 
 .add-to-order-btn:active {
-    transform: translateY(0);
+    transform: translateY(-1px);
+}
+
+.add-to-order-btn:active::after {
+    transform: translate(-50%, -50%) scale(1.2);
 }
 
 /* QR Code Display */
@@ -546,12 +765,34 @@
 
     .digital-menu-board {
         padding: 1rem;
+        animation: slideInMobile 0.5s ease;
+    }
+
+    @keyframes slideInMobile {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     .menu-row {
         gap: 1rem;
         flex-direction: column;
         align-items: center;
+        animation: fadeInMobile 0.6s ease;
+    }
+
+    @keyframes fadeInMobile {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
     
     .menu-card {
@@ -559,6 +800,24 @@
         max-width: 280px;
         height: auto;
         min-height: 200px;
+        animation: fadeInUpMobile 0.5s ease forwards;
+        animation-delay: calc(var(--card-index, 0) * 0.08s);
+    }
+
+    @keyframes fadeInUpMobile {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .menu-card:active {
+        transform: scale(0.96);
+        transition: transform 0.1s ease;
     }
     
     .card-image {
@@ -903,7 +1162,7 @@
     position: absolute;
     top: -6px;
     right: -6px;
-    background-color: #ff8c00;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
     color: #2c1810;
     border-radius: 50%;
     width: 20px;
@@ -913,6 +1172,23 @@
     justify-content: center;
     font-size: 0.7rem;
     font-weight: bold;
+    animation: pulseBadge 2s ease infinite;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.5);
+}
+
+@keyframes pulseBadge {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 140, 0, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.7);
+    }
+}
+
+.header .order-badge:not([data-count="0"]):not(:empty) {
+    animation: pulseBadge 2s ease infinite;
 }
 
 @media (max-width: 768px) {

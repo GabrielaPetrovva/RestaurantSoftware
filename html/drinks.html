@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>НАПИТКИ - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav">
+            <a href="../index.html">Начало</a>
+            <a href="menu.html">Меню</a>
+            <a href="#contact">Контакти</a>
+        </nav>
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <div class="order-icon" onclick="toggleOrderSummary()">
+                <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                <span class="order-badge" id="order-count">0</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <nav class="mobile-nav">
+            <a href="../index.html" class="mobile-nav-link">Начало</a>
+            <a href="menu.html" class="mobile-nav-link">Меню</a>
+            <a href="contacts.html" class="mobile-nav-link">Контакти</a>
+        </nav>
+    </div>
+
+    <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <!-- Category Section -->
+    <main class="category-main">
+        <div class="category-header">
+            <h1>НАПИТКИ</h1>
+            <p class="category-subtitle">Освежаващи и вкусни напитки</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Drinks Grid Layout -->
+        <div class="salads-container">
+            <!-- Безалкохолни напитки Section -->
+            <div class="category-subsection">
+                <h2 class="subsection-title">Безалкохолни напитки</h2>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Вода – газирана</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">500 ml</span>
+                        <span class="price">1.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Вода – газирана', 1.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Вода – негазирана</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">500 ml</span>
+                        <span class="price">1.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Вода – негазирана', 1.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Безалкохолна напитка</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">330 ml</span>
+                        <span class="price">2.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Безалкохолна напитка', 2.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Портокалов сок</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">250 ml</span>
+                        <span class="price">2.80 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Сок', 2.80)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Лимонада</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">300 ml</span>
+                        <span class="price">3.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Лимонада', 3.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Студен чай</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">300 ml</span>
+                        <span class="price">2.80 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Студен чай', 2.80)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Минерална вода – голяма</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">1 l</span>
+                        <span class="price">2.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Минерална вода – голяма', 2.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <!-- Кафе и чай Section -->
+            <div class="category-subsection" style="margin-top: 3rem;">
+                <h2 class="subsection-title">Кафе и чай</h2>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Еспресо</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">60 ml</span>
+                        <span class="price">2.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Еспресо', 2.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Капучино</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">250 ml</span>
+                        <span class="price">3.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Капучино', 3.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Лате</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">300 ml</span>
+                        <span class="price">3.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Лате', 3.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Мокачино</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">300 ml</span>
+                        <span class="price">3.80 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Мокачино', 3.80)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Топъл чай</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">250 ml</span>
+                        <span class="price">2.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Топъл чай', 2.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <!-- Алкохолни напитки Section -->
+            <div class="category-subsection" style="margin-top: 3rem;">
+                <h2 class="subsection-title">Алкохолни напитки</h2>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Бира</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">500 ml</span>
+                        <span class="price">3.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Бира', 3.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Бяло вино</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">200 ml</span>
+                        <span class="price">4.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Вино – бяло / червено', 4.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Червено вино</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">200 ml</span>
+                        <span class="price">4.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Вино – бяло / червено', 4.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Вино – бутилка</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">750 ml</span>
+                        <span class="price">18.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Вино – бутилка', 18.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Просеко / шампанско</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">150 ml</span>
+                        <span class="price">6.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Просеко / шампанско', 6.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Ракия / бренди</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">50 ml</span>
+                        <span class="price">3.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Ракия / бренди', 3.50)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Уиски / водка / джин</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">50 ml</span>
+                        <span class="price">4.00 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Уиски / водка / джин', 4.00)">Добави в количката</button>
+                </div>
+            </div>
+
+            <div class="salad-card">
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Ликьори</h3>
+                    </div>
+                    <div class="salad-price">
+                        <span class="weight">50 ml</span>
+                        <span class="price">4.50 €</span>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToOrder('Ликьори', 4.50)">Добави в количката</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+            </ul>
+        </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+

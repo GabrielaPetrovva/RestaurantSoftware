@@ -8,23 +8,31 @@ function scrollToSection(sectionId) {
 
 // Hamburger menu toggle functionality
 function toggleMobileMenu() {
-    const nav = document.querySelector('.nav');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
     const menuToggle = document.querySelector('.menu-toggle');
     
-    if (nav && menuToggle) {
-        nav.classList.toggle('active');
+    if (mobileMenuOverlay && menuToggle) {
+        mobileMenuOverlay.classList.toggle('active');
         menuToggle.classList.toggle('active');
+        
+        // Prevent body scroll when menu is open
+        if (mobileMenuOverlay.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
     }
 }
 
 // Close mobile menu when clicking on a link
 function closeMobileMenu() {
-    const nav = document.querySelector('.nav');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
     const menuToggle = document.querySelector('.menu-toggle');
     
-    if (nav && menuToggle) {
-        nav.classList.remove('active');
+    if (mobileMenuOverlay && menuToggle) {
+        mobileMenuOverlay.classList.remove('active');
         menuToggle.classList.remove('active');
+        document.body.style.overflow = '';
     }
 }
 
@@ -36,7 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
         menuToggle.addEventListener('click', toggleMobileMenu);
     }
 
-    const navLinks = document.querySelectorAll('.nav a');
+    // Handle both desktop nav and mobile nav links
+    const navLinks = document.querySelectorAll('.nav a, .mobile-nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
@@ -69,16 +78,18 @@ document.addEventListener('DOMContentLoaded', function() {
         ctaButton.style.transition = 'transform 0.3s ease';
     }
 
-    // Close mobile menu when clicking outside
+    // Close mobile menu when clicking outside or on overlay
     document.addEventListener('click', function(e) {
-        const nav = document.querySelector('.nav');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
         const menuToggle = document.querySelector('.menu-toggle');
         const header = document.querySelector('.header');
         
-        if (nav && menuToggle && header && 
-            !header.contains(e.target) && 
-            nav.classList.contains('active')) {
-            closeMobileMenu();
+        if (mobileMenuOverlay && menuToggle && header) {
+            // Close if clicking on overlay background (not on nav links)
+            if (mobileMenuOverlay.classList.contains('active') && 
+                e.target === mobileMenuOverlay) {
+                closeMobileMenu();
+            }
         }
     });
 
