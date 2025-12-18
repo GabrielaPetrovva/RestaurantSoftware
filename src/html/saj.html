@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>САЧОВЕ - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>САЧОВЕ</h1>
+            <p class="category-subtitle">Традиционни ястия на нагрят сач</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Saj Dishes Grid Layout -->
+        <div class="salads-container">
+
+            <div class="salad-card" onclick="showNutritionInfo('Пилешко месо на сач със зеленчуци', 'Пилешко месо печено на нагрят сач със зеленчуци.', 460, 18, 50, 20, '350 г', '14.90 €', 14.90)">
+                <div class="salad-image">
+                    <img src="../images/saj_category/saj-chicken-veg.jpg" alt="Пилешко месо на сач със зеленчуци">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пилешко месо на сач със зеленчуци</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко месо печено на нагрят сач със зеленчуци.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">14.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пилешко месо на сач', 'Пилешко месо печено на нагрят сач.', 420, 12, 48, 22, '320 г', '13.90 €', 13.90)">
+                <div class="salad-image">
+                    <img src="../images/saj_category/saj-chicken.jpg" alt="Пилешко месо на сач">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пилешко месо на сач</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко месо печено на нагрят сач.</p>
+                    <div class="salad-price">
+                        <span class="weight">320 г</span>
+                        <span class="price">13.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Телешко месо на сач', 'Телешко месо печено на нагрят сач.', 600, 18, 52, 34, '350 г', '15.90 €', 15.90)">
+                <div class="salad-image">
+                    <img src="../images/saj_category/saj-veal.jpg" alt="Телешко месо на сач">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешко месо на сач</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешко месо печено на нагрят сач.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">15.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Кавърма на сач', 'Свинско месо с лук и чушки на сач.', 520, 25, 46, 26, '380 г', '15.90 €', 15.90)">
+                <div class="salad-image">
+                    <img src="../images/saj_category/saj-kavurma.jpg" alt="Кавърма на сач">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Кавърма на сач</h3>
+                    </div>
+                    <p class="salad-ingredients">Свинско месо с лук и чушки на сач.</p>
+                    <div class="salad-price">
+                        <span class="weight">380 г</span>
+                        <span class="price">15.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Свинско с гъби на сач', 'Свинско месо с гъби печено на сач.', 610, 22, 48, 36, '380 г', '15.50 €', 15.50)">
+                <div class="salad-image">
+                    <img src="../images/saj_category/saj-pork.jpg" alt="Свинско с гъби на сач">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Свинско с гъби на сач</h3>
+                    </div>
+                    <p class="salad-ingredients">Свинско месо с гъби печено на сач.</p>
+                    <div class="salad-price">
+                        <span class="weight">380 г</span>
+                        <span class="price">15.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+        
+
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+                
+            </ul>
+        </div>
+    </footer>
+    
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+

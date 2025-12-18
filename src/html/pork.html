@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СВИНСКО - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>СВИНСКО</h1>
+            <p class="category-subtitle">Ароматни свински ястия</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Pork Dishes Grid Layout -->
+        <div class="salads-container">
+            <div class="salad-card" onclick="showNutritionInfo('Свински ребра на скара', 'Свински ребра запечени на скара.', 950, 10, 55, 75, '400 г', '14.90 €', 14.90)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-ribs.jpg" alt="Свински ребра на скара">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Свински ребра на скара</h3>
+                    </div>
+                    <p class="salad-ingredients">Свински ребра запечени на скара.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">14.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Свинска кавърма', 'Свинско месо с лук, чушки и домати.', 520, 18, 38, 32, '350 г', '12.90 €', 12.90)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-kavarma.jpg" alt="Свинска кавърма">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Свинска кавърма</h3>
+                    </div>
+                    <p class="salad-ingredients">Свинско месо с лук, чушки и домати.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">12.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Джолан с картофи', 'Свинско джолан с картофи.', 780, 58, 50, 40, '450 г', '13.90 €', 13.90)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-jolian.jpg" alt="Джолан с картофи">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Джолан с картофи</h3>
+                    </div>
+                    <p class="salad-ingredients">Свинско джолан с картофи.</p>
+                    <div class="salad-price">
+                        <span class="weight">450 г</span>
+                        <span class="price">13.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Свински котлет с гъбен сос', 'Свински котлет с печени гъби.', 600, 20, 45, 35, '350 г', '14.50 €', 14.50)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-chop.jpg" alt="Свински котлет">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Свински котлет с гъбен сос</h3>
+                    </div>
+                    <p class="salad-ingredients">Свински котлет с печени гъби.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">14.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Свинско с прясно зеле', 'Свинско с прясно зеле и моркови.', 460, 20, 36, 28, '380 г', '13.20 €', 13.20)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-cabbage.jpg" alt="Свинско с зеле">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Свинско с прясно зеле</h3>
+                    </div>
+                    <p class="salad-ingredients">Свинско с прясно зеле и моркови.</p>
+                    <div class="salad-price">
+                        <span class="weight">380 г</span>
+                        <span class="price">13.20 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Свинско с ориз', 'Свинско месо с варен ориз.', 650, 65, 38, 28, '400 г', '13.80 €', 13.80)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-rice.jpg" alt="Свинско с ориз">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Свинско с ориз</h3>
+                    </div>
+                    <p class="salad-ingredients">Свинско месо с варен ориз.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">13.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Сухи наденички на скара', 'Наденички запечени на скара.', 820, 5, 36, 72, '280 г', '9.90 €', 9.90)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-sausages.jpg" alt="Наденички">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Сухи наденички на скара</h3>
+                    </div>
+                    <p class="salad-ingredients">Наденички запечени на скара.</p>
+                    <div class="salad-price">
+                        <span class="weight">280 г</span>
+                        <span class="price">9.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Панирани свински хапки', 'Свински хапки в тесто.', 720, 40, 36, 42, '250 г', '10.50 €', 10.50)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-bites.jpg" alt="Свински хапки">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Панирани свински хапки</h3>
+                    </div>
+                    <p class="salad-ingredients">Свински хапки в тесто.</p>
+                    <div class="salad-price">
+                        <span class="weight">250 г</span>
+                        <span class="price">10.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Свинско с чушки и домати', 'Свинско с печени чушки и домати.', 500, 22, 36, 28, '350 г', '13.90 €', 13.90)">
+                <div class="salad-image">
+                    <img src="../images/pork_category/Pork-peppers.jpg" alt="Свинско с чушки">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Свинско с чушки и домати</h3>
+                    </div>
+                    <p class="salad-ingredients">Свинско с печени чушки и домати.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">13.90 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+                
+            </ul>
+        </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>

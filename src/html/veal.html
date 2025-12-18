@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ТЕЛЕШКО - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <!-- Category Section -->
+    <main class="category-main">
+        <div class="category-header">
+            <h1>ТЕЛЕШКО</h1>
+            <p class="category-subtitle">Премиум телешки ястия</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Veal Dishes Grid Layout -->
+        <div class="salads-container">
+            <div class="salad-card" onclick="showNutritionInfo('Телешки стек на скара', 'Телешки стек грилиран.', 520, 15, 48, 28, '350 г', '18.90 €', 18.90)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-steak.jpg" alt="Телешки стек">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешки стек на скара</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешки стек грилиран.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">18.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Телешко варено', 'Телешко варено с подправки.', 450, 12, 42, 26, '300 г', '16.90 €', 16.90)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-boiled.jpg" alt="Телешко варено">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешко варено</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешко варено с подправки.</p>
+                    <div class="salad-price">
+                        <span class="weight">300 г</span>
+                        <span class="price">16.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Телешка мусака', 'Мусака с телешко месо и картофи.', 610, 50, 30, 32, '400 г', '15.90 €', 15.90)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-moussaka.jpg" alt="Телешка мусака">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешка мусака</h3>
+                    </div>
+                    <p class="salad-ingredients">Мусака с телешко месо и картофи.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">15.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Бифтек по български', 'Бифтек с яйце и картофи.', 560, 32, 42, 30, '380 г', '17.50 €', 17.50)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-bulgarian.jpg" alt="Бифтек по български">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Бифтек по български</h3>
+                    </div>
+                    <p class="salad-ingredients">Бифтек с яйце и картофи.</p>
+                    <div class="salad-price">
+                        <span class="weight">380 г</span>
+                        <span class="price">17.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Телешко бургунди', 'Телешко тушовано в вино.', 520, 25, 40, 28, '350 г', '18.50 €', 18.50)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-burgundy.jpg" alt="Телешко бургунди">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешко бургунди</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешко тушовано в вино.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">18.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Кюфтета по чирпански', 'Телешки кюфтета с лук.', 600, 30, 38, 36, '350 г', '16.90 €', 16.90)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-patties.jpg" alt="Кюфтета по чирпански">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Кюфтета по чирпански</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешки кюфтета с лук.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">16.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Телешки език с масло', 'Телешки език варен с масло.', 480, 18, 36, 32, '300 г', '16.50 €', 16.50)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-tongue.jpg" alt="Телешки език">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешки език с масло</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешки език варен с масло.</p>
+                    <div class="salad-price">
+                        <span class="weight">300 г</span>
+                        <span class="price">16.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Телешко със зеленчуци', 'Телешко с печени зеленчуци.', 480, 28, 40, 26, '350 г', '17.20 €', 17.20)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-vegetables.jpg" alt="Телешко със зеленчуци">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешко със зеленчуци</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешко с печени зеленчуци.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">17.20 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Телешко с боб', 'Телешко с варен боб.', 600, 48, 38, 24, '380 г', '16.80 €', 16.80)">
+                <div class="salad-image">
+                    <img src="../images/veal_category/Veal-beans.jpg" alt="Телешко с боб">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Телешко с боб</h3>
+                    </div>
+                    <p class="salad-ingredients">Телешко с варен боб.</p>
+                    <div class="salad-price">
+                        <span class="weight">380 г</span>
+                        <span class="price">16.80 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+                
+            </ul>
+        </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>

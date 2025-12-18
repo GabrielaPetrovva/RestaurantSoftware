@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ПИЛЕ - Serve Software Restaurant</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>ПИЛЕ</h1>
+            <p class="category-subtitle">Разнообразие от пилешки ястия</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Chicken Dishes Grid Layout -->
+        <div class="salads-container">
+            <div class="salad-card" onclick="showNutritionInfo('Пилешко филе на скара', 'Пилешко филе на грил без кожа.', 295, 0, 53, 7, '250 г', '10.90 €', 10.90)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-slice.jpg" alt="Пилешко филе на скара">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пилешко филе на скара</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко филе на грил без кожа.</p>
+                    <div class="salad-price">
+                        <span class="weight">250 г</span>
+                        <span class="price">10.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пилешки пържоли с гъбен сос', 'Пилешки пържоли с гъбен сос и масло.', 510, 8, 46, 32, '280 г', '12.50 €', 12.50)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-mushrooms.jpg" alt="Пилешки пържоли с гъбен сос">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пилешки пържоли с гъбен сос</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешки пържоли с гъби и сос със сметана.</p>
+                    <div class="salad-price">
+                        <span class="weight">280 г</span>
+                        <span class="price">12.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Кавърма с пилешко месо', 'Пилешко месо с лук и чушки.', 430, 12, 44, 20, '300 г', '11.90 €', 11.90)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-kavurma.jpg" alt="Кавърма с пилешко месо">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Кавърма с пилешко месо</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко месо, лук, чушки, подправки.</p>
+                    <div class="salad-price">
+                        <span class="weight">300 г</span>
+                        <span class="price">11.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пиле с ориз на фурна', 'Пилешко месо с печен ориз.', 540, 48, 36, 16, '350 г', '11.50 €', 11.50)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-oven.jpg" alt="Пиле с ориз на фурна">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пиле с ориз на фурна</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко с ориз, запечено във фурна.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">11.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Панирани пилешки филенца', 'Пилешки филенца в панировка.', 620, 42, 33, 32, '280 г', '12.90 €', 12.90)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-fileta.jpg" alt="Панирани пилешки филенца">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Панирани пилешки филенца</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешки филенца, панировка, олио.</p>
+                    <div class="salad-price">
+                        <span class="weight">280 г</span>
+                        <span class="price">12.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пиле „Жулиен“', 'Пиле в сметанов сос с гъби.', 580, 10, 38, 38, '280 г', '13.50 €', 13.50)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-julien.jpg" alt="Пиле Жулиен">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пиле „Жулиен“</h3>
+                    </div>
+                    <p class="salad-ingredients">Пиле, сметана, кашкавал, гъби.</p>
+                    <div class="salad-price">
+                        <span class="weight">280 г</span>
+                        <span class="price">13.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пилешки дюнер', 'Пилешки дюнер с гарнитура.', 610, 64, 39, 19, '350 г', '8.90 €', 8.90)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-duner.jpg" alt="Пилешки дюнер">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пилешки дюнер</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко месо, зеленчуци, хлебче, сос.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">8.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пиле с мед и горчица', 'Пилешко с медено-горчичен сос.', 490, 26, 42, 18, '280 г', '12.80 €', 12.80)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-honey.jpg" alt="Пиле с мед и горчица">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пиле с мед и горчица</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко, мед, горчица, подправки.</p>
+                    <div class="salad-price">
+                        <span class="weight">280 г</span>
+                        <span class="price">12.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пилешки шишчета', 'Пилешки шишчета на грил.', 330, 6, 48, 12, '280 г', '10.50 €', 10.50)">
+                <div class="salad-image">
+                    <img src="../images/chicken_category/Chicken-shish.jpg" alt="Пилешки шишчета">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пилешки шишчета</h3>
+                    </div>
+                    <p class="salad-ingredients">Пилешко месо, подправки.</p>
+                    <div class="salad-price">
+                        <span class="weight">280 г</span>
+                        <span class="price">10.50 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>Serve Software</h4>
+                <ul>
+                    <li>Поверителност</li>
+                    <li>Услуги</li>
+                    <li>За нас</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Бързи връзки</h4>
+                <ul>
+                    <li>Меню</li>
+                    <li>Нашата история</li>
+                    <li>Резервации</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Социални мрежи</h4>
+                <div class="socials">
+                    <span>🌐</span>
+                    <span>📸</span>
+                    <span>🐦</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>

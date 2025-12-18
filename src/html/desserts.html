@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ДЕСЕРТИ - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+               <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>ДЕСЕРТИ</h1>
+            <p class="category-subtitle">Сладки изкушения</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Dessert Dishes Grid Layout -->
+        <div class="salads-container">
+
+            <div class="salad-card" onclick="showNutritionInfo('Шоколадова торта', 'Пухкава шоколадова торта с тъмен крем и какао.', 610, 70, 7, 36, '210 г', '7.20 €', 7.20)">
+                <div class="salad-image">
+                    <img src="../images/dessert_category/cake-chocolate.jpg" alt="Шоколадова торта">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Шоколадова торта</h3>
+                    </div>
+                    <p class="salad-ingredients">Пухкава шоколадова торта с тъмен крем и какао.</p>
+                    <div class="salad-price">
+                        <span class="weight">210 г</span>
+                        <span class="price">7.20 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Чийзкейк', 'Класически чийзкейк с малинов топинг.', 540, 62, 8, 30, '200 г', '6.80 €', 6.80)">
+                <div class="salad-image">
+                    <img src="../images/dessert_category/cake-cheesecake.jpg" alt="Чийзкейк">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Чийзкейк</h3>
+                    </div>
+                    <p class="salad-ingredients">Класически чийзкейк с малинов топинг.</p>
+                    <div class="salad-price">
+                        <span class="weight">200 г</span>
+                        <span class="price">6.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Торта Тирамису', 'Традиционно италианско Тирамису с маскарпоне и кафе.', 580, 55, 9, 33, '220 г', '7.90 €', 7.90)">
+                <div class="salad-image">
+                    <img src="../images/dessert_category/cake-tiramisu.jpg" alt="Торта Тирамису">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Торта Тирамису</h3>
+                    </div>
+                    <p class="salad-ingredients">Традиционно италианско Тирамису с маскарпоне и кафе.</p>
+                    <div class="salad-price">
+                        <span class="weight">220 г</span>
+                        <span class="price">7.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Палачинка с шоколад', 'Палачинка с течен шоколад и банан.', 450, 50, 7, 22, '180 г', '5.20 €', 5.20)">
+                <div class="salad-image">
+                    <img src="../images/dessert_category/pancake.jpg" alt="Палачинка с шоколад">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Палачинка с шоколад</h3>
+                    </div>
+                    <p class="salad-ingredients">Палачинка с течен шоколад и банан.</p>
+                    <div class="salad-price">
+                        <span class="weight">180 г</span>
+                        <span class="price">5.20 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Сладолед', 'Десерт с три топки сладолед на избор.', 330, 44, 6, 16, '160 г', '4.60 €', 4.60)">
+                <div class="salad-image">
+                    <img src="../images/dessert_category/icecream.jpg" alt="Сладолед">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Сладолед</h3>
+                    </div>
+                    <p class="salad-ingredients">Десерт с три топки сладолед на избор.</p>
+                    <div class="salad-price">
+                        <span class="weight">160 г</span>
+                        <span class="price">4.60 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Баклава', 'Баклава с орехи, масло и меден сироп.', 600, 72, 8, 32, '170 г', '5.90 €', 5.90)">
+                <div class="salad-image">
+                    <img src="../images/dessert_category/baklava.jpg" alt="Баклава">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Баклава</h3>
+                    </div>
+                    <p class="salad-ingredients">Баклава с орехи, масло и меден сироп.</p>
+                    <div class="salad-price">
+                        <span class="weight">170 г</span>
+                        <span class="price">5.90 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+                
+            </ul>
+        </div>
+    </footer>
+
+    </script>
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+

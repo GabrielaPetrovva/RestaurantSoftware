@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Политика за поверителност - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .legal-main {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), url('../images/backgr.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 8rem 2rem 4rem;
+        }
+
+        .legal-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .legal-content {
+            background-color: rgba(44, 24, 16, 0.95);
+            padding: 3rem;
+            border-radius: 15px;
+            border: 2px solid #ff8c00;
+            color: #ccc;
+        }
+
+        .legal-content h1 {
+            color: #ff8c00;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+        }
+
+        .legal-content .last-updated {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .legal-content h2 {
+            color: #ff8c00;
+            font-size: 1.8rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+        }
+
+        .legal-content h3 {
+            color: #ff8c00;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .legal-content p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .legal-content ul {
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .legal-content li {
+            margin-bottom: 0.75rem;
+            line-height: 1.8;
+        }
+
+        .legal-content a {
+            color: #ff8c00;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .legal-content a:hover {
+            color: #ff6b00;
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #ff8c00;
+            color: #2c1810 !important;
+            text-decoration: none !important;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .back-link:hover {
+            background-color: #ff6b00;
+            color: #2c1810 !important;
+            text-decoration: none !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+        }
+
+        .contact-box {
+            background-color: rgba(26, 15, 10, 0.6);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #4a3a2a;
+            margin-top: 1.5rem;
+        }
+
+        .contact-box p {
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .legal-main {
+                padding: 6rem 1rem 3rem;
+            }
+
+            .legal-content {
+                padding: 2rem 1.5rem;
+            }
+
+            .legal-content h1 {
+                font-size: 2rem;
+            }
+
+            .legal-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .legal-content ul {
+                margin-left: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="software"></span>
+        </div>
+        <button class="menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav">
+            <a href="../index.html">Начало</a>
+            <a href="menu.html">Меню</a>
+            <a href="../index.html#about">За нас</a>
+            <a href="contacts.html">Контакти</a>
+        </nav>
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <div class="order-icon" onclick="toggleOrderSummary()">
+                <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                <span class="order-badge" id="order-count">0</span>
+            </div>
+            <div class="search-icon">
+                <img src="../images/search.png" alt="Search">
+            </div>
+        </div>
+    </header>
+
+    <!-- Privacy Policy Content -->
+    <main class="legal-main">
+        <div class="legal-container">
+            <div class="legal-content">
+                <h1>Политика за поверителност</h1>
+                <p class="last-updated">Последна актуализация: Декември 2024</p>
+
+                <p>
+                    В Serve Software Restaurant се ангажираме да защитаваме вашата поверителност. 
+                    Тази Политика за поверителност обяснява как събираме, използваме, съхраняваме и споделяме вашата лична информация 
+                    в съответствие с Общия регламент за защита на данните (GDPR) и българското законодателство.
+                </p>
+
+                <h2>1. Каква лична информация събираме</h2>
+                
+                <h3>1.1 Информация, която ни предоставяте директно</h3>
+                <ul>
+                    <li><strong>Контактна информация:</strong> Име, имейл адрес, телефонен номер, когато попълвате формуляри за контакт или резервации</li>
+                    <li><strong>Информация за резервации:</strong> Дата, час, брой гости, специални изисквания</li>
+                    <li><strong>Информация за поръчки:</strong> Адрес за доставка, платежна информация (обработва се чрез защитени платежни процесори)</li>
+                    <li><strong>Съобщения:</strong> Съдържанието на съобщенията, които ни изпращате чрез формуляри за контакт</li>
+                </ul>
+
+                <h3>1.2 Информация, събирана автоматично</h3>
+                <ul>
+                    <li><strong>Техническа информация:</strong> IP адрес, тип браузър, операционна система, устройство</li>
+                    <li><strong>Информация за използване:</strong> Страници, които посещавате, време на посещение, кликвания, референти</li>
+                    <li><strong>Бисквитки и подобни технологии:</strong> Вижте нашата Политика за бисквитки по-долу</li>
+                </ul>
+
+                <h2>2. Как и защо събираме вашата информация</h2>
+                
+                <h3>2.1 Основни цели</h3>
+                <ul>
+                    <li><strong>Обработване на резервации и поръчки:</strong> За да можем да обработим и потвърдим вашите резервации и поръчки</li>
+                    <li><strong>Комуникация:</strong> За да отговорим на вашите запитвания и да ви информираме за вашите резервации</li>
+                    <li><strong>Подобряване на услугите:</strong> За да анализираме как използвате нашия уебсайт и да подобрим потребителското изживяване</li>
+                    <li><strong>Правни задължения:</strong> За да изпълняваме правните си задължения и да защитаваме нашите права</li>
+                </ul>
+
+                <h3>2.2 Правна основа за обработка</h3>
+                <p>
+                    Обработваме вашите лични данни на основата на:
+                </p>
+                <ul>
+                    <li><strong>Съгласие:</strong> Когато сте дали изрично съгласие (напр. за маркетингови съобщения)</li>
+                    <li><strong>Изпълнение на договор:</strong> За обработка на резервации и поръчки</li>
+                    <li><strong>Законен интерес:</strong> За подобряване на услугите и анализиране на използването на уебсайта</li>
+                    <li><strong>Правни задължения:</strong> Когато това е необходимо по закон</li>
+                </ul>
+
+                <h2>3. Колко дълго съхраняваме вашата информация</h2>
+                <ul>
+                    <li><strong>Резервации и поръчки:</strong> Съхраняваме информацията за периода, необходим за изпълнение на услугата, и 3 години за счетоводни и правни цели</li>
+                    <li><strong>Контактни формуляри:</strong> Съхраняваме до 2 години след последния контакт, освен ако не поискате изтриване по-рано</li>
+                    <li><strong>Маркетингови съобщения:</strong> Докато не оттеглите съгласието си</li>
+                    <li><strong>Бисквитки:</strong> Вижте нашата Политика за бисквитки по-долу</li>
+                </ul>
+
+                <h2>4. С кого споделяме вашата информация</h2>
+                
+                <h3>4.1 Доставчици на услуги</h3>
+                <p>Може да споделяме вашата информация с трети страни, които ни помагат да работим:</p>
+                <ul>
+                    <li><strong>Доставчици на хостинг:</strong> [Име на хостинг доставчик] - за съхранение на данните</li>
+                    <li><strong>Имейл системи:</strong> [Име на имейл доставчик, напр. MailChimp, SendGrid] - за изпращане на имейли</li>
+                    <li><strong>Аналитични инструменти:</strong> [Име на аналитичен инструмент, напр. Google Analytics] - за анализ на използването на уебсайта</li>
+                    <li><strong>Платежни процесори:</strong> [Име на платежен процесор, напр. Stripe, PayPal] - за обработка на плащания</li>
+                    <li><strong>Системи за резервации:</strong> [Име на система за резервации] - за управление на резервации</li>
+                </ul>
+                <p>
+                    Всички тези доставчици са задължени да защитават вашите данни и да ги използват само за целите, за които са наети.
+                </p>
+
+                <h3>4.2 Правни изисквания</h3>
+                <p>
+                    Може да разкрием вашата информация, ако това е необходимо по закон, съдебна заповед или при поискване от правителствени органи.
+                </p>
+
+                <h2>5. Вашите права според GDPR</h2>
+                <p>Като субект на данни имате следните права:</p>
+                <ul>
+                    <li><strong>Право на достъп:</strong> Можете да поискате копие от личните данни, които притежаваме за вас</li>
+                    <li><strong>Право на коригиране:</strong> Можете да поискате да коригираме неточни или непълни данни</li>
+                    <li><strong>Право на изтриване:</strong> Можете да поискате изтриване на вашите данни в определени обстоятелства</li>
+                    <li><strong>Право на ограничаване на обработката:</strong> Можете да поискате ограничаване на обработката на вашите данни</li>
+                    <li><strong>Право на преносимост:</strong> Можете да поискате прехвърляне на вашите данни към друг доставчик</li>
+                    <li><strong>Право на възражение:</strong> Можете да възразите срещу обработката на вашите данни за определени цели</li>
+                    <li><strong>Право на оттегляне на съгласие:</strong> Можете да оттеглите съгласието си по всяко време</li>
+                </ul>
+                <p>
+                    За да упражните някое от тези права, моля свържете се с нас на адреса, посочен в секция „Контакти" по-долу.
+                </p>
+
+                <h2>6. Защита на данните</h2>
+                <p>
+                    Прилагаме подходящи технически и организационни мерки за защита на вашите лични данни срещу неоторизиран достъп, 
+                    загуба, унищожаване или промяна. Това включва криптиране, защитени връзки (HTTPS) и ограничен достъп до данните.
+                </p>
+
+                <h2>7. Политика за бисквитки</h2>
+                
+                <h3>7.1 Какво са бисквитките</h3>
+                <p>
+                    Бисквитките са малки текстови файлове, които се съхраняват на вашето устройство, когато посещавате уебсайт. 
+                    Те помагат на уебсайта да запомни вашите предпочитания и да подобри вашето изживяване.
+                </p>
+
+                <h3>7.2 Видове бисквитки, които използваме</h3>
+                <ul>
+                    <li><strong>Необходими бисквитки:</strong> Тези бисквитки са от съществено значение за функционирането на уебсайта и не могат да бъдат деактивирани. Те включват бисквитки за сесии и сигурност.</li>
+                    <li><strong>Аналитични бисквитки:</strong> Помагат ни да разберем как посетителите използват нашия уебсайт чрез анонимни данни. Използваме ги за подобряване на функционалността и съдържанието.</li>
+                    <li><strong>Маркетингови бисквитки:</strong> Използват се за показване на релевантна реклама и проследяване на ефективността на кампаниите. Тези бисквитки изискват вашето съгласие.</li>
+                </ul>
+
+                <h3>7.3 Управление на бисквитките</h3>
+                <p>
+                    Можете да управлявате вашите предпочитания за бисквитки по всяко време чрез нашия банер за съгласие с бисквитки, 
+                    който се появява при първото ви посещение. Можете също да настроите вашия браузър да блокира бисквитки, 
+                    но това може да повлияе на функционалността на уебсайта.
+                </p>
+                <p>
+                    За да промените настройките си за бисквитки, моля използвайте функцията „Настройки" в банера за съгласие или 
+                    <a href="javascript:void(0);" onclick="if(window.CookieConsent){window.CookieConsent.reset();}">кликнете тук, за да отворите настройките за бисквитки</a>.
+                </p>
+
+                <h2>8. Връзки към други уебсайтове</h2>
+                <p>
+                    Нашият уебсайт може да съдържа връзки към други уебсайтове. Не носим отговорност за практиките за поверителност 
+                    на тези уебсайтове. Препоръчваме ви да прочетете политиките за поверителност на всеки уебсайт, който посещавате.
+                </p>
+
+                <h2>9. Промени в политиката</h2>
+                <p>
+                    Може да актуализираме тази Политика за поверителност от време на време. Ще ви уведомим за всяка промяна чрез 
+                    публикуване на новата политика на тази страница и актуализиране на датата „Последна актуализация". 
+                    Препоръчваме ви да преглеждате тази страница периодично.
+                </p>
+
+                <h2>10. Контакти</h2>
+                <p>
+                    Ако имате въпроси относно тази Политика за поверителност или искате да упражните вашите права, моля свържете се с нас:
+                </p>
+                <div class="contact-box">
+                    <p><strong>Serve Software Restaurant</strong></p>
+                    <p>Адрес: ул. Примерна 123, София 1000, България</p>
+                    <p>Имейл: <a href="mailto:privacy@restaurant.bg">privacy@restaurant.bg</a></p>
+                    <p>Телефон: <a href="tel:+359123456789">+359 123 456 789</a></p>
+                    <p><strong>Лице, отговорно за защита на данните:</strong> [Име на лицето]</p>
+                    <p>Имейл за защита на данните: <a href="mailto:dpo@restaurant.bg">dpo@restaurant.bg</a></p>
+                </div>
+
+                <p>
+                    Също така имате право да подадете жалба до Комисията за защита на личните данни (КЗЛД) в България, 
+                    ако смятате, че обработката на вашите лични данни нарушава GDPR.
+                </p>
+
+                <a href="../index.html" class="back-link">← Обратно към началната страница</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="terms.html">Условия за ползване</a></li>
+                <li><a href="privacy.html">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-column">
+            <h3>Услуги</h3>
+            <ul>
+                <li><a href="#">Магазин</a></li>
+                <li><a href="#">Поръчай предварително</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="../index.html#about">За нас</a></li>
+                <li><a href="#">Нашата история</a></li>
+                <li><a href="contacts.html">Намерете локация</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="search-modal">
+        <div class="search-modal-content">
+            <span class="search-close">&times;</span>
+            <h2 style="color: white; margin-bottom: 1rem;">Търсене</h2>
+            <input type="text" id="searchInput" class="search-input" placeholder="Търсене на ястия, напитки или услуги...">
+            <div id="searchResults" class="search-results"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleOrderSummary() {
+            // Order summary functionality if needed
+        }
+    </script>
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/search.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+

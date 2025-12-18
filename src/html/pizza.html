@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ПИЦИ - Serve Software Restaurant</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>ПИЦИ</h1>
+            <p class="category-subtitle">600 гр. / Италнаска и домашна пица</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Pizza Dishes Grid Layout -->
+        <div class="salads-container">
+            <div class="salad-card" onclick="showNutritionInfo('Маргарита', 'Домат, моцарела, босилек.', 680, 82, 28, 22, '600 г', '8.90 €', 8.90)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/margherita-pizza.jpg" alt="Маргарита">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Маргарита</h3>
+                    </div>
+                    <p class="salad-ingredients">Домат, моцарела, босилек.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">8.90 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Пеперони', 'Домат, моцарела, пеперони.', 750, 85, 32, 28, '600 г', '10.90 €', 10.90)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-peperoni.jpg" alt="Пеперони">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пеперони</h3>
+                    </div>
+                    <p class="salad-ingredients">Домат, моцарела, пеперони.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">10.90 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Кватро Формадж', 'Бешамел, моцарела, ементал, пармезан.', 720, 88, 38, 30, '600 г', '12.50 €', 12.50)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-quatro-formaggi.jpg" alt="Кватро Формадж">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Кватро Формадж</h3>
+                    </div>
+                    <p class="salad-ingredients">Бешамел, моцарела, ементал, пармезан.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">12.50 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Капричоза', 'Домат, моцарела, шунка, яйце, чушки.', 720, 80, 32, 28, '600 г', '11.50 €', 11.50)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-capricciosa.jpg" alt="Капричоза">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Капричоза</h3>
+                    </div>
+                    <p class="salad-ingredients">Домат, моцарела, шунка, яйце, чушки.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">11.50 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Вегетарианска', 'Домат, моцарела, чушки, маслини, лук.', 680, 82, 25, 22, '600 г', '10.90 €', 10.90)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-vegetarian.jpg" alt="Вегетарианска">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Вегетарианска</h3>
+                    </div>
+                    <p class="salad-ingredients">Домат, моцарела, чушки, маслини, лук.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">10.90 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Наполитана', 'Домат, моцарела, риба тон, маслини.', 700, 85, 32, 26, '600 г', '11.50 €', 11.50)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-napoletana.jpg" alt="Наполитана">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Наполитана</h3>
+                    </div>
+                    <p class="salad-ingredients">Домат, моцарела, риба тон, маслини.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">11.50 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Карбонара', 'Бешамел, моцарела, бекон, яйце.', 740, 82, 38, 32, '600 г', '12.90 €', 12.90)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-karbonara.jpg" alt="Карбонара">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Карбонара</h3>
+                    </div>
+                    <p class="salad-ingredients">Бешамел, моцарела, бекон, яйце.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">12.90 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Прошуто е Фунги', 'Домат, моцарела, прошуто, гъби.', 720, 80, 35, 28, '600 г', '13.90 €', 13.90)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-proshuto.jpg" alt="Прошуто е Фунги">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Прошуто е Фунги</h3>
+                    </div>
+                    <p class="salad-ingredients">Домат, моцарела, прошуто, гъби.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">13.90 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Калцоне', 'Затворена пица с шунка, сирене и яйце.', 680, 85, 32, 26, '600 г', '11.90 €', 11.90)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-calzone.jpg" alt="Калцоне">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Калцоне</h3>
+                    </div>
+                    <p class="salad-ingredients">Затворена пица с шунка, сирене и яйце.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">11.90 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="salad-card" onclick="showNutritionInfo('Рома', 'Домат, моцарела, шунка, маслини.', 710, 82, 33, 28, '600 г', '11.50 €', 11.50)">
+                <div class="salad-image">
+                    <img src="../images/pizza_category/pizza-roma.jpg" alt="Рома">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Рома</h3>
+                    </div>
+                    <p class="salad-ingredients">Домат, моцарела, шунка, маслини.</p>
+                    <div class="salad-price">
+                        <span class="weight">600 г</span>
+                        <span class="price">11.50 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>Serve Software</h4>
+                <ul>
+                    <li>Поверителност</li>
+                    <li>Услуги</li>
+                    <li>За нас</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Бързи връзки</h4>
+                <ul>
+                    <li>Меню</li>
+                    <li>Нашата история</li>
+                    <li>Резервации</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Социални мрежи</h4>
+                <div class="socials">
+                    <span>🌐</span>
+                    <span>📸</span>
+                    <span>🐦</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+

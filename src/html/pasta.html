@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ПАСТА И РИЗОТО - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>ПАСТА И РИЗОТО</h1>
+            <p class="category-subtitle">Класически и иновативни ястия</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Pasta Dishes Grid Layout -->
+        <div class="salads-container">
+
+            <div class="salad-card" onclick="showNutritionInfo('Спагети Карбонара', 'Спагети с бекон, яйце и пармезан.', 610, 64, 28, 23, '350 г', '11.90 €', 11.90)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Spagetti-karbonara.jpg" alt="Спагети Карбонара">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Спагети Карбонара</h3>
+                    </div>
+                    <p class="salad-ingredients">Спагети с бекон, яйце и пармезан.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">11.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Болонезе', 'Спагети с телешко месо и доматен сос.', 560, 58, 18, 28, '350 г', '12.50 €', 12.50)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Spagetti-bolonese.jpg" alt="Болонезе">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Болонезе</h3>
+                    </div>
+                    <p class="salad-ingredients">Спагети с телешко месо и доматен сос.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">12.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пене Арабиата', 'Пене с пикантен чесън и червен пипер.', 470, 80, 10, 13, '320 г', '10.90 €', 10.90)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Spagetti-arabiata.jpg" alt="Пене Арабиата">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пене Арабиата</h3>
+                    </div>
+                    <p class="salad-ingredients">Пене с пикантен чесън и червен пипер.</p>
+                    <div class="salad-price">
+                        <span class="weight">320 г</span>
+                        <span class="price">10.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Ризото с манатарки', 'Кремозно ризото с печени гъби.', 540, 75, 16, 12, '350 г', '12.90 €', 12.90)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Rizoto-manatarki.jpg" alt="Ризото с манатарки">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Ризото с манатарки</h3>
+                    </div>
+                    <p class="salad-ingredients">Кремозно ризото с печени гъби.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">12.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Лазаня', 'Класическа лазаня с месо и бешамел.', 680, 52, 38, 34, '380 г', '13.90 €', 13.90)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Lazanq.jpg" alt="Лазаня">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Лазаня</h3>
+                    </div>
+                    <p class="salad-ingredients">Класическа лазаня с месо и бешамел.</p>
+                    <div class="salad-price">
+                        <span class="weight">380 г</span>
+                        <span class="price">13.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Талиателе със сьомга', 'Талиателе с кремава сьомга.', 720, 55, 40, 30, '350 г', '14.50 €', 14.50)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Taliateli.png" alt="Талиателе със сьомга">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Талиателе със сьомга</h3>
+                    </div>
+                    <p class="salad-ingredients">Талиателе с кремава сьомга.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">14.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Ризото с морски дарове', 'Ризото с различен риби и морски дарове.', 520, 68, 12, 22, '350 г', '15.90 €', 15.90)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Rizoto-darove.jpg" alt="Ризото с морски дарове">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Ризото с морски дарове</h3>
+                    </div>
+                    <p class="salad-ingredients">Ризото с различен риби и морски дарове.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">15.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Фетучини Алфредо', 'Фетучини с кремав сос и пармезан.', 690, 60, 38, 18, '350 г', '12.90 €', 12.90)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Spagetti-alfredo.jpg" alt="Фетучини Алфредо">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Фетучини Алфредо</h3>
+                    </div>
+                    <p class="salad-ingredients">Фетучини с кремав сос и пармезан.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">12.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пене с чери домати и босилек', 'Пене с чери домати и босилек.', 490, 78, 12, 14, '320 г', '10.80 €', 10.80)">
+                <div class="salad-image">
+                    <img src="../images/pasta_category/Pene.jpg" alt="Пене с чери домати">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пене с чери домати и босилек</h3>
+                    </div>
+                    <p class="salad-ingredients">Пене с чери домати и босилек.</p>
+                    <div class="salad-price">
+                        <span class="weight">320 г</span>
+                        <span class="price">10.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+                
+            </ul>
+        </div>
+    </footer>
+    
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>

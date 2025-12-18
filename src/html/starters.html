@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СТАРТЕРИ - Serve Software Restaurant</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <!-- Category Section -->
+    <main class="category-main">
+        <div class="category-header">
+            <h1>ПРЕДЯСТИЯ</h1>
+            <p class="category-subtitle">Вкусни предястия за началото на трапезата</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Starters Grid Layout -->
+        <div class="salads-container">
+
+            <div class="salad-card" onclick="showNutritionInfo('Брускети с домати и моцарела', 'Подпечен хляб с домати и моцарела.', 330, 36, 13, 16, '200 г', '4.50 €', 4.50)">
+                <div class="salad-image">
+                    <img src="../images/starters_category/Starters_bruskets.jpg" alt="Брускети с домати и моцарела">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Брускети с домати и моцарела</h3>
+                    </div>
+                    <p class="salad-ingredients">Подпечен хляб с домати и моцарела.</p>
+                    <div class="salad-price">
+                        <span class="weight">200 г</span>
+                        <span class="price">4.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Запечени чушки с чесън', 'Чушки запечени с чесън и зехтин.', 160, 11, 3, 11, '150 г', '3.80 €', 3.80)">
+                <div class="salad-image">
+                    <img src="../images/starters_category/Starters_pepper.jpg" alt="Запечени чушки с чесън">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Запечени чушки с чесън</h3>
+                    </div>
+                    <p class="salad-ingredients">Чушки запечени с чесън и зехтин.</p>
+                    <div class="salad-price">
+                        <span class="weight">150 г</span>
+                        <span class="price">3.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Хрупкави калмари', 'Хрупкави калмари, мариновани с риган, поднесени с чеснов сос', 310, 18, 20, 18, '120 г', '4.20 €', 4.20)">
+                <div class="salad-image">
+                    <img src="../images/starters_category/Starters_kalmari.jpg" alt="Хрупкави калмари">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Хрупкави калмари</h3>
+                    </div>
+                    <p class="salad-ingredients">Хрупкави калмари, мариновани с риган, поднесени с чеснов сос</p>
+                    <div class="salad-price">
+                        <span class="weight">120 г</span>
+                        <span class="price">4.20 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Сотирани свински уши', 'Свински уши', 265, 3, 26, 16, '180 г', '4.80 €', 4.80)">
+                <div class="salad-image">
+                    <img src="../images/starters_category/Starters_ears.png" alt="Сотирани свински уши">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Сотирани свински уши</h3>
+                    </div>
+                    <p class="salad-ingredients">Свински уши</p>
+                    <div class="salad-price">
+                        <span class="weight">180 г</span>
+                        <span class="price">4.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пълнени яйца', 'Яйца пълнени с майонеза и подправки.', 260, 3, 14, 22, '150 г', '3.50 €', 3.50)">
+                <div class="salad-image">
+                    <img src="../images/starters_category/Starters_eggs.jpg" alt="Пълнени яйца">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пълнени яйца</h3>
+                    </div>
+                    <p class="salad-ingredients">Яйца пълнени с майонеза и подправки.</p>
+                    <div class="salad-price">
+                        <span class="weight">150 г</span>
+                        <span class="price">3.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Разядка с патладжан (баба гануш)', 'Патладжан, чесън, тахини.', 240, 15, 4, 19, '150 г', '3.80 €', 3.80)">
+                <div class="salad-image">
+                    <img src="../images/starters_category/Starters_baba.jpg" alt="Разядка с патладжан">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Разядка с патладжан (баба гануш)</h3>
+                    </div>
+                    <p class="salad-ingredients">Патладжан, чесън, тахини.</p>
+                    <div class="salad-price">
+                        <span class="weight">150 г</span>
+                        <span class="price">3.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Гуакамоле с чипс', 'Авокадо, лук, чесън, чипс.', 410, 32, 6, 29, '180 г', '4.50 €', 4.50)">
+                <div class="salad-image">
+                    <img src="../images/starters_category/Starters_guakamole.jpg" alt="Гуакамоле с чипс">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Гуакамоле с чипс</h3>
+                    </div>
+                    <p class="salad-ingredients">Авокадо, лук, чесън, чипс.</p>
+                    <div class="salad-price">
+                        <span class="weight">180 г</span>
+                        <span class="price">4.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>Serve Software</h4>
+                <ul>
+                    <li>Поверителност</li>
+                    <li>Услуги</li>
+                    <li>За нас</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Бързи връзки</h4>
+                <ul>
+                    <li>Меню</li>
+                    <li>Нашата история</li>
+                    <li>Резервации</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Социални мрежи</h4>
+                <div class="socials">
+                    <span>🌐</span>
+                    <span>📸</span>
+                    <span>🐦</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>

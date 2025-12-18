@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>САЛАТИ - Serve Software Restaurant</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <!-- Category Section -->
+    <main class="category-main">
+        <div class="category-header">
+            <h1>САЛАТИ</h1>
+            <p class="category-subtitle">Свежи и здравословни салати</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Salads Grid Layout -->
+        <div class="salads-container">
+            <div class="salad-card" onclick="showNutritionInfo('КАПРЕЗЕ', 'белен домат, пържени чушки, свежо бяло саламурено сирене, краставици, маслини, хляб.', 420, 26, 20, 28, '400 г', '10.90 лв. / 5.57 €', 10.90)">
+                <div class="salad-image">
+                    <img src="../images/salad_category/Salad-kapreze.jpg" alt="КАПРЕЗЕ">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>КАПРЕЗЕ</h3>
+                    </div>
+                    <p class="salad-ingredients">белен домат, пържени чушки, свежо бяло саламурено сирене, краставици, маслини, хляб.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">5.57 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('САЛАТА С ПАТЛАДЖАН', 'Печен патладжан, филийки домати, натрошено сирене, печена чушка, маслини, дресинг, семена.', 390, 30, 14, 27, '350 г', '5.37 €', 5.37)">
+                <div class="salad-image">
+                    <img src="../images/salad_category/Salad_Patlajan.jpg" alt="САЛАТА С ПАТЛАДЖАН">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>САЛАТА С ПАТЛАДЖАН</h3>
+                    </div>
+                    <p class="salad-ingredients">Печен патладжан, филийки домати, натрошено сирене, печена чушка, маслини, дресинг, семена.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">5.37 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('ШОПСКА САЛАТА', 'домат, краставица, свежа чушка, сирене, маслина, лук, хляб.', 350, 22, 17, 24, '350 г', '4.86 €', 4.86)">
+                <div class="salad-image">
+                    <img src="../images/salad_category/Shopska_Salad.jpg" alt="ШОПСКА САЛАТА">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>ШОПСКА САЛАТА</h3>
+                    </div>
+                    <p class="salad-ingredients">домат, краставица, свежа чушка, сирене, маслина, лук, хляб.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">4.86 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('ГРЪЦКА САЛАТА', 'домат, краставица, свежа чушка, мариновано сирене, лук, риган, зехтин, хляб.', 380, 24, 15, 29, '350 г', '5.06 €', 5.06)">
+                <div class="salad-image">
+                    <img src="../images/salad_category/Greek_Salad.jpg" alt="ГРЪЦКА САЛАТА">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>ГРЪЦКА САЛАТА</h3>
+                    </div>
+                    <p class="salad-ingredients">домат, краставица, свежа чушка, мариновано сирене, лук, риган, зехтин, хляб.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 г</span>
+                        <span class="price">5.06 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('СЕЛСКА САЛАТА', 'домат, краставица, печена чушка, сирене, маслини, лук, кашкавал, хляб.', 460, 28, 21, 33, '400 г', '5.06 €', 5.06)">
+                <div class="salad-image">
+                    <img src="../images/salad_category/Selska_Salad.jpg" alt="СЕЛСКА САЛАТА">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>СЕЛСКА САЛАТА</h3>
+                    </div>
+                    <p class="salad-ingredients">домат, краставица, печена чушка, сирене, маслини, лук, кашкавал, хляб.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">5.06 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('ОВЧАРСКА САЛАТА', 'домат, краставица, печена чушка, сирене, кашкавал, яйце, шунка, гъби, маслина, лук, хляб.', 520, 25, 26, 38, '400 г', '5.57 €', 5.57)">
+                <div class="salad-image">
+                    <img src="../images/salad_category/Ovcharska_Salad.jpg" alt="ОВЧАРСКА САЛАТА">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>ОВЧАРСКА САЛАТА</h3>
+                    </div>
+                    <p class="salad-ingredients">домат, краставица, печена чушка, сирене, кашкавал, яйце, шунка, гъби, маслина, лук, хляб.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">5.57 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>Serve Software</h4>
+                <ul>
+                    <li>Поверителност</li>
+                    <li>Услуги</li>
+                    <li>За нас</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Бързи връзки</h4>
+                <ul>
+                    <li>Меню</li>
+                    <li>Нашата история</li>
+                    <li>Резервации</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Социални мрежи</h4>
+                <div class="socials">
+                    <span>🌐</span>
+                    <span>📸</span>
+                    <span>🐦</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>

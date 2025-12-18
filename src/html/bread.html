@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ПЪРЛЕНКИ И ХЛЕБЧЕТА - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>ПЪРЛЕНКИ И ХЛЕБЧЕТА</h1>
+            <p class="category-subtitle">Печени хлебчета и пърленки</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Bread Dishes Grid Layout -->
+        <div class="salads-container">
+
+            <!-- ПЪРЛЕНКИ -->
+            <div class="salad-card"
+                onclick="showNutritionInfo(
+                    'Пърленки',
+                    'Класически пърленки печени на фурна.',
+                    695,      /* kcal */
+                    130.15,   /* carbs (g) */
+                    17.0,     /* protein (g) */
+                    11.9,     /* fat (g) */
+                    '250 г',
+                    '3.50 €',
+                    3.50
+                )">
+                <div class="salad-image">
+                    <img src="../images/bread_category/bread-purlenka.jpg" alt="Пърленки">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пърленки</h3>
+                    </div>
+                    <p class="salad-ingredients">Класически пърленки печени на фурна.</p>
+                    <div class="salad-price">
+                        <span class="weight">250 г</span>
+                        <span class="price">3.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- БЯЛ ХЛЯБ -->
+            <div class="salad-card"
+                onclick="showNutritionInfo(
+                    'Бял хляб',
+                    'Свежият бял хляб.',
+                    1064,      /* kcal */
+                    202.44,    /* carbs (g) */
+                    30.56,     /* protein (g) */
+                    13.16,     /* fat (g) */
+                    '400 г',
+                    '2.90 €',
+                    2.90
+                )">
+                <div class="salad-image">
+                    <img src="../images/bread_category/bread-white.jpg" alt="Бял хляб">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Бял хляб</h3>
+                    </div>
+                    <p class="salad-ingredients">Свежият бял хляб.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">2.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- ДОМАТЕН (ГЪСТ) ХЛЯБ -->
+            <div class="salad-card"
+                onclick="showNutritionInfo(
+                    'Гъст хляб',
+                    'Доматен гъст хляб.',
+                    1048,      /* kcal */
+                    204.36,    /* carbs (g) */
+                    36.68,     /* protein (g) */
+                    9.32,      /* fat (g) */
+                    '400 г',
+                    '3.20 €',
+                    3.20
+                )">
+                <div class="salad-image">
+                    <img src="../images/bread_category/bread-tomato.jpg" alt="Гъст хляб">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Гъст хляб</h3>
+                    </div>
+                    <p class="salad-ingredients">Доматен гъст хляб.</p>
+                    <div class="salad-price">
+                        <span class="weight">400 г</span>
+                        <span class="price">3.20 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- ХЛЕБЧЕ СЪС СИРЕНЕ -->
+            <div class="salad-card"
+                onclick="showNutritionInfo(
+                    'Хлебче със сирене',
+                    'Хлебче със сирене от фурната.',
+                    546,       /* kcal */
+                    96.28,     /* carbs (g) */
+                    17.0,      /* protein (g) */
+                    9.56,      /* fat (g) */
+                    '200 г',
+                    '2.50 €',
+                    2.50
+                )">
+                <div class="salad-image">
+                    <img src="../images/bread_category/bread-cheese.jpg" alt="Хлебче със сирене">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Хлебче със сирене</h3>
+                    </div>
+                    <p class="salad-ingredients">Хлебче със сирене от фурната.</p>
+                    <div class="salad-price">
+                        <span class="weight">200 г</span>
+                        <span class="price">2.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- ХЛЕБЧЕ С КАШКАВАЛ И ЧЕСЪН -->
+            <div class="salad-card"
+                onclick="showNutritionInfo(
+                    'Хлебче с кашкавал и чесън',
+                    'Хлебче с кашкавал и чесън.',
+                    590,       /* kcal */
+                    93,      /* carbs (g) */
+                    15.0,      /* protein (g) */
+                    17.2,      /* fat (g) */
+                    '200 г',
+                    '2.80 €',
+                    2.80
+                )">
+                <div class="salad-image">
+                    <img src="../images/bread_category/bread-chesse-garlic.jpg" alt="Хлебче с кашкавал и чесън">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Хлебче с кашкавал и чесън</h3>
+                    </div>
+                    <p class="salad-ingredients">Хлебче с кашкавал и чесън.</p>
+                    <div class="salad-price">
+                        <span class="weight">200 г</span>
+                        <span class="price">2.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+        
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+                
+            </ul>
+        </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+

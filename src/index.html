@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Serve Software – Restaurant</title>
+
+  <!-- Google Fonts (closest visual match) -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <ul>
+                  <li><a href="#" data-translate="nav.home">Home</a></li>
+                  <li><a href="html/menu.html" data-translate="nav.menu">Menu</a></li>
+                  <li><a href="#about" data-translate="nav.about">About us</a></li>
+                  <li><a href="#contact" data-translate="nav.contact">Contact us</a></li>
+                </ul>
+              </nav>
+          <div class="language-toggle">
+            <button onclick="changeLanguage('en')" id="lang-en" class="active">EN</button>
+            <button onclick="changeLanguage('bg')" id="lang-bg">BG</button>
+          </div>
+        </div>
+
+    <div class="hero">
+      <h1 data-translate="hero.title">Taste The Difference</h1>
+      <button data-translate="hero.button" onclick="window.location.href='html/menu.html'">View Menu</button>
+    </div>
+  </header>
+
+  <section class="about" id="about">
+    <h2 data-translate="about.title">About Us</h2>
+    <div class="subtitle" data-translate="about.subtitle">Our Story</div>
+    <p data-translate="about.text">
+      The restaurant opened its doors in 2015 with one simple idea – to offer genuine taste
+      and comfort in the heart of the city. Since then, we have been combining traditional
+      recipes with modern culinary techniques to create experiences that are truly unforgettable.
+    </p>
+
+    <div class="about-images">
+      <img src="https://images.unsplash.com/photo-1521017432531-fbd92d768814" alt="Menu" />
+      <img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092" alt="Cooking" />
+    </div>
+  </section>  
+  
+  <section class="contact" id="contact">
+    <h2 data-translate="contact.title">Contact Us</h2>
+    <div class="subtitle" data-translate="contact.subtitle">Get In Touch</div>
+    
+    <div id="toast" class="toast">Message sent successfully!</div>
+
+    <form class="contact-form" id="contact-form">
+      <input type="text" name="name" data-translate-placeholder="contact.name" placeholder="Your Name" required>
+      <input type="email" name="email" data-translate-placeholder="contact.email" placeholder="Email Address" required>
+      <textarea name="message" data-translate-placeholder="contact.message" placeholder="Your Message" required></textarea>
+      <button type="submit" data-translate="contact.button">Send Message</button>
+    </form>
+  </section>
+  
+  
+  
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <h4>Serve Software</h4>
+        <ul>
+          <li data-translate="footer.privacy">Privacy</li>
+          <li data-translate="footer.services">Services</li>
+          <li data-translate="footer.about">About Us</li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-translate="footer.quickLinks">Quick Links</h4>
+        <ul>
+          <li data-translate="footer.menu">Menu</li>
+          <li data-translate="footer.story">Our Story</li>
+          <li data-translate="footer.reservations">Reservations</li>
+        </ul>
+      </div>
+      
+      <div>
+        <h4 data-translate="footer.social">Social Media</h4>
+        <div class="socials">
+          <span>🌐</span>
+          <span>📸</span>
+          <span>🐦</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>

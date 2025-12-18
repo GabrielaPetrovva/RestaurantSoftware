@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>БУРГЕР И ТОРТИЛА - Serve Software Restaurant</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>БУРГЕР И ТОРТИЛА</h1>
+            <p class="category-subtitle">Сочни бургери и тортили</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Burger and Tortilla Dishes Grid Layout -->
+        <div class="salads-container">
+            <div class="salad-card" onclick="showNutritionInfo(
+                'Класически бургер',
+                'Телешко месо, марула, домат, лук, кисели краставички, сос.',
+                850,     /* kcal */
+                75.0,    /* carbs (g) */
+                48.0,    /* protein (g) */
+                40.0,    /* fat (g) */
+                '300 г',
+                '8.90 €',
+                8.90
+            )">
+                <div class="salad-image">
+                    <img src="../images/burger_category/burger-classic.jpg" alt="Класически бургер">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header"><h3>Класически бургер</h3></div>
+                    <p class="salad-ingredients">Телешко месо, марула, домат, лук, кисели краставички, сос.</p>
+                    <div class="salad-price"><span class="weight">300 г</span><span class="price">8.90 €</span></div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo(
+                'Бургер със сирене',
+                'Телешко месо, сирене, марула, домат, сос.',
+                920,     /* kcal */
+                78.0,    /* carbs (g) */
+                50.0,    /* protein (g) */
+                45.0,    /* fat (g) */
+                '320 г',
+                '9.90 €',
+                9.90
+            )">
+                <div class="salad-image">
+                    <img src="../images/burger_category/burger-cheese.jpg" alt="Бургер със сирене">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header"><h3>Бургер със сирене</h3></div>
+                    <p class="salad-ingredients">Телешко месо, сирене, марула, домат, сос.</p>
+                    <div class="salad-price"><span class="weight">320 г</span><span class="price">9.90 €</span></div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo(
+                'Бургер с бекон',
+                'Телешко месо, бекон, сирене, марула, домат, сос.',
+                1000,    /* kcal */
+                85.0,    /* carbs (g) */
+                52.0,    /* protein (g) */
+                50.0,    /* fat (g) */
+                '350 г',
+                '11.90 €',
+                11.90
+            )">
+                <div class="salad-image">
+                    <img src="../images/burger_category/burger-bakon.jpg" alt="Бургер с бекон">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header"><h3>Бургер с бекон</h3></div>
+                    <p class="salad-ingredients">Телешко месо, бекон, сирене, марула, домат, сос.</p>
+                    <div class="salad-price"><span class="weight">350 г</span><span class="price">11.90 €</span></div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo(
+                'Пилешки бургер',
+                'Пилешко филе, марула, домат, лук, майонеза.',
+                750,     /* kcal */
+                70.0,    /* carbs (g) */
+                45.0,    /* protein (g) */
+                30.0,    /* fat (g) */
+                '300 г',
+                '8.50 €',
+                8.50
+            )">
+                <div class="salad-image">
+                    <img src="../images/burger_category/burger-chicken.jpg" alt="Пилешки бургер">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header"><h3>Пилешки бургер</h3></div>
+                    <p class="salad-ingredients">Пилешко филе, марула, домат, лук, майонеза.</p>
+                    <div class="salad-price"><span class="weight">300 г</span><span class="price">8.50 €</span></div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo(
+                'Вегетариански бургер',
+                'Храна с вегетарианско месо, марула, домат, сос.',
+                650,     /* kcal */
+                60.0,    /* carbs (g) */
+                30.0,    /* protein (g) */
+                25.0,    /* fat (g) */
+                '280 г',
+                '7.90 €',
+                7.90
+            )">
+                <div class="salad-image">
+                    <img src="../images/burger_category/burger-vegetarian.jpg" alt="Вегетариански бургер">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header"><h3>Вегетариански бургер</h3></div>
+                    <p class="salad-ingredients">Храна с вегетарианско месо, марула, домат, сос.</p>
+                    <div class="salad-price"><span class="weight">280 г</span><span class="price">7.90 €</span></div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo(
+                'Тортила с пиле',
+                'Тортила с пилешко месо, сирене, салата, майонеза.',
+                720,     /* kcal */
+                65.0,    /* carbs (g) */
+                38.0,    /* protein (g) */
+                32.0,    /* fat (g) */
+                '300 г',
+                '8.90 €',
+                8.90
+            )">
+                <div class="salad-image">
+                    <img src="../images/burger_category/tortilla-chicken.jpg" alt="Тортила с пиле">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header"><h3>Тортила с пиле</h3></div>
+                    <p class="salad-ingredients">Тортила с пилешко месо, сирене, салата, майонеза.</p>
+                    <div class="salad-price"><span class="weight">300 г</span><span class="price">8.90 €</span></div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo(
+                'Тортила със свинско',
+                'Тортила със свинско месо, кашкавал, салата, сос.',
+                800,     /* kcal */
+                70.0,    /* carbs (g) */
+                44.0,    /* protein (g) */
+                35.0,    /* fat (g) */
+                '320 г',
+                '9.50 €',
+                9.50
+            )">
+                <div class="salad-image">
+                    <img src="../images/burger_category/tortilla-pork.jpg" alt="Тортила със свинско">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header"><h3>Тортила със свинско</h3></div>
+                    <p class="salad-ingredients">Тортила със свинско месо, кашкавал, салата, сос.</p>
+                    <div class="salad-price"><span class="weight">320 г</span><span class="price">9.50 €</span></div>
+                </div>
+            </div>
+        
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>Serve Software</h4>
+                <ul>
+                    <li>Поверителност</li>
+                    <li>Услуги</li>
+                    <li>За нас</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Бързи връзки</h4>
+                <ul>
+                    <li>Меню</li>
+                    <li>Нашата история</li>
+                    <li>Резервации</li>
+                </ul>
+            </div>
+            <div>
+                <h4>Социални мрежи</h4>
+                <div class="socials">
+                    <span>🌐</span>
+                    <span>📸</span>
+                    <span>🐦</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>
+

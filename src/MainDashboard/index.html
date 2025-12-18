@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss dashboard</title>
+        <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1 id="headerTitle">Boss dashboard</h1>
+            <div class="header-right">
+                <span class="user-name" id="userName">Petar Petrov - Head Chef</span>
+                <button class="lang-btn" onclick="toggleLanguage()" id="langBtn" style="padding: 8px 16px; border: none; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; font-weight: 500; margin-right: 10px;">EN</button>
+                <button class="exit-btn" onclick="logout()" id="exitBtn">Exit</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('metrics')" id="tabMetrics">
+                <span id="tabMetricsText">Metrics</span>
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="tab" onclick="switchTab('menu')" id="tabMenu">Menu & Profit</button>
+            <button class="tab" onclick="switchTab('staff')" id="tabStaff">Staff</button>
+            <button class="tab" onclick="switchTab('kitchen')" id="tabKitchen" data-i18n="Kitchen Dashboard">Kitchen Dashboard</button>
+            <button class="tab" onclick="switchTab('bar')" id="tabBar" data-i18n="Bar Dashboard">Bar Dashboard</button>
+            <button class="tab" onclick="switchTab('waiter')" id="tabWaiter" data-i18n="Waiter Dashboard">Waiter Dashboard</button>
+        </div>
+
+        <!-- METRICS VIEW -->
+        <div id="metrics-view" class="view-container active">
+            <div class="main-content">
+                <div class="top-bar">
+                    <div class="top-stat">
+                        <div class="top-stat-label" data-i18n="Today's Revenue">Today's Revenue</div>
+                        <div class="top-stat-value" style="color: #4caf50;">2,450 лв</div>
+                    </div>
+                    <div class="top-stat">
+                        <div class="top-stat-label" data-i18n="Covers">Covers</div>
+                        <div class="top-stat-value">87</div>
+                    </div>
+                    <div class="top-stat">
+                        <div class="top-stat-label" data-i18n="Avg Check">Avg Check</div>
+                    <div class="top-stat-value">28.16 лв</div>
+                    </div>
+                    <div class="top-stat">
+                    <div class="top-stat-label" data-i18n="Open Tickets">Open Tickets</div>
+                    <div class="top-stat-value" style="color: #ff9800;">4</div>
+                    </div>
+                    <div class="top-stat">
+                    <div class="top-stat-label" data-i18n="Covers/Hour">Covers/Hour</div>
+                    <div class="top-stat-value">12.4</div>
+                    </div>
+                    </div>
+                    <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Average Ticket Time">Average Ticket Time</div>
+                    <div class="metric-value-large">12:34</div>
+                    <div class="metric-subtitle" data-i18n="From order to served">From order to served</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Average Cook Time">Average Cook Time</div>
+                    <div class="metric-value-large">08:47</div>
+                    <div class="metric-subtitle" data-i18n="Kitchen preparation time">Kitchen preparation time</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="First Time Right">First Time Right</div>
+                    <div class="metric-value-large" style="color: #4caf50;">96%</div>
+                    <div class="metric-subtitle" data-i18n="Orders without corrections">Orders without corrections</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Order Throughput">Order Throughput</div>
+                    <div class="metric-value-large">18</div>
+                    <div class="metric-subtitle" data-i18n="Orders per hour">Orders per hour</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Table Turn Time">Table Turn Time</div>
+                    <div class="metric-value-large">45:20</div>
+                    <div class="metric-subtitle" data-i18n="Average time per table">Average time per table</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Food Cost %">Food Cost %</div>
+                    <div class="metric-value-large" style="color: #ff9800;">32%</div>
+                    <div class="metric-subtitle" data-i18n="Of total revenue">Of total revenue</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Labor Cost %">Labor Cost %</div>
+                    <div class="metric-value-large">28%</div>
+                    <div class="metric-subtitle" data-i18n="Of total revenue">Of total revenue</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Waste %">Waste %</div>
+                    <div class="metric-value-large" style="color: #dc3545;">3.2%</div>
+                    <div class="metric-subtitle" data-i18n="Of total inventory value">Of total inventory value</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Void & Refund Rate">Void & Refund Rate</div>
+                    <div class="metric-value-large" style="color: #ff9800;">1.5%</div>
+                    <div class="metric-subtitle" data-i18n="Of total revenue">Of total revenue</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title" data-i18n="Delivery Cost %">Delivery Cost %</div>
+                    <div class="metric-value-large">8.5%</div>
+                    <div class="metric-subtitle" data-i18n="Of delivery revenue">Of delivery revenue</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title" data-i18n="Top Selling Items Today">Top Selling Items Today</div>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">Burger</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 85%;">34 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Caesar Salad</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 70%;">28 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Pasta Carbonara</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 62%;">25 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Grilled Salmon</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 50%;">20 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Margherita Pizza</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 45%;">18 orders</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title" data-i18n="Revenue by Category">Revenue by Category</div>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">Main Courses</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 90%; background: linear-gradient(90deg, #2196f3, #64b5f6);">1,820 лв</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Appetizers</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 45%; background: linear-gradient(90deg, #2196f3, #64b5f6);">680 лв</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Desserts</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 30%; background: linear-gradient(90deg, #2196f3, #64b5f6);">420 лв</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Beverages</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 25%; background: linear-gradient(90deg, #2196f3, #64b5f6);">350 лв</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU & PROFIT VIEW -->
+    <div id="menu-view" class="view-container">
+        <div class="main-content">
+            <div class="chart-container">
+                <div class="chart-title" data-i18n="Menu Engineering Matrix">Menu Engineering Matrix</div>
+                <div class="matrix-grid">
+                    <div class="matrix-cell matrix-stars">
+                        <h3>⭐ <span data-i18n="Stars (High Profit, High Popularity)">Stars (High Profit, High Popularity)</span></h3>
+                        <div class="matrix-items">
+                            <div class="matrix-item">Grilled Salmon - Margin: 68% - Sales: 145/week</div>
+                            <div class="matrix-item">Ribeye Steak - Margin: 65% - Sales: 132/week</div>
+                            <div class="matrix-item">Truffle Pasta - Margin: 72% - Sales: 98/week</div>
+                        </div>
+                    </div>
+                    <div class="matrix-cell matrix-puzzles">
+                        <h3>❓ <span data-i18n="Puzzles (High Profit, Low Popularity)">Puzzles (High Profit, Low Popularity)</span></h3>
+                        <div class="matrix-items">
+                            <div class="matrix-item">Lobster Bisque - Margin: 75% - Sales: 23/week</div>
+                            <div class="matrix-item">Duck Confit - Margin: 70% - Sales: 18/week</div>
+                        </div>
+                    </div>
+                    <div class="matrix-cell matrix-plowhorses">
+                        <h3>🐴 <span data-i18n="Plowhorses (Low Profit, High Popularity)">Plowhorses (Low Profit, High Popularity)</span></h3>
+                        <div class="matrix-items">
+                            <div class="matrix-item">Burger - Margin: 45% - Sales: 234/week</div>
+                            <div class="matrix-item">Margherita Pizza - Margin: 48% - Sales: 187/week</div>
+                            <div class="matrix-item">Caesar Salad - Margin: 52% - Sales: 156/week</div>
+                        </div>
+                    </div>
+                    <div class="matrix-cell matrix-dogs">
+                        <h3>🐕 <span data-i18n="Dogs (Low Profit, Low Popularity)">Dogs (Low Profit, Low Popularity)</span></h3>
+                        <div class="matrix-items">
+                            <div class="matrix-item">Vegan Bowl - Margin: 38% - Sales: 12/week</div>
+                            <div class="matrix-item">Fish & Chips - Margin: 42% - Sales: 15/week</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title" data-i18n="Dish Profitability Analysis">Dish Profitability Analysis</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Dish Name</th>
+                            <th>Sale Price</th>
+                            <th>Cost</th>
+                            <th>Gross Profit</th>
+                            <th>Margin %</th>
+                            <th>Sales (7d)</th>
+                            <th>Total Profit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Grilled Salmon</strong></td>
+                            <td>32.00 лв</td>
+                            <td>10.20 лв</td>
+                            <td>21.80 лв</td>
+                            <td style="color: #4caf50; font-weight: 600;">68%</td>
+                            <td>145</td>
+                            <td style="font-weight: 600;">3,161 лв</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Burger</strong></td>
+                            <td>18.00 лв</td>
+                            <td>9.90 лв</td>
+                            <td>8.10 лв</td>
+                            <td style="color: #ff9800; font-weight: 600;">45%</td>
+                            <td>234</td>
+                            <td style="font-weight: 600;">1,895 лв</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Truffle Pasta</strong></td>
+                            <td>28.00 лв</td>
+                            <td>7.80 лв</td>
+                            <td>20.20 лв</td>
+                            <td style="color: #4caf50; font-weight: 600;">72%</td>
+                            <td>98</td>
+                            <td style="font-weight: 600;">1,980 лв</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Caesar Salad</strong></td>
+                            <td>16.00 лв</td>
+                            <td>7.70 лв</td>
+                            <td>8.30 лв</td>
+                            <td style="color: #ff9800; font-weight: 600;">52%</td>
+                            <td>156</td>
+                            <td style="font-weight: 600;">1,295 лв</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ribeye Steak</strong></td>
+                            <td>42.00 лв</td>
+                            <td>14.70 лв</td>
+                            <td>27.30 лв</td>
+                            <td style="color: #4caf50; font-weight: 600;">65%</td>
+                            <td>132</td>
+                            <td style="font-weight: 600;">3,604 лв</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title" data-i18n="Modifier Impact Analysis">Modifier Impact Analysis</div>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">Extra Cheese</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 75%; background: linear-gradient(90deg, #ff9800, #ffb74d);">187 orders (+3.50 лв avg)</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">No Onions</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 45%; background: linear-gradient(90deg, #ff9800, #ffb74d);">112 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Extra Bacon</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 60%; background: linear-gradient(90deg, #ff9800, #ffb74d);">148 orders (+4.20 лв avg)</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Gluten Free</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 25%; background: linear-gradient(90deg, #ff9800, #ffb74d);">62 orders (+2.00 лв avg)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVENTORY VIEW -->
+    <div id="inventory-view" class="view-container">
+        <div class="main-content">
+            <div class="filters">
+                <button class="filter-btn active" onclick="filterInventory('all')">All Items</button>
+                <button class="filter-btn" onclick="filterInventory('low')">Low Stock</button>
+                <button class="filter-btn" onclick="filterInventory('critical')">Critical</button>
+                <button class="filter-btn" onclick="filterInventory('proteins')">Proteins</button>
+                <button class="filter-btn" onclick="filterInventory('vegetables')">Vegetables</button>
+                <button class="filter-btn" onclick="filterInventory('dairy')">Dairy</button>
+            </div>
+
+            <div class="inventory-grid">
+                <div class="inventory-card">
+                    <div class="inventory-header">
+                        <div class="inventory-name">Salmon Fillets</div>
+                        <span class="stock-badge stock-good">In Stock</span>
+                    </div>
+                    <div class="inventory-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Current Stock:</span>
+                            <span class="detail-value">24.5 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Min Required:</span>
+                            <span class="detail-value">10.0 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Unit Cost:</span>
+                            <span class="detail-value">42.00 лв/kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Value:</span>
+                            <span class="detail-value">1,029 лв</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 82%; background: #4caf50;"></div>
+                    </div>
+                    <div class="order-actions" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="viewRecipeUsage('salmon')">View Usage</button>
+                        <button class="btn btn-primary" onclick="orderSupplies('salmon')">Reorder</button>
+                    </div>
+                </div>
+
+                <div class="inventory-card low-stock">
+                    <div class="inventory-header">
+                        <div class="inventory-name">Parmesan Cheese</div>
+                        <span class="stock-badge stock-low">Low Stock</span>
+                    </div>
+                    <div class="inventory-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Current Stock:</span>
+                            <span class="detail-value" style="color: #ff9800; font-weight: 700;">3.2 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Min Required:</span>
+                            <span class="detail-value">8.0 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Unit Cost:</span>
+                            <span class="detail-value">58.00 лв/kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Value:</span>
+                            <span class="detail-value">186 лв</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 32%; background: #ff9800;"></div>
+                    </div>
+                    <div class="order-actions" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="viewRecipeUsage('parmesan')">View Usage</button>
+                        <button class="btn btn-start" onclick="orderSupplies('parmesan')">Reorder Now</button>
+                    </div>
+                </div>
+
+                <div class="inventory-card critical">
+                    <div class="inventory-header">
+                        <div class="inventory-name">Truffle Oil</div>
+                        <span class="stock-badge stock-critical">Critical</span>
+                    </div>
+                    <div class="inventory-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Current Stock:</span>
+                            <span class="detail-value" style="color: #dc3545; font-weight: 700;">0.3 L</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Min Required:</span>
+                            <span class="detail-value">2.0 L</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Unit Cost:</span>
+                            <span class="detail-value">145.00 лв/L</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Value:</span>
+                            <span class="detail-value">44 лв</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 12%; background: #dc3545;"></div>
+                    </div>
+                    <div class="order-actions" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="viewRecipeUsage('truffle')">View Usage</button>
+                        <button class="btn btn-danger" onclick="orderSupplies('truffle')">Urgent Reorder</button>
+                    </div>
+                </div>
+
+                <div class="inventory-card">
+                    <div class="inventory-header">
+                        <div class="inventory-name">Ground Beef</div>
+                        <span class="stock-badge stock-good">In Stock</span>
+                    </div>
+                    <div class="inventory-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Current Stock:</span>
+                            <span class="detail-value">18.0 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Min Required:</span>
+                            <span class="detail-value">12.0 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Unit Cost:</span>
+                            <span class="detail-value">22.00 лв/kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Value:</span>
+                            <span class="detail-value">396 лв</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%; background: #4caf50;"></div>
+                    </div>
+                    <div class="order-actions" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="viewRecipeUsage('beef')">View Usage</button>
+                        <button class="btn btn-primary" onclick="orderSupplies('beef')">Reorder</button>
+                    </div>
+                </div>
+
+                <div class="inventory-card">
+                    <div class="inventory-header">
+                        <div class="inventory-name">Tomatoes</div>
+                        <span class="stock-badge stock-good">In Stock</span>
+                    </div>
+                    <div class="inventory-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Current Stock:</span>
+                            <span class="detail-value">15.5 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Min Required:</span>
+                            <span class="detail-value">8.0 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Unit Cost:</span>
+                            <span class="detail-value">4.50 лв/kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Value:</span>
+                            <span class="detail-value">70 лв</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78%; background: #4caf50;"></div>
+                    </div>
+                    <div class="order-actions" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="viewRecipeUsage('tomatoes')">View Usage</button>
+                        <button class="btn btn-primary" onclick="orderSupplies('tomatoes')">Reorder</button>
+                    </div>
+                </div>
+
+                <div class="inventory-card low-stock">
+                    <div class="inventory-header">
+                        <div class="inventory-name">Mozzarella</div>
+                        <span class="stock-badge stock-low">Low Stock</span>
+                    </div>
+                    <div class="inventory-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Current Stock:</span>
+                            <span class="detail-value" style="color: #ff9800; font-weight: 700;">4.8 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Min Required:</span>
+                            <span class="detail-value">10.0 kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Unit Cost:</span>
+                            <span class="detail-value">18.00 лв/kg</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Total Value:</span>
+                            <span class="detail-value">86 лв</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 38%; background: #ff9800;"></div>
+                    </div>
+                    <div class="order-actions" style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="viewRecipeUsage('mozzarella')">View Usage</button>
+                        <button class="btn btn-start" onclick="orderSupplies('mozzarella')">Reorder Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAFF VIEW -->
+    <div id="staff-view" class="view-container">
+        <div class="main-content">
+            <div class="top-bar">
+                    <div class="top-stat">
+                    <div class="top-stat-label" data-i18n="Active Staff">Active Staff</div>
+                    <div class="top-stat-value">8</div>
+                </div>
+                <div class="top-stat">
+                    <div class="top-stat-label" data-i18n="Total Labor Cost Today">Total Labor Cost Today</div>
+                    <div class="top-stat-value">686 лв</div>
+                </div>
+                <div class="top-stat">
+                    <div class="top-stat-label" data-i18n="Labor %">Labor %</div>
+                    <div class="top-stat-value">28%</div>
+                </div>
+                <div class="top-stat">
+                    <div class="top-stat-label" data-i18n="Avg Orders/Cook">Avg Orders/Cook</div>
+                    <div class="top-stat-value">17.5</div>
+                </div>
+            </div>
+
+            <div class="staff-grid">
+                <div class="staff-card">
+                    <div class="staff-header">
+                        <div class="staff-avatar">PP</div>
+                        <div class="staff-info">
+                            <h3>Petar Petrov</h3>
+                            <div class="staff-role" data-i18n="Head Chef">Head Chef</div>
+                        </div>
+                    </div>
+                    <div class="staff-stats">
+                        <div class="staff-stat">
+                            <span>Orders Completed:</span>
+                            <strong style="color: #4caf50;">42</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Avg Prep Time:</span>
+                            <strong>7:23</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Errors/Returns:</span>
+                            <strong style="color: #4caf50;">1</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Hours Today:</span>
+                            <strong>8.5h</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Station:</span>
+                            <strong>Grill</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="staff-card">
+                    <div class="staff-header">
+                        <div class="staff-avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);">II</div>
+                        <div class="staff-info">
+                            <h3>Ivan Ivanov</h3>
+                            <div class="staff-role" data-i18n="Line Cook">Line Cook</div>
+                        </div>
+                    </div>
+                    <div class="staff-stats">
+                        <div class="staff-stat">
+                            <span>Orders Completed:</span>
+                            <strong style="color: #4caf50;">38</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Avg Prep Time:</span>
+                            <strong>8:15</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Errors/Returns:</span>
+                            <strong style="color: #4caf50;">0</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Hours Today:</span>
+                            <strong>8.0h</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Station:</span>
+                            <strong>Pasta</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="staff-card">
+                    <div class="staff-header">
+                        <div class="staff-avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">MG</div>
+                        <div class="staff-info">
+                            <h3>Maria Georgieva</h3>
+                            <div class="staff-role" data-i18n="Sous Chef">Sous Chef</div>
+                        </div>
+                    </div>
+                    <div class="staff-stats">
+                        <div class="staff-stat">
+                            <span>Orders Completed:</span>
+                            <strong style="color: #4caf50;">35</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Avg Prep Time:</span>
+                            <strong>6:58</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Errors/Returns:</span>
+                            <strong style="color: #4caf50;">0</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Hours Today:</span>
+                            <strong>7.5h</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Station:</span>
+                            <strong>Salads</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="staff-card">
+                    <div class="staff-header">
+                        <div class="staff-avatar" style="background: linear-gradient(135deg, #fa709a, #fee140);">GP</div>
+                        <div class="staff-info">
+                            <h3>Georgi Petkov</h3>
+                            <div class="staff-role" data-i18n="Line Cook">Line Cook</div>
+                        </div>
+                    </div>
+                    <div class="staff-stats">
+                        <div class="staff-stat">
+                            <span>Orders Completed:</span>
+                            <strong style="color: #ff9800;">28</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Avg Prep Time:</span>
+                            <strong>9:42</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Errors/Returns:</span>
+                            <strong style="color: #ff9800;">3</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Hours Today:</span>
+                            <strong>8.0h</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Station:</span>
+                            <strong>Fryer</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="staff-card">
+                    <div class="staff-header">
+                        <div class="staff-avatar" style="background: linear-gradient(135deg, #30cfd0, #330867);">AD</div>
+                        <div class="staff-info">
+                            <h3>Aleksandrа Dimova</h3>
+                            <div class="staff-role" data-i18n="Pastry Chef">Pastry Chef</div>
+                        </div>
+                    </div>
+                    <div class="staff-stats">
+                        <div class="staff-stat">
+                            <span>Orders Completed:</span>
+                            <strong style="color: #4caf50;">24</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Avg Prep Time:</span>
+                            <strong>5:30</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Errors/Returns:</span>
+                            <strong style="color: #4caf50;">0</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Hours Today:</span>
+                            <strong>6.0h</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Station:</span>
+                            <strong>Desserts</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="staff-card">
+                    <div class="staff-header">
+                        <div class="staff-avatar" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">KI</div>
+                        <div class="staff-info">
+                            <h3>Kaloyan Ivanov</h3>
+                            <div class="staff-role" data-i18n="Prep Cook">Prep Cook</div>
+                        </div>
+                    </div>
+                    <div class="staff-stats">
+                        <div class="staff-stat">
+                            <span>Orders Completed:</span>
+                            <strong>N/A</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Prep Tasks:</span>
+                            <strong style="color: #4caf50;">18/20</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Errors:</span>
+                            <strong style="color: #4caf50;">0</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Hours Today:</span>
+                            <strong>7.0h</strong>
+                        </div>
+                        <div class="staff-stat">
+                            <span>Station:</span>
+                            <strong>Prep</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container" style="margin-top: 30px;">
+                <div class="chart-title" data-i18n="Staff Performance Comparison">Staff Performance Comparison</div>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">Petar Petrov</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 95%; background: linear-gradient(90deg, #4caf50, #81c784);">42 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Ivan Ivanov</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 86%; background: linear-gradient(90deg, #4caf50, #81c784);">38 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Maria Georgieva</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 79%; background: linear-gradient(90deg, #4caf50, #81c784);">35 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Georgi Petkov</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 63%; background: linear-gradient(90deg, #ff9800, #ffb74d);">28 orders</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Aleksandra Dimova</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 54%; background: linear-gradient(90deg, #4caf50, #81c784);">24 orders</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORTS VIEW -->
+    <div id="reports-view" class="view-container">
+        <div class="main-content">
+            <div class="reports-section">
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-title">End of Day Report</div>
+                        <div class="date-selector">
+                            <select>
+                                <option>Today - Dec 1, 2025</option>
+                                <option>Yesterday - Nov 30, 2025</option>
+                                <option>Last 7 Days</option>
+                                <option>Last 30 Days</option>
+                                <option>This Month</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="downloadReport()">Download PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid" style="margin-bottom: 0;">
+                        <div class="metric-card">
+                            <div class="metric-title">Total Revenue</div>
+                            <div class="metric-value-large" style="color: #4caf50; font-size: 36px;">2,450 лв</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Food Cost</div>
+                            <div class="metric-value-large" style="color: #ff9800; font-size: 36px;">784 лв</div>
+                            <div class="metric-subtitle">32% of revenue</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Labor Cost</div>
+                            <div class="metric-value-large" style="font-size: 36px;">686 лв</div>
+                            <div class="metric-subtitle">28% of revenue</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-title">Net Profit</div>
+                            <div class="metric-value-large" style="color: #4caf50; font-size: 36px;">980 лв</div>
+                            <div class="metric-subtitle">40% margin</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-title">Weekly Trend Analysis</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Revenue</th>
+                                <th>Orders</th>
+                                <th>Avg Check</th>
+                                <th>Food Cost %</th>
+                                <th>Labor %</th>
+                                <th>Net Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Monday</strong></td>
+                                <td>1,850 лв</td>
+                                <td>72</td>
+                                <td>25.69 лв</td>
+                                <td>31%</td>
+                                <td>29%</td>
+                                <td style="color: #4caf50; font-weight: 600;">740 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tuesday</strong></td>
+                                <td>2,120 лв</td>
+                                <td>81</td>
+                                <td>26.17 лв</td>
+                                <td>33%</td>
+                                <td>28%</td>
+                                <td style="color: #4caf50; font-weight: 600;">827 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Wednesday</strong></td>
+                                <td>2,340 лв</td>
+                                <td>89</td>
+                                <td>26.29 лв</td>
+                                <td>32%</td>
+                                <td>27%</td>
+                                <td style="color: #4caf50; font-weight: 600;">959 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Thursday</strong></td>
+                                <td>2,680 лв</td>
+                                <td>98</td>
+                                <td>27.35 лв</td>
+                                <td>30%</td>
+                                <td>26%</td>
+                                <td style="color: #4caf50; font-weight: 600;">1,179 лв</td>
+                            </tr>
+                            <tr style="background: #e8f5e9;">
+                                <td><strong>Friday</strong></td>
+                                <td style="font-weight: 600;">3,420 лв</td>
+                                <td>124</td>
+                                <td>27.58 лв</td>
+                                <td>29%</td>
+                                <td>25%</td>
+                                <td style="color: #4caf50; font-weight: 700;">1,573 лв</td>
+                            </tr>
+                            <tr style="background: #e8f5e9;">
+                                <td><strong>Saturday</strong></td>
+                                <td style="font-weight: 600;">3,890 лв</td>
+                                <td>142</td>
+                                <td>27.39 лв</td>
+                                <td>28%</td>
+                                <td>24%</td>
+                                <td style="color: #4caf50; font-weight: 700;">1,867 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sunday</strong></td>
+                                <td>2,950 лв</td>
+                                <td>107</td>
+                                <td>27.57 лв</td>
+                                <td>31%</td>
+                                <td>27%</td>
+                                <td style="color: #4caf50; font-weight: 600;">1,239 лв</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-title">Top 10 Items (Last 30 Days)</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Item Name</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                                <th>Avg Price</th>
+                                <th>Food Cost</th>
+                                <th>Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td>Burger</td>
+                                <td>936</td>
+                                <td>16,848 лв</td>
+                                <td>18.00 лв</td>
+                                <td>9,266 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">7,582 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td>Margherita Pizza</td>
+                                <td>748</td>
+                                <td>13,464 лв</td>
+                                <td>18.00 лв</td>
+                                <td>6,732 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">6,732 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td>Caesar Salad</td>
+                                <td>624</td>
+                                <td>9,984 лв</td>
+                                <td>16.00 лв</td>
+                                <td>4,805 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">5,179 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4</strong></td>
+                                <td>Grilled Salmon</td>
+                                <td>580</td>
+                                <td>18,560 лв</td>
+                                <td>32.00 лв</td>
+                                <td>5,916 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">12,644 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5</strong></td>
+                                <td>Ribeye Steak</td>
+                                <td>528</td>
+                                <td>22,176 лв</td>
+                                <td>42.00 лв</td>
+                                <td>7,762 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">14,414 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6</strong></td>
+                                <td>Pasta Carbonara</td>
+                                <td>412</td>
+                                <td>9,888 лв</td>
+                                <td>24.00 лв</td>
+                                <td>3,956 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">5,932 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>7</strong></td>
+                                <td>Truffle Pasta</td>
+                                <td>392</td>
+                                <td>10,976 лв</td>
+                                <td>28.00 лв</td>
+                                <td>3,058 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">7,918 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>8</strong></td>
+                                <td>Tiramisu</td>
+                                <td>356</td>
+                                <td>4,984 лв</td>
+                                <td>14.00 лв</td>
+                                <td>1,993 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">2,991 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>9</strong></td>
+                                <td>Greek Salad</td>
+                                <td>298</td>
+                                <td>4,172 лв</td>
+                                <td>14.00 лв</td>
+                                <td>2,003 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">2,169 лв</td>
+                            </tr>
+                            <tr>
+                                <td><strong>10</strong></td>
+                                <td>Chicken Wings</td>
+                                <td>287</td>
+                                <td>5,166 лв</td>
+                                <td>18.00 лв</td>
+                                <td>2,324 лв</td>
+                                <td style="color: #4caf50; font-weight: 600;">2,842 лв</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-title">Supplier Performance</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Supplier</th>
+                                <th>Category</th>
+                                <th>Orders (30d)</th>
+                                <th>Total Spend</th>
+                                <th>Avg Lead Time</th>
+                                <th>On-Time %</th>
+                                <th>Quality Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Metro Cash & Carry</strong></td>
+                                <td>General</td>
+                                <td>24</td>
+                                <td>8,450 лв</td>
+                                <td>1 day</td>
+                                <td style="color: #4caf50; font-weight: 600;">98%</td>
+                                <td style="color: #4caf50; font-weight: 600;">9.5/10</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Black Sea Fish</strong></td>
+                                <td>Seafood</td>
+                                <td>8</td>
+                                <td>3,240 лв</td>
+                                <td>2 days</td>
+                                <td style="color: #4caf50; font-weight: 600;">95%</td>
+                                <td style="color: #4caf50; font-weight: 600;">9.2/10</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Beef Master</strong></td>
+                                <td>Meat</td>
+                                <td>12</td>
+                                <td>5,680 лв</td>
+                                <td>1 day</td>
+                                <td style="color: #4caf50; font-weight: 600;">100%</td>
+                                <td style="color: #4caf50; font-weight: 600;">9.8/10</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Farm Fresh Veggies</strong></td>
+                                <td>Produce</td>
+                                <td>16</td>
+                                <td>2,890 лв</td>
+                                <td>1 day</td>
+                                <td style="color: #ff9800; font-weight: 600;">87%</td>
+                                <td style="color: #ff9800; font-weight: 600;">8.5/10</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Italian Import Co</strong></td>
+                                <td>Specialty</td>
+                                <td>6</td>
+                                <td>1,950 лв</td>
+                                <td>3 days</td>
+                                <td style="color: #4caf50; font-weight: 600;">92%</td>
+                                <td style="color: #4caf50; font-weight: 600;">9.0/10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WASTE LOG VIEW -->
+    <div id="waste-view" class="view-container">
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-stat">
+                    <div class="top-stat-label">Total Waste Today</div>
+                    <div class="top-stat-value" style="color: #dc3545;">78 лв</div>
+                </div>
+                <div class="top-stat">
+                    <div class="top-stat-label">Waste % (Today)</div>
+                    <div class="top-stat-value" style="color: #dc3545;">3.2%</div>
+                </div>
+                <div class="top-stat">
+                    <div class="top-stat-label">Items Wasted</div>
+                    <div class="top-stat-value">12</div>
+                </div>
+                <div class="top-stat">
+                    <div class="top-stat-label">Most Wasted</div>
+                    <div class="top-stat-value" style="font-size: 16px;">Lettuce</div>
+                </div>
+            </div>
+
+            <div class="waste-form">
+                <h2 style="margin-bottom: 20px;">Log New Waste</h2>
+                <form onsubmit="logWaste(event)">
+                    <div class="form-group">
+                        <label class="form-label">Item Name</label>
+                        <select class="form-select" required>
+                            <option value="">Select item...</option>
+                            <option>Salmon Fillet</option>
+                            <option>Ground Beef</option>
+                            <option>Lettuce</option>
+                            <option>Tomatoes</option>
+                            <option>Parmesan Cheese</option>
+                            <option>Mozzarella</option>
+                            <option>Pasta</option>
+                            <option>Bread</option>
+                            <option>Eggs</option>
+                            <option>Milk</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Quantity Wasted</label>
+                        <input type="number" class="form-input" placeholder="Enter quantity" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Unit</label>
+                        <select class="form-select" required>
+                            <option value="">Select unit...</option>
+                            <option>kg</option>
+                            <option>g</option>
+                            <option>L</option>
+                            <option>ml</option>
+                            <option>pieces</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reason for Waste</label>
+                        <select class="form-select" required>
+                            <option value="">Select reason...</option>
+                            <option>Spoilage</option>
+                            <option>Prep Loss</option>
+                            <option>Customer Rejection</option>
+                            <option>Over-portioning</option>
+                            <option>Cooking Error</option>
+                            <option>Expired</option>
+                            <option>Damaged in Transit</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Responsible Staff</label>
+                        <select class="form-select" required>
+                            <option value="">Select staff...</option>
+                            <option>Petar Petrov</option>
+                            <option>Ivan Ivanov</option>
+                            <option>Maria Georgieva</option>
+                            <option>Georgi Petkov</option>
+                            <option>Aleksandra Dimova</option>
+                            <option>Kaloyan Ivanov</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea class="form-textarea" placeholder="Additional details..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">Log Waste</button>
+                </form>
+            </div>
+
+            <div class="chart-container" style="margin-top: 30px;">
+                <div class="chart-title">Waste History (Last 7 Days)</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Value</th>
+                            <th>Reason</th>
+                            <th>Staff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dec 1, 14:30</td>
+                            <td>Lettuce</td>
+                            <td>1.2 kg</td>
+                            <td>12 лв</td>
+                            <td><span style="background: #ffebee; padding: 4px 8px; border-radius: 4px;">Spoilage</span></td>
+                            <td>Kaloyan Ivanov</td>
+                        </tr>
+                        <tr>
+                            <td>Dec 1, 12:15</td>
+                            <td>Salmon Fillet</td>
+                            <td>0.3 kg</td>
+                            <td>13 лв</td>
+                            <td><span style="background: #fff8e1; padding: 4px 8px; border-radius: 4px;">Over-portioning</span></td>
+                            <td>Ivan Ivanov</td>
+                        </tr>
+                        <tr>
+                            <td>Dec 1, 10:45</td>
+                            <td>Pasta Carbonara</td>
+                            <td>1 portion</td>
+                            <td>24 лв</td>
+                            <td><span style="background: #e3f2fd; padding: 4px 8px; border-radius: 4px;">Customer Rejection</span></td>
+                            <td>Petar Petrov</td>
+                        </tr>
+                        <tr>
+                            <td>Nov 30, 22:00</td>
+                            <td>Bread</td>
+                            <td>8 pieces</td>
+                            <td>16 лв</td>
+                            <td><span style="background: #ffebee; padding: 4px 8px; border-radius: 4px;">Expired</span></td>
+                            <td>Maria Georgieva</td>
+                        </tr>
+                        <tr>
+                            <td>Nov 30, 18:30</td>
+                            <td>Tomatoes</td>
+                            <td>0.8 kg</td>
+                            <td>4 лв</td>
+                            <td><span style="background: #f3e5f5; padding: 4px 8px; border-radius: 4px;">Prep Loss</span></td>
+                            <td>Kaloyan Ivanov</td>
+                        </tr>
+                        <tr>
+                            <td>Nov 29, 20:15</td>
+                            <td>Ribeye Steak</td>
+                            <td>1 piece</td>
+                            <td>42 лв</td>
+                            <td><span style="background: #fff8e1; padding: 4px 8px; border-radius: 4px;">Cooking Error</span></td>
+                            <td>Georgi Petkov</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Waste by Reason (Last 30 Days)</div>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">Spoilage</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 75%; background: linear-gradient(90deg, #dc3545, #f48fb1);">420 лв (38%)</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Prep Loss</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 50%; background: linear-gradient(90deg, #dc3545, #f48fb1);">280 лв (25%)</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Customer Rejection</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 30%; background: linear-gradient(90deg, #dc3545, #f48fb1);">168 лв (15%)</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Cooking Error</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 25%; background: linear-gradient(90deg, #dc3545, #f48fb1);">140 лв (13%)</div>
+                        </div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">Over-portioning</div>
+                        <div class="bar-wrapper">
+                            <div class="bar-fill" style="width: 18%; background: linear-gradient(90deg, #dc3545, #f48fb1);">100 лв (9%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KITCHEN DASHBOARD VIEW -->
+    <div id="kitchen-view" class="view-container">
+        <div class="main-content" style="padding: 0; height: calc(100vh - 120px);">
+            <iframe src="../KitchenSoftware/index.html" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+        </div>
+    </div>
+
+    <!-- BAR DASHBOARD VIEW -->
+    <div id="bar-view" class="view-container">
+        <div class="main-content" style="padding: 0; height: calc(100vh - 120px);">
+            <iframe src="../BarDashboard/index.html" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+        </div>
+    </div>
+
+    <!-- WAITER DASHBOARD VIEW -->
+    <div id="waiter-view" class="view-container">
+        <div class="main-content waiter-dashboard-wrapper" style="padding: 0; height: calc(100vh - 120px); overflow: auto;">
+            <div class="waiter-iframe-container">
+                <iframe src="../WaiterDashboard/index.html" id="waiterDashboardIframe" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recipe Detail Modal -->
+<div id="recipeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Recipe Details - Grilled Salmon</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="recipe-ingredients">
+<h3 style="margin-bottom: 15px;">Ingredients (per portion)</h3>
+<div class="ingredient-item">
+<span>Salmon Fillet</span>
+<span><strong>200g</strong> - 8.40 лв</span>
+</div>
+<div class="ingredient-item">
+<span>Olive Oil</span>
+<span><strong>10ml</strong> - 0.50 лв</span>
+</div>
+<div class="ingredient-item">
+<span>Lemon</span>
+<span><strong>1/2 piece</strong> - 0.40 лв</span>
+</div>
+<div class="ingredient-item">
+<span>Fresh Herbs</span>
+<span><strong>5g</strong> - 0.60 лв</span>
+</div>
+<div class="ingredient-item">
+<span>Seasonings</span>
+<span><strong>mix</strong> - 0.30 лв</span>
+</div>
+<div class="ingredient-item" style="background: #f8f9fa; font-weight: 600; border-bottom: none;">
+<span>TOTAL COST:</span>
+<span style="color: #dc3545;">10.20 лв</span>
+</div>
+</div>
+<div style="margin-top: 20px;">
+<div class="detail-row" style="margin-bottom: 10px;">
+<span class="detail-label">Sale Price:</span>
+<span class="detail-value">32.00 лв</span>
+</div>
+<div class="detail-row" style="margin-bottom: 10px;">
+<span class="detail-label">Gross Profit:</span>
+<span class="detail-value" style="color: #4caf50;">21.80 лв</span>
+</div>
+<div class="detail-row" style="margin-bottom: 10px;">
+<span class="detail-label">Margin:</span>
+<span class="detail-value" style="color: #4caf50;">68%</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Salmon Inventory Left:</span>
+<span class="detail-value">24.5 kg (122 portions)</span>
+</div>
+</div>
+</div>
+</div>
+   <script src="script.js"></script>
+   <script>
+        // Translation system
+        let currentLang = localStorage.getItem('mainDashboardLang') || 'bg';
+        
+        const translations = {
+            bg: {
+                // Header
+                'Boss dashboard': 'Boss dashboard',
+                'Petar Petrov - Head Chef': 'Петър Петров - Главен Готвач',
+                'Exit': 'Изход',
+                // Tabs
+                'Orders': 'Поръчки',
+                'Metrics': 'Статистики',
+                'Menu & Profit': 'Меню & Печалба',
+                'Staff': 'Персонал',
+                'Kitchen Dashboard': 'Кухненско Табло',
+                'Bar Dashboard': 'Бар Табло',
+                'Waiter Dashboard': 'Табло на Сервитьор',
+                // Orders
+                'Order #': 'Поръчка #',
+                'Table': 'Маса',
+                'Dine-in': 'На място',
+                'Takeaway': 'За вкъщи',
+                'Station': 'Станция',
+                'Start cooking': 'Започни готвене',
+                'Ready': 'Готово',
+                'Mark Served': 'Маркирай като сервирано',
+                'Priority': 'Приоритет',
+                'LATE': 'ЗАБАВЕНО',
+                // Stats
+                'Average cooking time': 'Средно време за готвене',
+                'Late orders': 'Забавени поръчки',
+                'Total orders today': 'Общо поръчки днес',
+                'Open tickets': 'Отворени билети',
+                // Metrics
+                'Today\'s Revenue': 'Приходи днес',
+                'Covers': 'Гости',
+                'Avg Check': 'Среден чек',
+                'Open Tickets': 'Отворени билети',
+                'Covers/Hour': 'Гости/Час',
+                'Average Ticket Time': 'Средно време на билет',
+                'From order to served': 'От поръчка до сервиране',
+                'Average Cook Time': 'Средно време за готвене',
+                'Kitchen preparation time': 'Време за подготовка в кухнята',
+                'First Time Right': 'Правилно от първия път',
+                'Orders without corrections': 'Поръчки без корекции',
+                'Order Throughput': 'Пропускателна способност',
+                'Orders per hour': 'Поръчки на час',
+                'Table Turn Time': 'Време за обръщане на маса',
+                'Average time per table': 'Средно време на маса',
+                'Food Cost %': 'Разходи за храна %',
+                'Of total revenue': 'От общите приходи',
+                'Labor Cost %': 'Разходи за труд %',
+                'Waste %': 'Отпадъци %',
+                'Of total inventory value': 'От общата стойност на инвентара',
+                'Void & Refund Rate': 'Анулирания и възстановявания',
+                'Delivery Cost %': 'Разходи за доставка %',
+                'Of delivery revenue': 'От приходите от доставки',
+                'Top Selling Items Today': 'Най-продавани артикули днес',
+                'orders': 'поръчки',
+                'Revenue by Category': 'Приходи по категории',
+                'Main Courses': 'Основни ястия',
+                'Appetizers': 'Предястия',
+                'Desserts': 'Десерти',
+                'Beverages': 'Напитки',
+                // Menu & Profit
+                'Menu Engineering Matrix': 'Матрица на менюто',
+                'Stars (High Profit, High Popularity)': 'Звезди (Висока печалба, Висока популярност)',
+                'Puzzles (High Profit, Low Popularity)': 'Пъзели (Висока печалба, Ниска популярност)',
+                'Plowhorses (Low Profit, High Popularity)': 'Работни коне (Ниска печалба, Висока популярност)',
+                'Dogs (Low Profit, Low Popularity)': 'Кучета (Ниска печалба, Ниска популярност)',
+                'Margin': 'Марж',
+                'Sales': 'Продажби',
+                'week': 'седмица',
+                'Dish Profitability Analysis': 'Анализ на рентабилността на ястията',
+                'Dish Name': 'Име на ястието',
+                'Sale Price': 'Продажна цена',
+                'Cost': 'Разходи',
+                'Gross Profit': 'Брутна печалба',
+                'Margin %': 'Марж %',
+                'Sales (7d)': 'Продажби (7д)',
+                'Total Profit': 'Обща печалба',
+                'Modifier Impact Analysis': 'Анализ на въздействието на модификаторите',
+                'Extra Cheese': 'Допълнително сирене',
+                'No Onions': 'Без лук',
+                'Extra Bacon': 'Допълнителен бекон',
+                'Gluten Free': 'Без глутен',
+                'avg': 'средно',
+                // Staff
+                'Active Staff': 'Активен персонал',
+                'Total Labor Cost Today': 'Общи разходи за труд днес',
+                'Labor %': 'Труд %',
+                'Avg Orders/Cook': 'Средно поръчки/готвач',
+                'Head Chef': 'Главен готвач',
+                'Line Cook': 'Готвач на линия',
+                'Sous Chef': 'Су шеф',
+                'Pastry Chef': 'Кондитор',
+                'Prep Cook': 'Готвач за подготовка',
+                'Orders Completed': 'Завършени поръчки',
+                'Avg Prep Time': 'Средно време за подготовка',
+                'Errors/Returns': 'Грешки/Връщания',
+                'Hours Today': 'Часове днес',
+                'Station': 'Станция',
+                'Grill': 'Грил',
+                'Pasta': 'Паста',
+                'Salads': 'Салати',
+                'Fryer': 'Фритюр',
+                'Desserts': 'Десерти',
+                'Prep': 'Подготовка',
+                'Prep Tasks': 'Задачи за подготовка',
+                'Errors': 'Грешки',
+                'Staff Performance Comparison': 'Сравнение на производителността на персонала',
+                // Menu items
+                'Pasta Bolognese': 'Паста Болонезе',
+                'Garlic Bread': 'Чеснов хляб',
+                'Caesar Salad': 'Салата Цезар',
+                'Grilled Salmon': 'Печен сьомга',
+                'Margherita Pizza': 'Пица Маргарита',
+                'Greek Salad': 'Гръцка салата',
+                'Ribeye Steak': 'Риб ай стейк',
+                'Truffle Fries': 'Трюфелни пържени картофи',
+                'Tiramisu': 'Тирамису',
+                'Burger': 'Бургер',
+                'Pasta Carbonara': 'Паста Карбонара',
+                'Truffle Pasta': 'Трюфелна паста',
+                'Ribeye Steak - Medium Rare': 'Риб ай стейк - Средно прожарен',
+                'Lobster Bisque': 'Омарова супа',
+                'Duck Confit': 'Конфитюр от патица',
+                'Vegan Bowl': 'Веганска купа',
+                'Fish & Chips': 'Риба и пържени картофи',
+                'Chicken Wings': 'Пилешки крилца',
+                // Allergens
+                'GLUTEN': 'ГЛУТЕН',
+                'FISH': 'РИБА',
+                // Notes
+                'No cheese': 'Без сирене',
+                'Extra cheese': 'Допълнително сирене',
+                'No onions': 'Без лук',
+                'Medium rare': 'Средно прожарен',
+                'Spicy': 'Пикантно',
+                'View Only Mode': 'Режим само за преглед',
+                'No actions allowed': 'Действия не са разрешени'
+            },
+            en: {
+                // Header
+                'Boss dashboard': 'Boss dashboard',
+                'Petar Petrov - Head Chef': 'Petar Petrov - Head Chef',
+                'Exit': 'Exit',
+                // Tabs
+                'Orders': 'Orders',
+                'Metrics': 'Metrics',
+                'Menu & Profit': 'Menu & Profit',
+                'Staff': 'Staff',
+                'Kitchen Dashboard': 'Kitchen Dashboard',
+                'Bar Dashboard': 'Bar Dashboard',
+                'Waiter Dashboard': 'Waiter Dashboard',
+                // Orders
+                'Order #': 'Order #',
+                'Table': 'Table',
+                'Dine-in': 'Dine-in',
+                'Takeaway': 'Takeaway',
+                'Station': 'Station',
+                'Start cooking': 'Start cooking',
+                'Ready': 'Ready',
+                'Mark Served': 'Mark Served',
+                'Priority': 'Priority',
+                'LATE': 'LATE',
+                // Stats
+                'Average cooking time': 'Average cooking time',
+                'Late orders': 'Late orders',
+                'Total orders today': 'Total orders today',
+                'Open tickets': 'Open tickets',
+                // Metrics
+                'Today\'s Revenue': 'Today\'s Revenue',
+                'Covers': 'Covers',
+                'Avg Check': 'Avg Check',
+                'Open Tickets': 'Open Tickets',
+                'Covers/Hour': 'Covers/Hour',
+                'Average Ticket Time': 'Average Ticket Time',
+                'From order to served': 'From order to served',
+                'Average Cook Time': 'Average Cook Time',
+                'Kitchen preparation time': 'Kitchen preparation time',
+                'First Time Right': 'First Time Right',
+                'Orders without corrections': 'Orders without corrections',
+                'Order Throughput': 'Order Throughput',
+                'Orders per hour': 'Orders per hour',
+                'Table Turn Time': 'Table Turn Time',
+                'Average time per table': 'Average time per table',
+                'Food Cost %': 'Food Cost %',
+                'Of total revenue': 'Of total revenue',
+                'Labor Cost %': 'Labor Cost %',
+                'Waste %': 'Waste %',
+                'Of total inventory value': 'Of total inventory value',
+                'Void & Refund Rate': 'Void & Refund Rate',
+                'Delivery Cost %': 'Delivery Cost %',
+                'Of delivery revenue': 'Of delivery revenue',
+                'Top Selling Items Today': 'Top Selling Items Today',
+                'orders': 'orders',
+                'Revenue by Category': 'Revenue by Category',
+                'Main Courses': 'Main Courses',
+                'Appetizers': 'Appetizers',
+                'Desserts': 'Desserts',
+                'Beverages': 'Beverages',
+                // Menu & Profit
+                'Menu Engineering Matrix': 'Menu Engineering Matrix',
+                'Stars (High Profit, High Popularity)': 'Stars (High Profit, High Popularity)',
+                'Puzzles (High Profit, Low Popularity)': 'Puzzles (High Profit, Low Popularity)',
+                'Plowhorses (Low Profit, High Popularity)': 'Plowhorses (Low Profit, High Popularity)',
+                'Dogs (Low Profit, Low Popularity)': 'Dogs (Low Profit, Low Popularity)',
+                'Margin': 'Margin',
+                'Sales': 'Sales',
+                'week': 'week',
+                'Dish Profitability Analysis': 'Dish Profitability Analysis',
+                'Dish Name': 'Dish Name',
+                'Sale Price': 'Sale Price',
+                'Cost': 'Cost',
+                'Gross Profit': 'Gross Profit',
+                'Margin %': 'Margin %',
+                'Sales (7d)': 'Sales (7d)',
+                'Total Profit': 'Total Profit',
+                'Modifier Impact Analysis': 'Modifier Impact Analysis',
+                'Extra Cheese': 'Extra Cheese',
+                'No Onions': 'No Onions',
+                'Extra Bacon': 'Extra Bacon',
+                'Gluten Free': 'Gluten Free',
+                'avg': 'avg',
+                // Staff
+                'Active Staff': 'Active Staff',
+                'Total Labor Cost Today': 'Total Labor Cost Today',
+                'Labor %': 'Labor %',
+                'Avg Orders/Cook': 'Avg Orders/Cook',
+                'Head Chef': 'Head Chef',
+                'Line Cook': 'Line Cook',
+                'Sous Chef': 'Sous Chef',
+                'Pastry Chef': 'Pastry Chef',
+                'Prep Cook': 'Prep Cook',
+                'Orders Completed': 'Orders Completed',
+                'Avg Prep Time': 'Avg Prep Time',
+                'Errors/Returns': 'Errors/Returns',
+                'Hours Today': 'Hours Today',
+                'Station': 'Station',
+                'Grill': 'Grill',
+                'Pasta': 'Pasta',
+                'Salads': 'Salads',
+                'Fryer': 'Fryer',
+                'Desserts': 'Desserts',
+                'Prep': 'Prep',
+                'Prep Tasks': 'Prep Tasks',
+                'Errors': 'Errors',
+                'Staff Performance Comparison': 'Staff Performance Comparison',
+                // Menu items
+                'Pasta Bolognese': 'Pasta Bolognese',
+                'Garlic Bread': 'Garlic Bread',
+                'Caesar Salad': 'Caesar Salad',
+                'Grilled Salmon': 'Grilled Salmon',
+                'Margherita Pizza': 'Margherita Pizza',
+                'Greek Salad': 'Greek Salad',
+                'Ribeye Steak': 'Ribeye Steak',
+                'Truffle Fries': 'Truffle Fries',
+                'Tiramisu': 'Tiramisu',
+                'Burger': 'Burger',
+                'Pasta Carbonara': 'Pasta Carbonara',
+                'Truffle Pasta': 'Truffle Pasta',
+                'Ribeye Steak - Medium Rare': 'Ribeye Steak - Medium Rare',
+                'Lobster Bisque': 'Lobster Bisque',
+                'Duck Confit': 'Duck Confit',
+                'Vegan Bowl': 'Vegan Bowl',
+                'Fish & Chips': 'Fish & Chips',
+                'Chicken Wings': 'Chicken Wings',
+                // Allergens
+                'GLUTEN': 'GLUTEN',
+                'FISH': 'FISH',
+                // Notes
+                'No cheese': 'No cheese',
+                'Extra cheese': 'Extra cheese',
+                'No onions': 'No onions',
+                'Medium rare': 'Medium rare',
+                'Spicy': 'Spicy',
+                'View Only Mode': 'View Only Mode',
+                'No actions allowed': 'No actions allowed'
+            }
+        };
+        
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+        
+        function toggleLanguage() {
+            currentLang = currentLang === 'bg' ? 'en' : 'bg';
+            localStorage.setItem('mainDashboardLang', currentLang);
+            document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+            updateAllTranslations();
+        }
+        
+        function updateAllTranslations() {
+            // Update header
+            document.getElementById('headerTitle').textContent = t('Boss dashboard');
+            document.getElementById('userName').textContent = t('Petar Petrov - Head Chef');
+            document.getElementById('exitBtn').textContent = t('Exit');
+            
+            // Update tabs
+            document.getElementById('tabMetricsText').textContent = t('Metrics');
+            document.getElementById('tabMenu').textContent = t('Menu & Profit');
+            document.getElementById('tabStaff').textContent = t('Staff');
+            const tabKitchen = document.getElementById('tabKitchen');
+            if (tabKitchen) {
+                const key = tabKitchen.getAttribute('data-i18n');
+                if (key) tabKitchen.textContent = t(key);
+            }
+            const tabBar = document.getElementById('tabBar');
+            if (tabBar) {
+                const key = tabBar.getAttribute('data-i18n');
+                if (key) tabBar.textContent = t(key);
+            }
+            const tabWaiter = document.getElementById('tabWaiter');
+            if (tabWaiter) {
+                const key = tabWaiter.getAttribute('data-i18n');
+                if (key) tabWaiter.textContent = t(key);
+            }
+            
+            // Update all text elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            
+            // Update view-only notice text
+            document.querySelectorAll('[data-i18n-view]').forEach(el => {
+                const key = el.getAttribute('data-i18n-view');
+                el.textContent = t(key);
+            });
+            
+            // Update order items
+            document.querySelectorAll('.order-item').forEach(item => {
+                const text = item.textContent.trim();
+                const parts = text.split('\n');
+                if (parts[0]) {
+                    const translated = t(parts[0].trim());
+                    if (translated !== parts[0].trim()) {
+                        item.innerHTML = item.innerHTML.replace(parts[0].trim(), translated);
+                    }
+                }
+            });
+            
+            // Update menu items with data-menu-item attribute
+            document.querySelectorAll('[data-menu-item]').forEach(el => {
+                const key = el.getAttribute('data-menu-item');
+                el.textContent = t(key);
+            });
+            
+            // Update order items that contain menu item names
+            document.querySelectorAll('.order-item').forEach(item => {
+                const textNodes = Array.from(item.childNodes).filter(n => n.nodeType === 3);
+                textNodes.forEach(node => {
+                    const text = node.textContent.trim();
+                    if (text && translations[currentLang][text]) {
+                        node.textContent = translations[currentLang][text];
+                    }
+                });
+                // Also check for direct text content
+                const directText = item.textContent.trim().split('\n')[0].trim();
+                if (translations[currentLang][directText]) {
+                    const firstChild = item.firstChild;
+                    if (firstChild && firstChild.nodeType === 3) {
+                        firstChild.textContent = translations[currentLang][directText];
+                    }
+                }
+            });
+            
+            // Update menu items in matrix, charts, and tables
+            const menuItemKeys = Object.keys(translations[currentLang]).filter(k => 
+                ['Pasta Bolognese', 'Garlic Bread', 'Caesar Salad', 'Grilled Salmon', 
+                 'Margherita Pizza', 'Greek Salad', 'Ribeye Steak', 'Truffle Fries', 
+                 'Tiramisu', 'Burger', 'Pasta Carbonara', 'Truffle Pasta'].includes(k)
+            );
+            
+            document.querySelectorAll('.matrix-item, .bar-label, td strong, .order-item').forEach(el => {
+                const originalText = el.textContent.trim();
+                menuItemKeys.forEach(key => {
+                    if (originalText.includes(key) || originalText === key) {
+                        const translated = translations[currentLang][key];
+                        if (translated) {
+                            el.innerHTML = el.innerHTML.replace(new RegExp(key, 'g'), translated);
+                        }
+                    }
+                });
+            });
+            
+            // Update metrics labels
+            document.querySelectorAll('.top-stat-label, .metric-label, .stat-label, .chart-title, .metric-title, .metric-subtitle').forEach(el => {
+                const text = el.textContent.trim();
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text];
+                }
+            });
+            
+            // Update staff role labels
+            document.querySelectorAll('.staff-role').forEach(el => {
+                const text = el.textContent.trim();
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text];
+                }
+            });
+            
+            // Update staff stat labels
+            document.querySelectorAll('.staff-stat span').forEach(el => {
+                const text = el.textContent.trim().replace(':', '').trim();
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text] + ':';
+                }
+            });
+            
+            // Update table headers
+            document.querySelectorAll('th').forEach(th => {
+                const text = th.textContent.trim();
+                if (translations[currentLang][text]) {
+                    th.textContent = translations[currentLang][text];
+                }
+            });
+            
+            // Update bar labels in charts
+            document.querySelectorAll('.bar-label').forEach(el => {
+                const text = el.textContent.trim();
+                // Check if it's a menu item
+                if (translations[currentLang][text]) {
+                    el.textContent = translations[currentLang][text];
+                } else {
+                    // Check if it's a category
+                    const categoryMap = {
+                        'Main Courses': 'Main Courses',
+                        'Appetizers': 'Appetizers',
+                        'Desserts': 'Desserts',
+                        'Beverages': 'Beverages'
+                    };
+                    if (translations[currentLang][text]) {
+                        el.textContent = translations[currentLang][text];
+                    }
+                }
+            });
+            
+            // Update matrix items (they contain menu items and text)
+            document.querySelectorAll('.matrix-item').forEach(el => {
+                let text = el.textContent;
+                // Replace menu item names
+                Object.keys(translations[currentLang]).forEach(key => {
+                    if (key.includes('Pasta') || key.includes('Salad') || key.includes('Pizza') || 
+                        key.includes('Burger') || key.includes('Salmon') || key.includes('Steak') ||
+                        key.includes('Truffle') || key.includes('Lobster') || key.includes('Duck') ||
+                        key.includes('Vegan') || key.includes('Fish')) {
+                        if (text.includes(key)) {
+                            text = text.replace(key, translations[currentLang][key]);
+                        }
+                    }
+                });
+                // Replace common words
+                if (text.includes('Margin:')) {
+                    text = text.replace('Margin:', t('Margin') + ':');
+                }
+                if (text.includes('Sales:')) {
+                    text = text.replace('Sales:', t('Sales') + ':');
+                }
+                if (text.includes('/week')) {
+                    text = text.replace('/week', '/' + t('week'));
+                }
+                el.textContent = text;
+            });
+        }
+        
+        // Disable all action buttons for boss view-only mode
+        function disableBossActions() {
+            // Show view-only notice in orders view
+            const notice = document.getElementById('viewOnlyNotice');
+            if (notice) {
+                notice.style.display = 'block';
+                const viewOnlyText = document.querySelector('[data-i18n-view="View Only Mode"]');
+                const noActionsText = document.querySelector('[data-i18n-view="No actions allowed"]');
+                if (viewOnlyText) viewOnlyText.textContent = t('View Only Mode');
+                if (noActionsText) noActionsText.textContent = t('No actions allowed');
+            }
+            
+            // Disable all order action buttons
+            document.querySelectorAll('.order-actions .btn').forEach(btn => {
+                btn.classList.add('boss-disabled');
+                btn.disabled = true;
+                btn.onclick = null;
+                btn.removeAttribute('onclick');
+            });
+            
+            // Disable inventory action buttons if they exist
+            document.querySelectorAll('.inventory-card .btn, .order-actions .btn').forEach(btn => {
+                if (!btn.classList.contains('boss-disabled')) {
+                    btn.classList.add('boss-disabled');
+                    btn.disabled = true;
+                    btn.onclick = null;
+                    btn.removeAttribute('onclick');
+                }
+            });
+            
+            // Orders tab is now clickable, but buttons remain disabled
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+            updateAllTranslations();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1249 @@
+/* Digital Menu Board Styles - Matching the Image Exactly */
+
+.menu-main {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
+                url('../images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding-top: 2rem;
+    padding-bottom: 4.5rem; /* space between last card and footer */
+    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    animation: fadeInBackground 1s ease;
+}
+
+@keyframes fadeInBackground {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Add subtle floating animation for menu board */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@media (min-width: 1200px) {
+    .digital-menu-board {
+        animation: slideIn 0.6s ease, float 6s ease-in-out infinite 1s;
+    }
+}
+
+/* Digital Menu Board Container */
+.digital-menu-board {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    animation: slideIn 0.6s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Menu Rows */
+.menu-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.top-row {
+    margin-bottom: 2rem;
+}
+
+.bottom-row {
+    margin-bottom: 0;
+}
+
+/* Menu Cards - Enhanced with Animations */
+.menu-card {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border: 2px solid transparent;
+    width: 180px;
+    height: 240px;
+    position: relative;
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+    animation-delay: calc(var(--card-index, 0) * 0.1s);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Image */
+.card-image {
+    height: 180px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: none;
+    filter: brightness(1);
+}
+
+/* Card Label - Enhanced styling */
+.card-label {
+    background: linear-gradient(135deg, rgb(236, 213, 188) 0%, rgb(255, 230, 200) 100%);
+    color: rgb(0, 0, 0);
+    padding: 0.8rem;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    font-family: 'Arial', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    position: relative;
+    z-index: 2;
+    transition: none;
+}
+
+/* Order Summary Button */
+.order-summary-btn-container {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.order-summary-btn {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+    color: #2c1810;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.order-summary-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.order-summary-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.order-summary-btn:hover {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(255, 140, 0, 0.5);
+}
+
+.order-summary-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Order Summary Modal */
+.order-summary-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    animation: fadeInModal 0.3s ease;
+}
+
+.order-summary-modal[style*="display: block"] {
+    animation: fadeInModal 0.3s ease;
+}
+
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.order-summary-content {
+    background-color: #2c1810;
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    border: 2px solid #ff8c00;
+    animation: slideUpModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideUpModal {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.order-close {
+    color: #ff8c00;
+    float: right;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    transition: all 0.3s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 140, 0, 0.1);
+}
+
+.order-close:hover {
+    color: #ff6b00;
+    background: rgba(255, 140, 0, 0.2);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.order-close:active {
+    transform: rotate(90deg) scale(0.9);
+}
+
+.order-summary-content h2 {
+    color: #ff8c00;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 2rem;
+}
+
+.order-items {
+    margin-bottom: 2rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.empty-order {
+    text-align: center;
+    color: #ccc;
+    font-style: italic;
+    padding: 2rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #4a3a2a;
+    background-color: #1a0f0a;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    animation: slideInItem 0.3s ease;
+}
+
+@keyframes slideInItem {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.order-item:hover {
+    background-color: #2c1810;
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.2);
+}
+
+.order-item-name {
+    color: white;
+    font-weight: 500;
+}
+
+.order-item-price {
+    color: #ff8c00;
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+.order-total {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #1a0f0a;
+    border-radius: 8px;
+    border: 1px solid #ff8c00;
+}
+
+.order-total h3 {
+    color: #ff8c00;
+    font-size: 1.5rem;
+}
+
+.generate-qr-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+    color: #2c1810;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+}
+
+.generate-qr-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.generate-qr-btn:hover::before {
+    left: 100%;
+}
+
+.generate-qr-btn:hover {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(255, 140, 0, 0.5);
+}
+
+.generate-qr-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Category Details Modal */
+.category-details-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    overflow-y: auto;
+    padding: 20px 10px;
+    box-sizing: border-box;
+}
+
+.category-details-modal[style*="display: block"],
+.category-details-modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.category-details-content {
+    background-color: #2c1810;
+    margin: auto;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 95%;
+    max-width: 1000px;
+    position: relative;
+    border: 2px solid #ff8c00;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    animation: slideUpModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.category-close {
+    color: #ff8c00;
+    float: right;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    transition: all 0.3s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 140, 0, 0.1);
+}
+
+.category-close:hover {
+    color: #ff6b00;
+    background: rgba(255, 140, 0, 0.2);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.category-close:active {
+    transform: rotate(90deg) scale(0.9);
+}
+
+.category-details-content h2 {
+    color: #ff8c00;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 2.5rem;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+}
+
+.category-dishes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+@media (min-width: 1200px) {
+    /* Force 3 columns for dishes in category details on desktop */
+    .category-dishes {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+}
+
+/* Dish Cards in Category Details */
+.dish-card {
+    background-color: #1a0f0a;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid transparent;
+    opacity: 0;
+    animation: fadeInScale 0.5s ease forwards;
+    animation-delay: calc(var(--dish-index, 0) * 0.1s);
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.dish-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 32px rgba(255, 140, 0, 0.3), 0 0 25px rgba(255, 140, 0, 0.15);
+    border-color: #ff8c00;
+}
+
+.dish-card:active {
+    transform: translateY(-4px) scale(0.98);
+}
+
+.dish-image {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.dish-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.dish-card:hover .dish-image img {
+    transform: scale(1.05);
+}
+
+.dish-content {
+    padding: 1.5rem;
+}
+
+.dish-content h3 {
+    color: #ff8c00;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Georgia', serif;
+}
+
+.dish-description {
+    color: #ccc;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Nutritional Information */
+.nutritional-info {
+    background-color: #2c1810;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #ff8c00;
+}
+
+.nutritional-info h4 {
+    color: #ff8c00;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    justify-items: center;
+}
+/* Desktop: show nutrition items in a single horizontal row */
+@media (min-width: 1200px) {
+    .nutrition-grid {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(120px, 1fr);
+        gap: 1.5rem;
+        justify-items: center;
+        align-items: start;
+    }
+}
+
+/* Mobile phones: ensure nutrition items have equal width */
+@media (max-width: 480px) {
+    .nutrition-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 0.5rem;
+        justify-items: center;
+    }
+
+    .nutrition-item {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.6rem;
+    }
+
+    .nutrition-value {
+        font-size: 1.4rem;
+    }
+}
+
+.nutrition-item {
+    text-align: center;
+    background-color: #1a0f0a;
+    padding: 0.8rem;
+    border-radius: 5px;
+}
+
+.nutrition-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #ff8c00;
+    margin-bottom: 0.3rem;
+}
+
+.nutrition-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dish-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ff8c00;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.add-to-order-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+    color: #2c1810;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.add-to-order-btn::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+    opacity: 0;
+}
+
+.add-to-order-btn:hover {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(255, 140, 0, 0.4);
+}
+
+.add-to-order-btn:hover::after {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.add-to-order-btn:active {
+    transform: translateY(-1px);
+}
+
+.add-to-order-btn:active::after {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* QR Code Display */
+.qr-code-container {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 2rem;
+    background-color: #1a0f0a;
+    border-radius: 8px;
+    border: 1px solid #ff8c00;
+}
+
+.qr-code-container h3 {
+    color: #ff8c00;
+    margin-bottom: 1rem;
+}
+
+#qr-code {
+    max-width: 200px;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .menu-row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .menu-card {
+        width: 160px;
+        height: 220px;
+    }
+    
+    .card-image {
+        height: 160px;
+    }
+    
+    .card-label {
+        height: 60px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .menu-card {
+        width: 140px;
+        height: 200px;
+    }
+    
+    .card-image {
+        height: 140px;
+    }
+    
+    .card-label {
+        height: 60px;
+        font-size: 0.75rem;
+        padding: 0.6rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-main {
+        padding-top: 100px;
+        background-attachment: scroll;
+        /* Use a solid/gradient color on mobile (remove heavy image) */
+        background: linear-gradient(180deg, rgba(44,24,16,1) 0%, rgba(82,44,29,1) 100%);
+        background-color: #2c1810;
+    }
+
+    .digital-menu-board {
+        padding: 1rem;
+        animation: slideInMobile 0.5s ease;
+    }
+
+    @keyframes slideInMobile {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .menu-row {
+        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
+        animation: fadeInMobile 0.6s ease;
+    }
+
+    @keyframes fadeInMobile {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    
+    .menu-card {
+        width: 100%;
+        max-width: 280px;
+        height: auto;
+        min-height: 200px;
+        animation: fadeInUpMobile 0.5s ease forwards;
+        animation-delay: calc(var(--card-index, 0) * 0.08s);
+    }
+
+    @keyframes fadeInUpMobile {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .menu-card:active {
+        transform: scale(0.96);
+        transition: transform 0.1s ease;
+    }
+    
+    .card-image {
+        height: 150px;
+    }
+    
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .card-label {
+        height: auto;
+        min-height: 60px;
+        font-size: 0.75rem;
+        padding: 0.6rem;
+        word-wrap: break-word;
+        line-height: 1.3;
+    }
+    
+    .nutrition-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+        justify-items: center;
+    }
+    
+    .nutrition-value {
+        font-size: 1.5rem;
+    }
+    
+    .order-summary-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 1.5rem;
+    }
+    
+    .category-details-content {
+        width: 90%;
+        margin: 3% auto;
+        padding: 1.25rem;
+        max-height: 94vh;
+        border-radius: 10px;
+    }
+
+    .category-details-content h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .category-dishes {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    .dish-content {
+        padding: 1rem;
+    }
+
+    .dish-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .dish-description {
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .dish-image {
+        height: 160px;
+    }
+
+    .nutritional-info {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .nutritional-info h4 {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .nutrition-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        justify-items: center;
+    }
+
+    .nutrition-value {
+        font-size: 1.3rem;
+    }
+
+    .nutrition-label {
+        font-size: 0.7rem;
+    }
+
+    .nutrition-item {
+        padding: 0.6rem;
+    }
+
+    .dish-price {
+        font-size: 1.2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .add-to-order-btn {
+        padding: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .category-close {
+        font-size: 1.5rem;
+        right: 0.75rem;
+        top: 0.75rem;
+    }
+
+    /* Move modal close (X) to the left on mobile for easier thumb reach */
+    .order-close,
+    .category-close,
+    .search-close {
+        right: auto;
+        left: 0.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-row {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: 100vw;
+    }
+    
+    .menu-card {
+        width: 100%;
+        max-width: 280px;
+        min-height: 200px;
+    }
+    
+    .card-image {
+        height: 150px;
+    }
+    
+    .card-label {
+        font-size: 0.8rem;
+        padding: 0.6rem;
+        min-height: 60px;
+    }
+    
+    .category-dishes {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .dish-image {
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-main {
+        padding-top: 80px;
+    }
+
+    .digital-menu-board {
+        padding: 0.75rem;
+    }
+
+    .menu-row {
+        gap: 1rem;
+        flex-direction: column;
+    }
+    
+    .menu-card {
+        width: 100%;
+        max-width: 300px;
+        min-height: 200px;
+    }
+    
+    .card-image {
+        height: 150px;
+    }
+    
+    .card-label {
+        font-size: 0.75rem;
+        padding: 0.6rem;
+        min-height: 60px;
+        letter-spacing: 0.5px;
+    }
+    
+    .nutrition-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        justify-items: center;
+    }
+    
+    .nutrition-item {
+        padding: 0.6rem;
+    }
+
+    .nutrition-value {
+        font-size: 1.3rem;
+    }
+
+    .order-summary-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .category-details-content {
+        width: 95%;
+        margin: 1% auto;
+        padding: 1rem;
+        max-height: 98vh;
+        border-radius: 8px;
+    }
+
+    .category-details-content h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .category-dishes {
+        gap: 1rem;
+    }
+
+    .dish-content {
+        padding: 0.875rem;
+    }
+
+    .dish-content h3 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .dish-description {
+        font-size: 0.8rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .dish-image {
+        height: 140px;
+    }
+
+    .nutritional-info {
+        padding: 0.6rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .nutritional-info h4 {
+        font-size: 0.85rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .nutrition-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+        justify-items: center;
+    }
+
+    .nutrition-value {
+        font-size: 1.1rem;
+    }
+
+    .nutrition-label {
+        font-size: 0.65rem;
+    }
+
+    .nutrition-item {
+        padding: 0.5rem;
+    }
+
+    .dish-price {
+        font-size: 1.1rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .add-to-order-btn {
+        padding: 0.65rem;
+        font-size: 0.9rem;
+    }
+
+    .category-close {
+        font-size: 1.25rem;
+        right: 0.5rem;
+        top: 0.5rem;
+    }
+}
+
+/* Custom Scrollbars */
+.order-items::-webkit-scrollbar,
+.category-details-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.order-items::-webkit-scrollbar-track,
+.category-details-content::-webkit-scrollbar-track {
+    background: #1a0f0a;
+    border-radius: 4px;
+}
+
+.order-items::-webkit-scrollbar-thumb,
+.category-details-content::-webkit-scrollbar-thumb {
+    background: #ff8c00;
+    border-radius: 4px;
+}
+
+.order-items::-webkit-scrollbar-thumb:hover,
+.category-details-content::-webkit-scrollbar-thumb:hover {
+    background: #ff6b00;
+}
+
+/* Menu page header overrides: place cart at right and center mobile nav/buttons */
+
+/* Ensure cart icon sizing and alignment inside header */
+.header .order-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-left: auto; /* push to the right in flex header */
+}
+
+.header .order-icon img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Make the cart touch/click area match the hamburger button */
+.header .order-icon {
+    padding: 0.5rem; /* same as .menu-toggle */
+    box-sizing: border-box;
+    min-width: 50px; /* approximate width: 25px span + padding */
+    min-height: 46px; /* approximate height to match three bars + gaps + padding */
+    border-radius: 4px;
+}
+
+.header .order-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
+    color: #2c1810;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    animation: pulseBadge 2s ease infinite;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.5);
+}
+
+@keyframes pulseBadge {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 140, 0, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.7);
+    }
+}
+
+.header .order-badge:not([data-count="0"]):not(:empty) {
+    animation: pulseBadge 2s ease infinite;
+}
+
+@media (max-width: 768px) {
+    /* float cart to the absolute top-right so it's always visible */
+    .header .order-icon {
+        position: absolute;
+        right: 1rem;
+        top: 10px;
+        z-index: 1200;
+        margin-left: 0;
+    }
+    /* Reduce gap between navbar and buttons and center nav links */
+    .nav {
+        align-items: center;
+        padding-left: 0;
+        margin-top: 0; /* remove large top margin */
+        padding-top: 0;
+    }
+
+    .nav a {
+        text-align: center;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        width: 100%;
+        display: block;
+    }
+
+    /* Center on-page buttons (like add-to-order) inside cards */
+    .add-to-order-btn {
+        margin: 0.6rem auto;
+        display: block;
+        max-width: 260px;
+    }
+
+    /* Slightly reduce the hamburger spacing so logo centers correctly */
+    .menu-toggle {
+        margin-right: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav a {
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+        font-size: 0.98rem;
+    }
+
+    .header .order-icon img {
+        width: 24px;
+        height: 24px;
+    }
+
+    .header .order-icon {
+        min-width: 34px;
+        min-height: 32px;
+        padding: 0.4rem;
+    }
+}

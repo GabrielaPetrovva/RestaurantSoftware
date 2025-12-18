@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>РИБНИ - Serve Software Restaurant</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/category.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html">Начало</a></li>
+                    <li><a href="menu.html">Меню</a></li>
+                    <li><a href="../index.html#about">За нас</a></li>
+                    <li><a href="../index.html#contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Section -->
+       <!-- Back arrow (go to previous page) -->
+    <div class="back-arrow">
+        <button class="back-arrow-btn" type="button" onclick="history.back()" aria-label="Back to previous page">←</button>
+    </div>
+    <main class="category-main">
+        <div class="category-header">
+            <h1>РИБНИ</h1>
+            <p class="category-subtitle">Свежи рибни ястия</p>
+        </div>
+
+        <!-- Order Summary Button -->
+        <div class="order-summary-btn-container">
+            <button class="order-summary-btn" onclick="toggleOrderSummary()">
+                Виж поръчката (<span id="order-count">0</span>)
+            </button>
+        </div>
+
+        <!-- Order Summary Modal -->
+        <div id="orderSummaryModal" class="order-summary-modal">
+            <div class="order-summary-content">
+                <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+                <h2>Вашата поръчка</h2>
+                <div id="order-items" class="order-items">
+                    <p class="empty-order">Няма добавени ястия</p>
+                </div>
+                <div class="order-total">
+                    <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                </div>
+                <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            </div>
+        </div>
+
+        <!-- Fish Dishes Grid Layout -->
+        <div class="salads-container">
+
+            <div class="salad-card" onclick="showNutritionInfo('Панирани калмари', 'Калмари в хрупкаво пане.', 380, 20, 30, 20, '200 г', '8.50 €', 8.50)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-kalmari.jpg" alt="Панирани калмари">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Панирани калмари</h3>
+                    </div>
+                    <p class="salad-ingredients">Калмари в хрупкаво пане.</p>
+                    <div class="salad-price">
+                        <span class="weight">200 г</span>
+                        <span class="price">8.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Скумрия на скара', 'Свежа скумрия на скара.', 500, 0, 36, 33, '250 г', '9.50 €', 9.50)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-skumriq.jpg" alt="Скумрия на скара">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Скумрия на скара</h3>
+                    </div>
+                    <p class="salad-ingredients">Свежа скумрия на скара.</p>
+                    <div class="salad-price">
+                        <span class="weight">250 г</span>
+                        <span class="price">9.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Сьомга на тиган', 'Сьомга с лимон и мащерка.', 580, 2, 56, 36, '280 г', '14.90 €', 14.90)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-somga.jpg" alt="Сьомга на тиган">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Сьомга на тиган</h3>
+                    </div>
+                    <p class="salad-ingredients">Сьомга с лимон и мащерка.</p>
+                    <div class="salad-price">
+                        <span class="weight">280 г</span>
+                        <span class="price">14.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Пъстърва с масло', 'Пъстърва със зехтин и чесън.', 490, 0, 44, 30, '250 г', '11.90 €', 11.90)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-pasturva.jpg" alt="Пъстърва с масло">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Пъстърва с масло</h3>
+                    </div>
+                    <p class="salad-ingredients">Пъстърва със зехтин и чесън.</p>
+                    <div class="salad-price">
+                        <span class="weight">250 г</span>
+                        <span class="price">11.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Рибена чорба', 'Ароматна чорба с рибно филе.', 60, 4, 8, 2, '350 мл', '7.50 €', 7.50)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-chorba.jpg" alt="Рибена чорба">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Рибена чорба</h3>
+                    </div>
+                    <p class="salad-ingredients">Ароматна чорба с рибно филе.</p>
+                    <div class="salad-price">
+                        <span class="weight">350 мл</span>
+                        <span class="price">7.50 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Салата с риби микс', 'Смес от риба със свежа салата.', 250, 8, 28, 10, '250 г', '9.80 €', 9.80)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-mix.jpg" alt="Салата с риби микс">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Салата с риби микс</h3>
+                    </div>
+                    <p class="salad-ingredients">Смес от риба със свежа салата.</p>
+                    <div class="salad-price">
+                        <span class="weight">250 г</span>
+                        <span class="price">9.80 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Сардини на скара', 'Свежи сардини на скара.', 500, 0, 60, 28, '240 г', '8.90 €', 8.90)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-sardini.jpg" alt="Сардини на скара">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Сардини на скара</h3>
+                    </div>
+                    <p class="salad-ingredients">Свежи сардини на скара.</p>
+                    <div class="salad-price">
+                        <span class="weight">240 г</span>
+                        <span class="price">8.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Рибни филета пане', 'Филета в панировка.', 506, 28, 38, 26, '220 г', '9.90 €', 9.90)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-pane.jpg" alt="Рибни филета пане">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Рибни филета пане</h3>
+                    </div>
+                    <p class="salad-ingredients">Филета в панировка.</p>
+                    <div class="salad-price">
+                        <span class="weight">220 г</span>
+                        <span class="price">9.90 €</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="salad-card" onclick="showNutritionInfo('Скариди соте', 'Скариди с чесън и зехтин.', 318, 2, 40, 14, '200 г', '10.90 €', 10.90)">
+                <div class="salad-image">
+                    <img src="../images/fish_category/Fish-sote.jpg" alt="Скариди соте">
+                </div>
+                <div class="salad-content">
+                    <div class="salad-header">
+                        <h3>Скариди соте</h3>
+                    </div>
+                    <p class="salad-ingredients">Скариди с чесън и зехтин.</p>
+                    <div class="salad-price">
+                        <span class="weight">200 г</span>
+                        <span class="price">10.90 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Nutritional Information Modal -->
+        <div id="nutritionModal" class="nutrition-modal">
+            <div class="nutrition-modal-content">
+                <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+                <h2 id="nutrition-title"></h2>
+                <p id="nutrition-description"></p>
+                
+                <h3>Хранителна стойност (на порция)</h3>
+                <div class="nutrition-grid-modal">
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-calories"></span>
+                        <span class="nutrition-label-modal">Калории</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-carbs"></span>
+                        <span class="nutrition-label-modal">Въглехидрати (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-protein"></span>
+                        <span class="nutrition-label-modal">Протеини (г)</span>
+                    </div>
+                    <div class="nutrition-item-modal">
+                        <span class="nutrition-value-modal" id="nutrition-fat"></span>
+                        <span class="nutrition-label-modal">Мазнини (г)</span>
+                    </div>
+                </div>
+                
+                <div class="nutrition-price-modal">
+                    <div class="weight" id="nutrition-weight"></div>
+                    <div class="price" id="nutrition-price"></div>
+                </div>
+                
+                <button class="nutrition-add-btn" id="nutrition-add-btn">Добави в поръчката</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-column">
+            <h3>Поверителност</h3>
+            <ul>
+                <li><a href="#">Условия за ползване</a></li>
+                <li><a href="#">Политика за поверителност</a></li>
+            </ul>
+        </div>
+        
+        
+        
+        <div class="footer-column">
+            <h3>За нас</h3>
+            <ul>
+                <li><a href="#">За нас</a></li>
+                
+                
+            </ul>
+        </div>
+    </footer>
+    <script src="../js/script.js"></script>
+    <script src="../js/category.js"></script>
+    <script src="../js/cookie-consent.js"></script>
+</body>
+</html>

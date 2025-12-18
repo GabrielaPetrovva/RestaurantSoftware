@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serve Software - Login/Signup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;600&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body class="light">
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span id="theme-icon">🌙</span>
+    </button>
+
+    <div class="login-container">
+        <div class="hero-image"></div>
+        <div class="login-content">
+            <div class="brand-title">Serve</div>
+            <div class="brand-subtitle">Software</div>
+            
+            <div class="tab-container">
+                <button class="tab-button active" onclick="switchTab('login')">Login</button>
+                <button class="tab-button" onclick="switchTab('signup')">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="form-container active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon icon-user"></span>
+                            <input type="text" id="login-username" placeholder="Username" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon icon-lock"></span>
+                            <input type="password" id="login-password" placeholder="Password" required>
+                        </div>
+                    </div>
+
+                    <div class="options-row">
+                        <label class="remember-me">
+                            <input type="checkbox" id="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-password">
+                            <span class="icon-mail"></span>
+                            <span>Forgot Password?</span>
+                        </a>
+                    </div>
+
+                    <button type="submit" class="submit-button">Login</button>
+                </form>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" class="form-container">
+                <form onsubmit="handleSignup(event)">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon icon-user"></span>
+                            <input type="text" id="signup-firstname" placeholder="First Name" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon icon-user"></span>
+                            <input type="text" id="signup-lastname" placeholder="Last Name" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon icon-mail"></span>
+                            <input type="email" id="signup-email" placeholder="Email" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="input-icon icon-lock"></span>
+                            <input type="password" id="signup-password" placeholder="Password" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-button">Sign Up</button>
+
+                    <div class="terms-text">
+                        By signing up, you agree to our<br>
+                        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>
