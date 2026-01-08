@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap&subset=latin,cyrillic');
+
 /* ===== CSS VARIABLES ===== */
 :root {
     --brown-dark: #2a1a12;
@@ -90,6 +92,7 @@ section {
     color: var(--text-light);
     font-size: 14px;
     font-weight: 400;
+    font-family: 'Poppins', 'Manrope', 'Segoe UI', sans-serif;
     transition: color .3s;
 }
 
@@ -147,6 +150,36 @@ section {
 
 .order-badge:not(:empty) {
     display: flex;
+}
+
+/* Language Toggle */
+.language-toggle {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.language-toggle button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-light);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.language-toggle button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--gold);
+}
+
+.language-toggle button.active {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
 }
 
 /* Hamburger Menu */
