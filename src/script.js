@@ -33,6 +33,39 @@
         story: 'Our Story',
         reservations: 'Reservations',
         social: 'Social Media'
+      },
+      categories: {
+        pasta: 'Pasta',
+        burger: 'Burger & Tortilla',
+        bread: 'Bread',
+        pizza: 'Pizza',
+        chicken: 'Chicken',
+        pork: 'Pork',
+        veal: 'Veal',
+        fish: 'Fish',
+        salad: 'Salads',
+        salads: 'Salads',
+        starter: 'Starters',
+        starters: 'Starters',
+        saj: 'Saj',
+        dessert: 'Desserts',
+        drinks: 'Drinks'
+      },
+      order: {
+        title: 'Your Order',
+        empty: 'No items added',
+        total: 'Total',
+        generateQR: 'Generate QR Code'
+      },
+      nutrition: {
+        calories: 'Calories',
+        carbs: 'Carbs (g)',
+        protein: 'Protein (g)',
+        fat: 'Fat (g)',
+        addToCart: 'Add to Cart'
+      },
+      category: {
+        backToMenu: '← Back to Menu'
       }
     },
     bg: {
@@ -69,6 +102,39 @@
         story: 'Нашата история',
         reservations: 'Резервации',
         social: 'Социални мрежи'
+      },
+      categories: {
+        pasta: 'Паста',
+        burger: 'Бургер и Тортила',
+        bread: 'Пърленки и Хлебчета',
+        pizza: 'Пици',
+        chicken: 'Пиле',
+        pork: 'Свинско',
+        veal: 'Телешко',
+        fish: 'Рибни',
+        salad: 'Салати',
+        salads: 'Салати',
+        starter: 'Стартери',
+        starters: 'Стартери',
+        saj: 'Сачове',
+        dessert: 'Десерти',
+        drinks: 'Напитки'
+      },
+      order: {
+        title: 'Вашата поръчка',
+        empty: 'Няма добавени ястия',
+        total: 'Общо',
+        generateQR: 'Генерирай QR код'
+      },
+      nutrition: {
+        calories: 'Калории',
+        carbs: 'Въглехидрати (г)',
+        protein: 'Протеини (г)',
+        fat: 'Мазнини (г)',
+        addToCart: 'Добави в количката'
+      },
+      category: {
+        backToMenu: '← Назад към меню'
       }
     }
   };
@@ -122,6 +188,22 @@
         element.placeholder = value;
       }
     });
+    
+    // Update nutrition modal translations if function exists
+    if (typeof updateNutritionTranslations === 'function') {
+      updateNutritionTranslations();
+    }
+  }
+
+  // Function to get category translation
+  function getCategoryTranslation(categoryKey) {
+    const lang = localStorage.getItem('language') || 'en';
+    const t = translations[lang];
+    if (t && t.categories && t.categories[categoryKey.toLowerCase()]) {
+      return t.categories[categoryKey.toLowerCase()];
+    }
+    // Fallback to uppercase category key if translation not found
+    return categoryKey.toUpperCase();
   }
 
   // Initialize language on page load

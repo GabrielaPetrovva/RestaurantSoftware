@@ -35,7 +35,7 @@
                 <div class="top-bar">
                     <div class="top-stat">
                         <div class="top-stat-label" data-i18n="Today's Revenue">Today's Revenue</div>
-                        <div class="top-stat-value" style="color: #4caf50;">2,450 лв</div>
+                        <div class="top-stat-value" style="color: #4caf50;">2,450 EUR</div>
                     </div>
                     <div class="top-stat">
                         <div class="top-stat-label" data-i18n="Covers">Covers</div>
@@ -1866,5 +1866,13 @@
             updateAllTranslations();
         });
     </script>
+<script type="module">
+  import { startAuthRedirectGuard } from "../js/auth-redirect.js";
+  startAuthRedirectGuard();
+</script>
+
+<script src="./script.js"></script>
+
+
 </body>
 </html>

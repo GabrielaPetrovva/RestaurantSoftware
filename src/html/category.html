@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ястия по категория</title>
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/category.css">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+</head>
+<body>
+    <!-- Header -->
+    <header class="header navbar-wrapper">
+        <div class="navbar">
+            <nav>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul>
+                    <li><a href="../index.html" data-translate="nav.home">Начало</a></li>
+                    <li><a href="menu.html" data-translate="nav.menu">Меню</a></li>
+                    <li><a href="../index.html#about" data-translate="nav.about">За нас</a></li>
+                    <li><a href="../index.html#contact" data-translate="nav.contact">Контакти</a></li>
+                </ul>
+            </nav>
+            <div class="navbar-cart">
+                <div class="order-icon" onclick="toggleOrderSummary()">
+                    <img src="../images/shopping-cart.png" alt="Shopping Cart">
+                    <span class="order-badge" id="order-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+<div class="category-main">
+        <div class="back-button-container">
+            <button class="back-button" onclick="window.location.href='menu.html'" data-translate="category.backToMenu">← Назад към меню</button>
+        </div>
+        <h1 id="category-title"></h1>
+        <div class="digital-menu-board" id="menu"></div>
+</div>
+
+<!-- Order Summary Modal -->
+<div id="orderSummaryModal" class="order-summary-modal">
+    <div class="order-summary-content">
+        <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
+        <h2 data-translate="order.title">Вашата поръчка</h2>
+        <div id="order-items" class="order-items">
+            <p class="empty-order" data-translate="order.empty">Няма добавени ястия</p>
+        </div>
+        <div class="order-total">
+            <h3><span data-translate="order.total">Общо</span>: <span id="total-price">0.00</span> €</h3>
+        </div>
+        <button class="generate-qr-btn" onclick="generateQR()" data-translate="order.generateQR">Генерирай QR код</button>
+    </div>
+</div>
+
+<!-- Nutritional Information Modal -->
+<div id="nutritionModal" class="nutrition-modal">
+    <div class="nutrition-modal-content">
+        <span class="nutrition-close" onclick="closeNutritionModal()">&times;</span>
+        <img id="nutrition-image" src="" alt="" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 1.5rem;">
+        <h2 id="nutrition-title"></h2>
+        <p id="nutrition-description"></p>
+        <div class="nutrition-grid-modal">
+            <div class="nutrition-item-modal">
+                <span class="nutrition-value-modal" id="nutrition-calories">0</span>
+                <span class="nutrition-label-modal" data-translate="nutrition.calories">Калории</span>
+            </div>
+            <div class="nutrition-item-modal">
+                <span class="nutrition-value-modal" id="nutrition-carbs">0</span>
+                <span class="nutrition-label-modal" data-translate="nutrition.carbs">Въглехидрати (г)</span>
+            </div>
+            <div class="nutrition-item-modal">
+                <span class="nutrition-value-modal" id="nutrition-protein">0</span>
+                <span class="nutrition-label-modal" data-translate="nutrition.protein">Протеини (г)</span>
+            </div>
+            <div class="nutrition-item-modal">
+                <span class="nutrition-value-modal" id="nutrition-fat">0</span>
+                <span class="nutrition-label-modal" data-translate="nutrition.fat">Мазнини (г)</span>
+            </div>
+        </div>
+        <div class="nutrition-price-modal">
+            <div class="weight" id="nutrition-weight"></div>
+            <div class="price" id="nutrition-price"></div>
+        </div>
+        <button class="nutrition-add-btn" id="nutrition-add-btn" data-translate="nutrition.addToCart">Добави в количката</button>
+    </div>
+</div>
+
+<script src="../script.js"></script>
+<script src="../js/category.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

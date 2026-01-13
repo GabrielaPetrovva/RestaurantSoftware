@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/menu.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
 </head>
 <body>
     <!-- Header -->
@@ -37,122 +40,24 @@
 
     <!-- Menu Section -->
     <main class="menu-main">
-
-        <!-- Digital Menu Board -->
         <div class="digital-menu-board">
-            <!-- Top Row -->
-            <div class="menu-row top-row">
-                <div class="menu-card" onclick="window.location.href='salads.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/salad.jpg" alt="САЛАТИ">
-                    </div>
-                    <div class="card-label">САЛАТИ</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='starters.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/starter.jpg" alt="СТАРТЕРИ">
-                    </div>
-                    <div class="card-label">ПРЕДЯСТИЯ</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='fish.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/fish.jpg" alt="РИБНИ">
-                    </div>
-                    <div class="card-label">РИБНИ</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='pasta.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/pasta.jpg" alt="ПАСТА И РИЗОТО">
-                    </div>
-                    <div class="card-label">ПАСТА И РИЗОТО</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='chicken.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/chicken.jpg" alt="ПИЛЕ">
-                    </div>
-                    <div class="card-label">ПИЛЕ</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='pork.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/pork.jpg" alt="СВИНСКО">
-                    </div>
-                    <div class="card-label">СВИНСКО</div>
-                </div>
-            </div>
-
-            <!-- Bottom Row -->
-            <div class="menu-row bottom-row">
-                <div class="menu-card" onclick="window.location.href='veal.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/veal.jpg" alt="ТЕЛЕШКО">
-                    </div>
-                    <div class="card-label">ТЕЛЕШКО</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='saj.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/saj.jpg" alt="САЧОВЕ">
-                    </div>
-                    <div class="card-label">САЧОВЕ</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='pizza.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/pizza.jpg" alt="ПИЦИ">
-                    </div>
-                    <div class="card-label">ПИЦИ</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='bread.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/bread.jpg" alt="ПЪРЛЕНКИ И ХЛЕБЧЕТА">
-                    </div>
-                    <div class="card-label">ПЪРЛЕНКИ И ХЛЕБЧЕТА</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='burger.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/burger.jpg" alt="БУРГЕР И ТОРТИЛА">
-                    </div>
-                    <div class="card-label">БУРГЕР И ТОРТИЛА</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='desserts.html'">
-                    <div class="card-image">
-                        <img src="../images/categories/dessert.jpg" alt="ДЕСЕРТИ">
-                    </div>
-                    <div class="card-label">ДЕСЕРТИ</div>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='drinks.html'">
-                    <div class="card-image">
-                        <img src="../images/drink.jpg" alt="ДЕСЕРТИ">
-                    </div>
-                    <div class="card-label">Напитки</div>
-                </div>
-            </div>
-        </div>
-
-
+            <div class="menu-row top-row" id="topRow"></div>
+            <div class="menu-row bottom-row" id="bottomRow"></div>
+          </div>          
     </main>
 
     <!-- Order Summary Modal -->
     <div id="orderSummaryModal" class="order-summary-modal">
         <div class="order-summary-content">
             <span class="order-close" onclick="toggleOrderSummary()">&times;</span>
-            <h2>Вашата поръчка</h2>
+            <h2 data-translate="order.title">Вашата поръчка</h2>
             <div id="order-items" class="order-items">
-                <p class="empty-order">Няма добавени ястия</p>
+                <p class="empty-order" data-translate="order.empty">Няма добавени ястия</p>
             </div>
             <div class="order-total">
-                <h3>Общо: <span id="total-price">0.00</span> €</h3>
+                <h3><span data-translate="order.total">Общо</span>: <span id="total-price">0.00</span> €</h3>
             </div>
-            <button class="generate-qr-btn" onclick="generateQR()">Генерирай QR код</button>
+            <button class="generate-qr-btn" onclick="generateQR()" data-translate="order.generateQR">Генерирай QR код</button>
         </div>
     </div>
 
@@ -162,21 +67,21 @@
             <div>
                 <h4>Serve Software</h4>
                 <ul>
-                    <li>Поверителност</li>
-                    <li>Услуги</li>
-                    <li>За нас</li>
+                    <li data-translate="footer.privacy">Поверителност</li>
+                    <li data-translate="footer.services">Услуги</li>
+                    <li data-translate="footer.about">За нас</li>
                 </ul>
             </div>
             <div>
-                <h4>Бързи връзки</h4>
+                <h4 data-translate="footer.quickLinks">Бързи връзки</h4>
                 <ul>
-                    <li>Меню</li>
-                    <li>Нашата история</li>
-                    <li>Резервации</li>
+                    <li data-translate="footer.menu">Меню</li>
+                    <li data-translate="footer.story">Нашата история</li>
+                    <li data-translate="footer.reservations">Резервации</li>
                 </ul>
             </div>
             <div>
-                <h4>Социални мрежи</h4>
+                <h4 data-translate="footer.social">Социални мрежи</h4>
                 <div class="socials">
                     <span>🌐</span>
                     <span>📸</span>
@@ -185,7 +90,8 @@
             </div>
         </div>
     </footer>
-    
+    <script src="../script.js"></script>
+    <script src="./app.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/category.js"></script>
     <script src="../js/cookie-consent.js"></script>

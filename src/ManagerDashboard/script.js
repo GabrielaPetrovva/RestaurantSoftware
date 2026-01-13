@@ -1,105 +1,62 @@
-    // Tab switching functionality
-    function switchTab(tabName) {
-        // Hide all sections
-        const sections = document.querySelectorAll('.section');
-        sections.forEach(section => section.classList.remove('active'));
+// src/ManagerDashboard/script.js
 
-        // Remove active class from all tabs
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => tab.classList.remove('active'));
+// 🔹 Tabs (sections)
+window.switchTab = function (tabName, ev) {
+  document.querySelectorAll(".section").forEach(sec =>
+    sec.classList.remove("active")
+  );
 
-        // Show selected section
-        document.getElementById(tabName).classList.add('active');
+  document.querySelectorAll(".tab-btn").forEach(btn =>
+    btn.classList.remove("active")
+  );
 
-        // Add active class to clicked tab
-        event.target.classList.add('active');
-    }
+  const target = document.getElementById(tabName);
+  if (target) target.classList.add("active");
 
-    // Logout functionality
-    function logout() {
-        if (confirm('Сигурни ли сте, че искате да излезете?')) {
-            alert('Успешно излизане от системата');
-            // Here you would redirect to login page
-            // window.location.href = '/login';
-        }
-    }
+  if (ev && ev.currentTarget) {
+    ev.currentTarget.classList.add("active");
+  }
+};
 
-    // Simulate real-time data updates
-    setInterval(() => {
-        // Update random stat card with animation
-        const statValues = document.querySelectorAll('.stat-value');
-        if (statValues.length > 0) {
-            const randomIndex = Math.floor(Math.random() * Math.min(4, statValues.length));
-            const element = statValues[randomIndex];
-            element.style.transform = 'scale(1.05)';
-            element.style.color = '#4CAF50';
-            setTimeout(() => {
-                element.style.transform = 'scale(1)';
-                element.style.color = '#333';
-            }, 300);
-        }
-    }, 5000);
+// 🔹 Logout (UI only – auth signOut е в auth-redirect или отделно)
+window.logout = function () {
+  if (confirm("Сигурни ли сте, че искате да излезете?")) {
+    window.location.href = "../Login/login.html";
+  }
+};
 
-    // Add hover effects to heatmap cells
-    document.addEventListener('DOMContentLoaded', () => {
-        const heatmapCells = document.querySelectorAll('.heatmap-cell');
-        heatmapCells.forEach(cell => {
-            cell.addEventListener('click', function() {
-                const value = this.textContent;
-                alert(`Клиенти в този период: ${value}`);
-            });
-        });
+// 🔹 Fake realtime animation (stats)
+setInterval(() => {
+  const stats = document.querySelectorAll(".stat-value");
+  if (!stats.length) return;
 
-        // Animate progress bars on load
-        const progressFills = document.querySelectorAll('.progress-fill');
-        progressFills.forEach(fill => {
-            const width = fill.style.width;
-            fill.style.width = '0';
-            setTimeout(() => {
-                fill.style.width = width;
-            }, 100);
-        });
+  const el = stats[Math.floor(Math.random() * stats.length)];
+  el.style.transform = "scale(1.05)";
+  el.style.color = "#4CAF50";
 
-        // Animate bars on load
-        const bars = document.querySelectorAll('.bar');
-        bars.forEach((bar, index) => {
-            const height = bar.style.height;
-            bar.style.height = '0';
-            setTimeout(() => {
-                bar.style.height = height;
-            }, 100 + (index * 100));
-        });
+  setTimeout(() => {
+    el.style.transform = "scale(1)";
+    el.style.color = "#333";
+  }, 300);
+}, 5000);
+
+// 🔹 DOM animations
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".heatmap-cell").forEach(cell => {
+    cell.addEventListener("click", () => {
+      alert(`Клиенти в този период: ${cell.textContent}`);
     });
+  });
 
-    // Notification simulation
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            background: ${type === 'success' ? '#4CAF50' : type === 'warning' ? '#ff9800' : '#2196F3'};
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        `;
-        notification.textContent = message;
-        document.body.appendChild(notification);
+  document.querySelectorAll(".progress-fill").forEach(fill => {
+    const w = fill.style.width;
+    fill.style.width = "0";
+    setTimeout(() => fill.style.width = w, 100);
+  });
 
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-
-    // Simulate periodic notifications
-    setTimeout(() => {
-        showNotification('Нова поръчка за доставка!', 'info');
-    }, 10000);
-
-    setTimeout(() => {
-        showNotification('Ниско ниво на домати', 'warning');
-    }, 20000);
+  document.querySelectorAll(".bar").forEach((bar, i) => {
+    const h = bar.style.height;
+    bar.style.height = "0";
+    setTimeout(() => bar.style.height = h, 100 + i * 100);
+  });
+});

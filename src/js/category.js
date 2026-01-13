@@ -5,10 +5,11 @@ let orderItems = [];
 let orderTotal = 0;
 
 // Show nutrition information modal
-function showNutritionInfo(name, description, calories, carbs, protein, fat, weight, price, priceValue) {
+function showNutritionInfo(name, description, calories, carbs, protein, fat, weight, price, priceValue, imageUrl) {
     const modal = document.getElementById('nutritionModal');
     const title = document.getElementById('nutrition-title');
     const desc = document.getElementById('nutrition-description');
+    const imageEl = document.getElementById('nutrition-image');
     const caloriesEl = document.getElementById('nutrition-calories');
     const carbsEl = document.getElementById('nutrition-carbs');
     const proteinEl = document.getElementById('nutrition-protein');
@@ -20,11 +21,27 @@ function showNutritionInfo(name, description, calories, carbs, protein, fat, wei
     // Set content
     title.textContent = name;
     desc.textContent = description;
+    if (imageUrl) {
+        imageEl.src = imageUrl;
+        imageEl.alt = name;
+        imageEl.style.display = 'block';
+    } else {
+        imageEl.style.display = 'none';
+    }
     caloriesEl.textContent = calories;
     carbsEl.textContent = carbs;
     proteinEl.textContent = protein;
     fatEl.textContent = fat;
-    weightEl.textContent = weight;
+    
+    // Set weight and price
+    const lang = localStorage.getItem('language') || 'en';
+    if (weight) {
+        const weightLabel = lang === 'bg' ? 'Тегло' : 'Weight';
+        weightEl.textContent = `${weightLabel}: ${weight}`;
+        weightEl.style.display = 'block';
+    } else {
+        weightEl.style.display = 'none';
+    }
     priceEl.textContent = price;
     
     // Update add button
@@ -33,14 +50,71 @@ function showNutritionInfo(name, description, calories, carbs, protein, fat, wei
         closeNutritionModal();
     };
     
+    // Apply translations
+    updateNutritionTranslations();
+    
     // Show modal
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
 }
 
 // Close nutrition modal
 function closeNutritionModal() {
     const modal = document.getElementById('nutritionModal');
     modal.style.display = 'none';
+}
+
+// Update nutrition modal translations
+function updateNutritionTranslations() {
+    // Use the global translations from script.js if available
+    if (typeof translations !== 'undefined' && typeof currentLang !== 'undefined') {
+        const t = translations[currentLang];
+        if (t && t.nutrition) {
+            // Update labels with data-translate attribute
+            document.querySelectorAll('[data-translate^="nutrition."]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                const keys = key.split('.');
+                let value = t;
+                for (let k of keys) {
+                    value = value[k];
+                }
+                if (value) {
+                    element.textContent = value;
+                }
+            });
+        }
+    } else {
+        // Fallback translations
+        const lang = localStorage.getItem('language') || 'en';
+        const translations = {
+            en: {
+                calories: 'Calories',
+                carbs: 'Carbs (g)',
+                protein: 'Protein (g)',
+                fat: 'Fat (g)',
+                addToCart: 'Add to Cart'
+            },
+            bg: {
+                calories: 'Калории',
+                carbs: 'Въглехидрати (г)',
+                protein: 'Протеини (г)',
+                fat: 'Мазнини (г)',
+                addToCart: 'Добави в количката'
+            }
+        };
+        
+        const t = translations[lang] || translations.en;
+        document.querySelectorAll('[data-translate^="nutrition."]').forEach(element => {
+            const key = element.getAttribute('data-translate');
+            const keys = key.split('.');
+            let value = t;
+            for (let k of keys) {
+                value = value[k];
+            }
+            if (value) {
+                element.textContent = value;
+            }
+        });
+    }
 }
 
 // Add item to order
@@ -65,7 +139,9 @@ function addToOrder(dishName, price) {
     saveOrderToStorage();
     
     // Show success message
-    showOrderMessage(`${dishName} е добавен в поръчката!`);
+    const lang = localStorage.getItem('language') || 'en';
+    const addedMsg = lang === 'bg' ? `${dishName} е добавен в поръчката!` : `${dishName} added to order!`;
+    showOrderMessage(addedMsg);
 }
 
 // Remove item from order
@@ -137,9 +213,18 @@ function toggleOrderSummary() {
 function displayOrderItems() {
     const orderItemsContainer = document.getElementById('order-items');
     const totalPriceElement = document.getElementById('total-price');
+    const emptyOrderEl = document.querySelector('.empty-order');
+    
+    // Get translations
+    const lang = localStorage.getItem('language') || 'en';
+    const emptyMsg = lang === 'bg' ? 'Няма добавени ястия' : 'No items added';
     
     if (orderItems.length === 0) {
-        orderItemsContainer.innerHTML = '<p class="empty-order">Няма добавени ястия</p>';
+        if (emptyOrderEl) {
+            emptyOrderEl.textContent = emptyMsg;
+        } else {
+            orderItemsContainer.innerHTML = `<p class="empty-order">${emptyMsg}</p>`;
+        }
     } else {
         orderItemsContainer.innerHTML = orderItems.map(item => `
             <div class="order-item">
@@ -162,8 +247,11 @@ function displayOrderItems() {
 
 // Generate QR code for order
 function generateQR() {
+    const lang = localStorage.getItem('language') || 'en';
+    
     if (orderItems.length === 0) {
-        showOrderMessage('Поръчката е празна!');
+        const emptyMsg = lang === 'bg' ? 'Поръчката е празна!' : 'Order is empty!';
+        showOrderMessage(emptyMsg);
         return;
     }
     
@@ -173,12 +261,20 @@ function generateQR() {
     // Generate QR code using QR.js library (you'll need to include this library)
     generateQRCode(orderSummary);
     
-    showOrderMessage('QR кодът е генериран успешно!');
+    const successMsg = lang === 'bg' ? 'QR кодът е генериран успешно!' : 'QR code generated successfully!';
+    showOrderMessage(successMsg);
 }
 
 // Create order summary text
 function createOrderSummary() {
-    let summary = 'ПОРЪЧКА\n';
+    const lang = localStorage.getItem('language') || 'en';
+    const orderLabel = lang === 'bg' ? 'ПОРЪЧКА' : 'ORDER';
+    const totalLabel = lang === 'bg' ? 'ОБЩО' : 'TOTAL';
+    const dateLabel = lang === 'bg' ? 'Дата' : 'Date';
+    const timeLabel = lang === 'bg' ? 'Час' : 'Time';
+    const locale = lang === 'bg' ? 'bg-BG' : 'en-US';
+    
+    let summary = `${orderLabel}\n`;
     summary += '==================\n\n';
     
     orderItems.forEach(item => {
@@ -186,9 +282,9 @@ function createOrderSummary() {
     });
     
     summary += '\n==================\n';
-    summary += `ОБЩО: ${orderTotal.toFixed(2)} €\n`;
-    summary += `Дата: ${new Date().toLocaleDateString('bg-BG')}\n`;
-    summary += `Час: ${new Date().toLocaleTimeString('bg-BG')}`;
+    summary += `${totalLabel}: ${orderTotal.toFixed(2)} €\n`;
+    summary += `${dateLabel}: ${new Date().toLocaleDateString(locale)}\n`;
+    summary += `${timeLabel}: ${new Date().toLocaleTimeString(locale)}`;
     
     return summary;
 }
@@ -204,7 +300,11 @@ function generateQRCode(text) {
     }
     
     // Clear previous QR code
-    qrContainer.innerHTML = '<h3>QR код за поръчката</h3>';
+    const lang = localStorage.getItem('language') || 'en';
+    const qrTitle = lang === 'bg' ? 'QR код за поръчката' : 'QR Code for Order';
+    const qrScanMsg = lang === 'bg' ? 'Сканирайте този код за да видите детайлите на поръчката' : 'Scan this code to view order details';
+    
+    qrContainer.innerHTML = `<h3>${qrTitle}</h3>`;
     
     // Create QR code element
     const qrCodeElement = document.createElement('div');
@@ -218,7 +318,7 @@ function generateQRCode(text) {
             </div>
         </div>
         <p style="margin-top: 10px; color: #ccc; font-size: 0.9rem;">
-            Сканирайте този код за да видите детайлите на поръчката
+            ${qrScanMsg}
         </p>
     `;
     
@@ -288,7 +388,9 @@ function clearOrder() {
         displayOrderItems();
     }
     
-    showOrderMessage('Поръчката е изчистена!');
+    const lang = localStorage.getItem('language') || 'en';
+    const clearedMsg = lang === 'bg' ? 'Поръчката е изчистена!' : 'Order cleared!';
+    showOrderMessage(clearedMsg);
 }
 
 // Add CSS animations
@@ -372,6 +474,10 @@ document.head.appendChild(style);
 // Load order when page loads
 window.addEventListener('DOMContentLoaded', function() {
     loadOrderFromStorage();
+    // Apply translations to nutrition modal if it exists
+    if (document.getElementById('nutritionModal')) {
+        updateNutritionTranslations();
+    }
 });
 
 // Close modal when clicking outside

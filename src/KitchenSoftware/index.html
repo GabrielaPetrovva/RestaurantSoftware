@@ -4,7 +4,389 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kitchen Dashboard</title>
-    <link rel="stylesheet" href="kitchen.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .waiter-name {
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .lang-btn, .exit-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .lang-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .exit-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .lang-btn:hover, .exit-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .tabs {
+            background: var(--white);
+            padding: 0 2rem;
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark);
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .tab .badge {
+            background: var(--danger);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .orders-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            align-content: start;
+        }
+
+        .order-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .order-card.priority {
+            border-left: 4px solid var(--danger);
+        }
+
+        .order-card.late {
+            border-left: 4px solid var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .order-info {
+            flex: 1;
+        }
+
+        .order-number {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .order-waiter {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .order-table {
+            font-weight: 600;
+            color: var(--primary);
+            margin-top: 0.25rem;
+        }
+
+        .order-timer {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: right;
+        }
+
+        .order-timer.warning {
+            color: var(--warning);
+        }
+
+        .order-timer.danger {
+            color: var(--danger);
+        }
+
+        .priority-badge {
+            background: var(--danger);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 0.25rem;
+        }
+
+        .order-items {
+            margin: 1rem 0;
+        }
+
+        .order-item {
+            padding: 0.5rem;
+            background: var(--light);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .item-notes {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.625rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-start {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-ready {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-served {
+            background: var(--info);
+            color: white;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .metrics-card, .takeaway-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .metric {
+            margin-bottom: 1.25rem;
+        }
+
+        .metric:last-child {
+            margin-bottom: 0;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .metric-value.large {
+            font-size: 2.5rem;
+        }
+
+        .takeaway-order {
+            background: var(--light);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .takeaway-order:last-child {
+            margin-bottom: 0;
+        }
+
+        .takeaway-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .takeaway-number {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .takeaway-type {
+            background: var(--info);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .takeaway-items {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+        }
+
+        .takeaway-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9ca3af;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -56,6 +438,366 @@
         </div>
     </div>
 
-    <script src="kitchen.js"></script>
+    <script>
+        let currentLang = localStorage.getItem('kitchenLang') || 'bg';
+        const translations = {
+            bg: {
+                headerTitle: 'Кухненско Табло',
+                waiterName: 'Петър Петров',
+                exitBtn: 'Изход',
+                tabOrders: 'Поръчки',
+                tabMetrics: 'Статистики',
+                metricsTitle: 'Средно време за готвене',
+                avgTimeLabel: '',
+                lateOrdersLabel: 'Забавени поръчки',
+                totalOrdersLabel: 'Общо поръчки',
+                takeawayTitle: 'За вкъщи / Доставка',
+                btnStart: 'Започни готвене',
+                btnReady: 'Готово',
+                btnServed: 'Сервирано',
+                bumpOff: 'Премахни',
+                priority: 'Приоритет',
+                takeaway: 'За вкъщи',
+                delivery: 'Доставка',
+                table: 'Маса',
+                order: 'Поръчка',
+                // Menu items
+                'Pasta Bolognese': 'Паста Болонезе',
+                'Garlic Bread': 'Чеснов хляб',
+                'Caesar Salad': 'Салата Цезар',
+                'Grilled Salmon': 'Печен сьомга',
+                'Margherita Pizza': 'Пица Маргарита',
+                'Greek Salad': 'Гръцка салата',
+                'Chicken Curry': 'Пилешко карри',
+                'Rice': 'Ориз',
+                'Naan Bread': 'Наан хляб',
+                'Beef Burger': 'Говеждо бургер',
+                'French Fries': 'Пържени картофи',
+                'Seafood Pasta': 'Паста с морски дарове',
+                'Caprese Salad': 'Салата Капрезе',
+                'Burger': 'Бургер',
+                'Rice': 'Ориз',
+                'Naan Bread': 'Наан хляб',
+                'Greek Salad': 'Гръцка салата'
+            },
+            en: {
+                headerTitle: 'Kitchen Dashboard',
+                waiterName: 'Petar Petrov',
+                exitBtn: 'Exit',
+                tabOrders: 'Orders',
+                tabMetrics: 'Metrics',
+                metricsTitle: 'Average cooking time',
+                avgTimeLabel: '',
+                lateOrdersLabel: 'Late orders',
+                totalOrdersLabel: 'Total orders',
+                takeawayTitle: 'Takeaway / Delivery',
+                btnStart: 'Start cooking',
+                btnReady: 'Ready',
+                btnServed: 'Served',
+                bumpOff: 'Bump off',
+                priority: 'Priority',
+                takeaway: 'Takeaway',
+                delivery: 'Delivery',
+                table: 'Table',
+                order: 'Order',
+                // Menu items
+                'Pasta Bolognese': 'Pasta Bolognese',
+                'Garlic Bread': 'Garlic Bread',
+                'Caesar Salad': 'Caesar Salad',
+                'Grilled Salmon': 'Grilled Salmon',
+                'Margherita Pizza': 'Margherita Pizza',
+                'Greek Salad': 'Greek Salad',
+                'Chicken Curry': 'Chicken Curry',
+                'Rice': 'Rice',
+                'Naan Bread': 'Naan Bread',
+                'Beef Burger': 'Beef Burger',
+                'French Fries': 'French Fries',
+                'Seafood Pasta': 'Seafood Pasta',
+                'Caprese Salad': 'Caprese Salad',
+                'Burger': 'Burger',
+                'Rice': 'Rice',
+                'Naan Bread': 'Naan Bread',
+                'Greek Salad': 'Greek Salad'
+            }
+        };
+
+        // Sample orders data
+        const orders = [
+            {
+                id: 23,
+                waiter: 'Ivan Ivanov',
+                table: 2,
+                time: 335,
+                status: 'pending',
+                items: [
+                    { name: 'Pasta Bolognese', notes: 'No cheese' },
+                    { name: 'Garlic Bread', notes: '' }
+                ]
+            },
+            {
+                id: 24,
+                waiter: 'Aleksandar',
+                table: 3,
+                time: 80,
+                status: 'cooking',
+                priority: true,
+                items: [
+                    { name: 'Caesar Salad', notes: '' },
+                    { name: 'Grilled Salmon', notes: 'Medium rare' }
+                ]
+            },
+            {
+                id: 25,
+                waiter: 'Maria Petrova',
+                table: 5,
+                time: 45,
+                status: 'pending',
+                items: [
+                    { name: 'Margherita Pizza', notes: 'Extra cheese' },
+                    { name: 'Greek Salad', notes: 'No onions' }
+                ]
+            },
+            {
+                id: 26,
+                waiter: 'Ivan Ivanov',
+                table: 7,
+                time: 120,
+                status: 'cooking',
+                items: [
+                    { name: 'Chicken Curry', notes: 'Spicy' },
+                    { name: 'Rice', notes: '' },
+                    { name: 'Naan Bread', notes: 'Garlic' }
+                ]
+            },
+            {
+                id: 27,
+                waiter: 'Elena Dimitrova',
+                table: 1,
+                time: 25,
+                status: 'pending',
+                items: [
+                    { name: 'Beef Burger', notes: 'No pickles' },
+                    { name: 'French Fries', notes: '' }
+                ]
+            },
+            {
+                id: 28,
+                waiter: 'Georgi Georgiev',
+                table: 9,
+                time: 380,
+                status: 'cooking',
+                late: true,
+                items: [
+                    { name: 'Seafood Pasta', notes: 'Extra shrimp' },
+                    { name: 'Caprese Salad', notes: '' }
+                ]
+            }
+        ];
+
+        const takeawayOrders = [
+            {
+                id: 33,
+                type: 'Takeaway',
+                customer: 'Kaloyan',
+                items: ['Burger'],
+                status: 'ready'
+            }
+        ];
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'bg' ? 'en' : 'bg';
+            localStorage.setItem('kitchenLang', currentLang);
+            document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLang];
+            document.getElementById('headerTitle').textContent = t.headerTitle;
+            document.getElementById('waiterName').textContent = t.waiterName;
+            document.getElementById('exitBtn').textContent = t.exitBtn;
+            document.getElementById('tabOrders').innerHTML = `${t.tabOrders} <span class="badge" id="ordersBadge">${orders.length}</span>`;
+            document.getElementById('tabMetrics').textContent = t.tabMetrics;
+            document.getElementById('metricsTitle').textContent = t.metricsTitle;
+            document.getElementById('lateOrdersLabel').textContent = t.lateOrdersLabel;
+            document.getElementById('totalOrdersLabel').textContent = t.totalOrdersLabel;
+            document.getElementById('takeawayTitle').textContent = t.takeawayTitle;
+            
+            renderOrders();
+            renderTakeaway();
+        }
+        
+        // Helper function to translate menu items
+        function translateMenuItem(name) {
+            return translations[currentLang][name] || name;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function getTimerClass(seconds) {
+            if (seconds > 300) return 'danger';
+            if (seconds > 180) return 'warning';
+            return '';
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersSection');
+            const t = translations[currentLang];
+            
+            container.innerHTML = orders.map(order => `
+                <div class="order-card ${order.priority ? 'priority' : ''} ${order.late ? 'late' : ''}">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <div class="order-number">${t.order} #${order.id}</div>
+                            <div class="order-waiter">${order.waiter}</div>
+                            <div class="order-table">${t.table} ${order.table}</div>
+                            ${order.priority ? `<span class="priority-badge">${t.priority}</span>` : ''}
+                        </div>
+                        <div class="order-timer ${getTimerClass(order.time)}">
+                            ${formatTime(order.time)}
+                        </div>
+                    </div>
+                    <div class="order-items">
+                        ${order.items.map(item => {
+                            const translatedName = t[item.name] || item.name;
+                            return `
+                            <div class="order-item">
+                                <div class="item-name">${translatedName}</div>
+                                ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
+                            </div>
+                        `;
+                        }).join('')}
+                    </div>
+                    <div class="order-actions">
+                        ${order.status === 'pending' ? `
+                            <button class="btn btn-start" onclick="startCooking(${order.id})">${t.btnStart}</button>
+                        ` : order.status === 'cooking' ? `
+                            <button class="btn btn-ready" onclick="markReady(${order.id})">${t.btnReady}</button>
+                        ` : `
+                            <button class="btn btn-served" onclick="bumpOff(${order.id})">${t.bumpOff}</button>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTakeaway() {
+            const container = document.getElementById('takeawayOrders');
+            const t = translations[currentLang];
+            
+            container.innerHTML = takeawayOrders.map(order => {
+                const orderType = order.type === 'Takeaway' ? t.takeaway : (order.type === 'Delivery' ? t.delivery : order.type);
+                const translatedItems = order.items.map(item => t[item] || item).join(', ');
+                return `
+                <div class="takeaway-order">
+                    <div class="takeaway-header">
+                        <span class="takeaway-number">${t.order} #${order.id}</span>
+                        <span class="takeaway-type">${orderType}</span>
+                    </div>
+                    <div class="takeaway-items">
+                        <strong>${order.customer}</strong><br>
+                        ${translatedItems}
+                    </div>
+                    <div class="takeaway-actions">
+                        ${order.status === 'ready' ? `
+                            <button class="btn btn-served btn-small" onclick="markServed(${order.id})">${t.btnServed}</button>
+                        ` : `
+                            <button class="btn btn-ready btn-small" onclick="markReady(${order.id})">${t.btnReady}</button>
+                        `}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Render kitchen queue
+        <div id="kitchenQueue"></div>
+
+        function startCooking(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'cooking';
+                renderOrders();
+            }
+        }
+
+        function markReady(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'ready';
+                renderOrders();
+            }
+        }
+
+        function bumpOff(orderId) {
+            const index = orders.findIndex(o => o.id === orderId);
+            if (index > -1) {
+                orders.splice(index, 1);
+                renderOrders();
+                document.getElementById('ordersBadge').textContent = orders.length;
+                document.getElementById('totalOrders').textContent = orders.length;
+            }
+        }
+
+        function markServed(orderId) {
+            const index = takeawayOrders.findIndex(o => o.id === orderId);
+            if (index > -1) {
+                takeawayOrders.splice(index, 1);
+                renderTakeaway();
+            }
+        }
+
+        function switchTab(tab) {
+    if (tab === 'metrics') {
+        window.location.href = 'statisticks.html';
+        return;
+    }
+    
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    document.querySelector(`#tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+}
+
+        function exit() {
+            if (confirm(currentLang === 'bg' ? 'Сигурни ли сте, че искате да излезете?' : 'Are you sure you want to exit?')) {
+                alert(currentLang === 'bg' ? 'Излизане...' : 'Exiting...');
+            }
+        }
+
+        // Update timers every second
+        setInterval(() => {
+            orders.forEach(order => {
+                if (order.status !== 'ready') {
+                    order.time++;
+                    if (order.time > 300) {
+                        order.late = true;
+                    }
+                }
+            });
+            renderOrders();
+        }, 1000);
+
+        // Initialize language button text
+        document.getElementById('langBtn').textContent = currentLang === 'bg' ? 'EN' : 'БГ';
+        
+        // Initial render
+        updateLanguage();
+    </script>
+    <script type="module">
+  import { startAuthRedirectGuard } from "../js/auth-redirect.js";
+  startAuthRedirectGuard();
+</script>
+
+<script type="module" src="../js/auth-redirect.js"></script>
+<script type="module" src="./kitchen-data.js"></script>
+<script type="module" src="../js/logout.js"></script>
+<script src="./script.js"></script>
+
+
+
 </body>
 </html>

@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Header -->
   <header class="topbar">
     <div class="left-controls">
       <div class="title" id="appTitle">Waiter Dashboard</div>
@@ -27,14 +26,13 @@
         <option value="en">EN</option>
         <option value="bg">BG</option>
       </select>
-      <span class="user-name">Ivan</span>
+
+      <span class="user-name" id="userName">Loading...</span>
       <button class="exit" id="exitBtn">Exit</button>
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="main" id="main">
-    <!-- VIEW: Tables -->
     <section id="view-tables" class="view active">
       <div class="card">
         <h2 id="tablesTitle">Tables</h2>
@@ -43,19 +41,18 @@
       </div>
     </section>
 
-    <!-- VIEW: Orders -->
     <section id="view-orders" class="view">
       <button id="backToTablesBtn" class="back-btn" style="margin-bottom:12px;">
         <span>←</span>
         <span id="backToTablesLabel">Back to Tables</span>
       </button>
+
       <div class="order-container">
         <div class="card">
           <h2 id="orderTitle">Order</h2>
           <div class="order-items" id="orderItems">
             <div class="muted">No order selected. Tap a table to start.</div>
           </div>
-
           <div class="order-summary">
             <div id="labelTotal">Total</div>
             <div id="totalValue">0.00€</div>
@@ -67,7 +64,7 @@
             <h3 id="paymentsBlockTitle" style="text-align:center; margin:0 0 8px 0; font-size:16px;">Payments</h3>
 
             <div class="payment-types" id="paymentTypes">
-              <button class="pay-btn" data-type="cash">Cash</button>
+              <button class="pay-btn active" data-type="cash">Cash</button>
               <button class="pay-btn" data-type="card">Card</button>
               <button class="pay-btn" data-type="vouchers">Vouchers</button>
               <button class="pay-btn" data-type="online">Online</button>
@@ -87,7 +84,7 @@
             </div>
 
             <div style="margin-top:8px;"><strong id="labelComments">Comments</strong></div>
-            <textarea id="comments" data-placeholder-en="Notes to kitchen/bar" data-placeholder-bg="Бележки към кухнята/бара" placeholder="Notes to kitchen/bar"></textarea>
+            <textarea id="comments" placeholder="Notes to kitchen/bar"></textarea>
 
             <button id="completePayment">Complete Payment</button>
           </div>
@@ -96,16 +93,11 @@
 
       <div class="card menu">
         <h2 id="menuTitle">Menu</h2>
-        <div class="categories" id="categoryRow">
-          <button class="cat-btn active" data-cat="pizzas" data-i18n="Pizzas" id="catPizzas">Pizzas</button>
-          <button class="cat-btn" data-cat="drinks" data-i18n="Drinks" id="catDrinks">Drinks</button>
-          <button class="cat-btn" data-cat="sides" data-i18n="Sides" id="catSides">Sides</button>
-        </div>
+        <div class="categories" id="categoryRow"></div>
         <div class="menu-items" id="menuItems"></div>
       </div>
     </section>
 
-    <!-- VIEW: Payments -->
     <section id="view-payments" class="view">
       <div class="card">
         <h2 id="paymentsTitle">Payments</h2>
@@ -114,7 +106,6 @@
       </div>
     </section>
 
-    <!-- VIEW: Delivery -->
     <section id="view-delivery" class="view">
       <div class="card">
         <h2 id="deliveryTitle">Delivery / Takeaway</h2>
@@ -124,7 +115,6 @@
       </div>
     </section>
 
-    <!-- VIEW: Statistics -->
     <section id="view-stats" class="view">
       <div class="card">
         <h2 id="statsTitle">Statistics</h2>
@@ -138,28 +128,12 @@
     </section>
   </main>
 
-  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <button data-view="tables" class="active">
-      <span class="icon">▦</span>
-      <span>Tables</span>
-    </button>
-    <button data-view="orders">
-      <span class="icon">📄</span>
-      <span>Orders</span>
-    </button>
-    <button data-view="payments">
-      <span class="icon">💳</span>
-      <span id="navPay">Pay</span>
-    </button>
-    <button data-view="delivery">
-      <span class="icon">🚚</span>
-      <span>Delivery</span>
-    </button>
-    <button data-view="stats">
-      <span class="icon">📊</span>
-      <span>Stats</span>
-    </button>
+    <button data-view="tables" class="active"><span class="icon">▦</span><span>Tables</span></button>
+    <button data-view="orders"><span class="icon">📄</span><span>Orders</span></button>
+    <button data-view="payments"><span class="icon">💳</span><span>Pay</span></button>
+    <button data-view="delivery"><span class="icon">🚚</span><span>Delivery</span></button>
+    <button data-view="stats"><span class="icon">📊</span><span>Stats</span></button>
   </nav>
 
   <template id="tplTableChip">
@@ -175,10 +149,15 @@
         <div class="mname">Name</div>
         <div class="mprice muted">1.00€</div>
       </div>
-      <button class="add" data-i18n-add="Add">+ Add</button>
+      <button class="add">+ Add</button>
     </div>
   </template>
 
-<script src="script.js"></script>
+ <script src="./config.js"></script>
+<script type="module" src="./script.js"></script>
+<script type="module" src="../js/auth-redirect.js"></script>
+<script type="module" src="../js/logout.js"></script>
+
+
 </body>
 </html>
