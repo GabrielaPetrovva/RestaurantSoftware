@@ -58,34 +58,34 @@ ServeSoftware е уеб-базирана система за управлени�
 ## Screenshots
 
 ### Основен екран
-![Основен екран](docs/screenshots/menu-first-page.png)
+![Основен екран](assets/screenshots/menu-first-page.png)
 
 ### Категория в менюто
-![Категория](docs/screenshots/menu-category-page.png)
+![Категория](assets/screenshots/menu-category-page.png)
 
 ### Влизане в акаунта на мениджъра
-![Влизане в акаунт](docs/screenshots/login-manager.png)
+![Влизане в акаунт](assets/screenshots/login-manager.png)
 
 ### Табло на мениджъра - Финанси
-![Табло на мениджъра](docs/screenshots/finance.png)
+![Табло на мениджъра](assets/screenshots/manager-dashboard-finance.png)
 
 ### Табло на мениджъра - Персонал
-![Табло на мениджъра](docs/screenshots/manager-dashboard-employees.png)
+![Табло на мениджъра](assets/screenshots/manager-dashboard-employees.png)
 
 ### Табло на мениджъра - Меню
-![Добавяне/Изтриване/Деактивиране/Редакция на артикул](docs/screenshots/manager-dashboard-menu.png)
+![Добавяне/Изтриване/Деактивиране/Редакция на артикул](assets/screenshots/manager-dashboard-menu.png)
 
 ### Влизане в акаунта на сервитьора
-![Влизане в акаунт](docs/screenshots/login-waiter.png)
+![Влизане в акаунт](assets/screenshots/login-waiter.png)
 
 ### Поръчки
-![Завършване на поръчка - плащане](docs/screenshots/orders-waiter.png)
+![Завършване на поръчка - плащане](assets/screenshots/orders-waiter.png)
 
 ### Статистики
-![Статистики](docs/screenshots/statistics-waiter.png)
+![Статистики](assets/screenshots/statistics-waiter.png)
 
 ### Управление на маси
-![Управление на маси](docs/screenshots/tables-waiter.png)
+![Управление на маси](assets/screenshots/tables-waiter.png)
 
 ---
 
