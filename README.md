@@ -67,7 +67,7 @@ ServeSoftware е уеб-базирана система за управлени�
 ![Влизане в акаунт](assets/screenshots/login-manager.png)
 
 ### Табло на мениджъра - Финанси
-![Табло на мениджъра](assets/screenshots/finance.png)
+![Табло на мениджъра](assets/screenshots/manager-dashboard-finance.png)
 
 ### Табло на мениджъра - Персонал
 ![Табло на мениджъра](assets/screenshots/manager-dashboard-employees.png)
