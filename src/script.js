@@ -66,6 +66,9 @@
       },
       category: {
         backToMenu: '← Back to Menu'
+      },
+      receipt: {
+        title: 'Last Order Receipt'
       }
     },
     bg: {
@@ -135,6 +138,9 @@
       },
       category: {
         backToMenu: '← Назад към меню'
+      },
+      receipt: {
+        title: 'Последна поръчка'
       }
     }
   };
@@ -169,7 +175,12 @@
       const keys = key.split('.');
       let value = t;
       for (let k of keys) {
-        value = value[k];
+        if (value && typeof value === 'object' && k in value) {
+          value = value[k];
+        } else {
+          value = undefined;
+          break;
+        }
       }
       if (value) {
         element.textContent = value;
@@ -182,7 +193,12 @@
       const keys = key.split('.');
       let value = t;
       for (let k of keys) {
-        value = value[k];
+        if (value && typeof value === 'object' && k in value) {
+          value = value[k];
+        } else {
+          value = undefined;
+          break;
+        }
       }
       if (value) {
         element.placeholder = value;

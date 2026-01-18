@@ -49,7 +49,6 @@ const tplMenuItem = qs("tplMenuItem");
 
 const paymentTypes = qs("paymentTypes");
 const customTipEl = qs("customTip");
-const commentsEl = qs("comments");
 const completePaymentBtn = qs("completePayment");
 
 const checksList = qs("checksList");
@@ -58,6 +57,224 @@ const statSales = qs("statSales");
 const statAvg = qs("statAvg");
 const statTables = qs("statTables");
 const statTips = qs("statTips");
+const langSelect = qs("langSelect");
+const receiptModal = qs("receiptModal");
+const receiptBody = qs("receiptBody");
+const closeReceipt = qs("closeReceipt");
+const closeReceiptBtn = qs("closeReceiptBtn");
+const printReceipt = qs("printReceipt");
+const receiptTitle = qs("receiptTitle");
+
+/* ======================= TRANSLATIONS ======================= */
+let currentLang = localStorage.getItem('waiterDashboardLang') || 'en';
+
+const translations = {
+  en: {
+    'Waiter Dashboard': 'Waiter Dashboard',
+    'Tables': 'Tables',
+    'Orders': 'Orders',
+    'Payments': 'Payments',
+    'Delivery': 'Delivery',
+    'Statistics': 'Statistics',
+    'Exit': 'Exit',
+    'Tap a table to open or create an order': 'Tap a table to open or create an order',
+    'Back to Tables': 'Back to Tables',
+    'Order': 'Order',
+    'No order selected. Tap a table to start.': 'No order selected. Tap a table to start.',
+    'Total': 'Total',
+    'Cash': 'Cash',
+    'Card': 'Card',
+    'Amount': 'Amount',
+    'Tip': 'Tip',
+    'Comments': 'Comments',
+    'Notes to kitchen/bar': 'Notes to kitchen/bar',
+    'Complete Payment': 'Complete Payment',
+    'Menu': 'Menu',
+    'Open checks and payment history': 'Open checks and payment history',
+    'Delivery / Takeaway': 'Delivery / Takeaway',
+    'Incoming Orders': 'Incoming Orders',
+    'Print Orders': 'Print Orders',
+    'Sales this shift': 'Sales this shift',
+    'Average check': 'Average check',
+    'Served tables': 'Served tables',
+    'Tips (total)': 'Tips (total)',
+    'Table': 'Table',
+    'Free': 'Free',
+    'Busy': 'Busy',
+    'Occupied': 'Occupied',
+    'No tables.': 'No tables.',
+    'Loading...': 'Loading...',
+    'Empty order. Add items from menu.': 'Empty order. Add items from menu.',
+    'Order not found.': 'Order not found.',
+    'No categories.': 'No categories.',
+    'No payments yet.': 'No payments yet.',
+    'Pay': 'Pay',
+    'Stats': 'Stats',
+    'Receipt': 'Receipt',
+    'Table': 'Table',
+    'Date': 'Date',
+    'Payment Method': 'Payment Method',
+    'Subtotal': 'Subtotal',
+    'Tip': 'Tip',
+    'Total': 'Total',
+    'Print': 'Print',
+    'Close': 'Close',
+    'Quantity': 'Qty',
+    'Price': 'Price'
+  },
+  bg: {
+    'Waiter Dashboard': 'Табло на Сервитьор',
+    'Tables': 'Маси',
+    'Orders': 'Поръчки',
+    'Payments': 'Плащания',
+    'Delivery': 'Доставка',
+    'Statistics': 'Статистики',
+    'Exit': 'Изход',
+    'Tap a table to open or create an order': 'Натиснете маса, за да отворите или създадете поръчка',
+    'Back to Tables': 'Назад към Масите',
+    'Order': 'Поръчка',
+    'No order selected. Tap a table to start.': 'Няма избрана поръчка. Натиснете маса, за да започнете.',
+    'Total': 'Общо',
+    'Cash': 'В брой',
+    'Card': 'Карта',
+    'Amount': 'Сума',
+    'Tip': 'Бакшиш',
+    'Comments': 'Коментари',
+    'Notes to kitchen/bar': 'Бележки към кухня/бар',
+    'Complete Payment': 'Завърши Плащане',
+    'Menu': 'Меню',
+    'Open checks and payment history': 'Отворени сметки и история на плащания',
+    'Delivery / Takeaway': 'Доставка / За вкъщи',
+    'Incoming Orders': 'Входящи Поръчки',
+    'Print Orders': 'Принтирай Поръчки',
+    'Sales this shift': 'Продажби тази смяна',
+    'Average check': 'Среден чек',
+    'Served tables': 'Обслужени маси',
+    'Tips (total)': 'Бакшиши (общо)',
+    'Table': 'Маса',
+    'Free': 'Свободна',
+    'Busy': 'Заета',
+    'Occupied': 'Заета',
+    'No tables.': 'Няма маси.',
+    'Loading...': 'Зареждане...',
+    'Empty order. Add items from menu.': 'Празна поръчка. Добавете артикули от менюто.',
+    'Order not found.': 'Поръчката не е намерена.',
+    'No categories.': 'Няма категории.',
+    'No payments yet.': 'Все още няма плащания.',
+    'Pay': 'Плащане',
+    'Stats': 'Статистики',
+    'Receipt': 'Разписка',
+    'Table': 'Маса',
+    'Date': 'Дата',
+    'Payment Method': 'Метод на плащане',
+    'Subtotal': 'Междинна сума',
+    'Tip': 'Бакшиш',
+    'Total': 'Общо',
+    'Print': 'Принтирай',
+    'Close': 'Затвори',
+    'Quantity': 'Кол.',
+    'Price': 'Цена'
+  }
+};
+
+function t(key) {
+  return translations[currentLang][key] || translations['en'][key] || key;
+}
+
+function updateTranslations() {
+  // Update header
+  const appTitle = qs("appTitle");
+  if (appTitle) appTitle.textContent = t('Waiter Dashboard');
+  
+  // Update navigation buttons
+  document.querySelectorAll('.top-nav button[data-view="tables"]').forEach(el => el.textContent = t('Tables'));
+  document.querySelectorAll('.top-nav button[data-view="orders"]').forEach(el => el.textContent = t('Orders'));
+  document.querySelectorAll('.top-nav button[data-view="payments"]').forEach(el => el.textContent = t('Payments'));
+  document.querySelectorAll('.top-nav button[data-view="delivery"]').forEach(el => el.textContent = t('Delivery'));
+  document.querySelectorAll('.top-nav button[data-view="stats"]').forEach(el => el.textContent = t('Statistics'));
+  
+  document.querySelectorAll('.bottom-nav button[data-view="tables"] span:last-child').forEach(el => el.textContent = t('Tables'));
+  document.querySelectorAll('.bottom-nav button[data-view="orders"] span:last-child').forEach(el => el.textContent = t('Orders'));
+  document.querySelectorAll('.bottom-nav button[data-view="payments"] span:last-child').forEach(el => el.textContent = t('Pay'));
+  document.querySelectorAll('.bottom-nav button[data-view="delivery"] span:last-child').forEach(el => el.textContent = t('Delivery'));
+  document.querySelectorAll('.bottom-nav button[data-view="stats"] span:last-child').forEach(el => el.textContent = t('Stats'));
+  
+  // Update exit button
+  if (exitBtn) exitBtn.textContent = t('Exit');
+  
+  // Update section titles
+  const tablesTitle = qs("tablesTitle");
+  if (tablesTitle) tablesTitle.textContent = t('Tables');
+  const tablesSubtitle = qs("tablesSubtitle");
+  if (tablesSubtitle) tablesSubtitle.textContent = t('Tap a table to open or create an order');
+  
+  const backToTablesLabel = qs("backToTablesLabel");
+  if (backToTablesLabel) backToTablesLabel.textContent = t('Back to Tables');
+  
+  const orderTitle = qs("orderTitle");
+  if (orderTitle) orderTitle.textContent = t('Order');
+  
+  const labelTotal = qs("labelTotal");
+  if (labelTotal) labelTotal.textContent = t('Total');
+  
+  const paymentsBlockTitle = qs("paymentsBlockTitle");
+  if (paymentsBlockTitle) paymentsBlockTitle.textContent = t('Payments');
+  
+  document.querySelectorAll('.pay-btn[data-type="cash"]').forEach(el => el.textContent = t('Cash'));
+  document.querySelectorAll('.pay-btn[data-type="card"]').forEach(el => el.textContent = t('Card'));
+  
+  const labelAmount = qs("labelAmount");
+  if (labelAmount) labelAmount.textContent = t('Amount');
+  
+  const labelTip = qs("labelTip");
+  if (labelTip) labelTip.textContent = t('Tip');
+  
+  if (completePaymentBtn) completePaymentBtn.textContent = t('Complete Payment');
+  
+  const menuTitle = qs("menuTitle");
+  if (menuTitle) menuTitle.textContent = t('Menu');
+  
+  const paymentsTitle = qs("paymentsTitle");
+  if (paymentsTitle) paymentsTitle.textContent = t('Payments');
+  
+  const deliveryTitle = qs("deliveryTitle");
+  if (deliveryTitle) deliveryTitle.textContent = t('Delivery / Takeaway');
+  
+  const deliverySubtitle = qs("deliverySubtitle");
+  if (deliverySubtitle) deliverySubtitle.textContent = t('Incoming Orders');
+  
+  if (btnPrintOrders) btnPrintOrders.textContent = t('Print Orders');
+  
+  const statsTitle = qs("statsTitle");
+  if (statsTitle) statsTitle.textContent = t('Statistics');
+  
+  const statSalesLabel = qs("statSalesLabel");
+  if (statSalesLabel) statSalesLabel.textContent = t('Sales this shift');
+  
+  const statAvgLabel = qs("statAvgLabel");
+  if (statAvgLabel) statAvgLabel.textContent = t('Average check');
+  
+  const statTablesLabel = qs("statTablesLabel");
+  if (statTablesLabel) statTablesLabel.textContent = t('Served tables');
+  
+  const statTipsLabel = qs("statTipsLabel");
+  if (statTipsLabel) statTipsLabel.textContent = t('Tips (total)');
+  
+  // Update receipt modal translations
+  if (receiptTitle) receiptTitle.textContent = t('Receipt');
+  if (printReceipt) printReceipt.textContent = t('Print');
+  if (closeReceiptBtn) closeReceiptBtn.textContent = t('Close');
+  
+  // Update initial order items message if it exists
+  if (orderItemsEl && orderItemsEl.textContent.includes('No order selected')) {
+    orderItemsEl.innerHTML = `<div class="muted">${t('No order selected. Tap a table to start.')}</div>`;
+  }
+  
+  // Re-render tables to update status text
+  if (unsubTables) {
+    listenTables();
+  }
+}
 
 /* ======================= GUARDS ======================= */
 function requireEl(el, name) {
@@ -76,7 +293,6 @@ function requireEl(el, name) {
   [tplMenuItem, "tplMenuItem"],
   [paymentTypes, "paymentTypes"],
   [customTipEl, "customTip"],
-  [commentsEl, "comments"],
   [completePaymentBtn, "completePayment"],
   [checksList, "checksList"],
   [statSales, "statSales"],
@@ -145,6 +361,16 @@ function parseEuroInput(s) {
 });
 backToTablesBtn?.addEventListener("click", () => setView("tables"));
 
+/* ======================= LANGUAGE ======================= */
+if (langSelect) {
+  langSelect.value = currentLang;
+  langSelect.addEventListener("change", (e) => {
+    currentLang = e.target.value;
+    localStorage.setItem('waiterDashboardLang', currentLang);
+    updateTranslations();
+  });
+}
+
 /* ======================= AUTH ======================= */
 onAuthStateChanged(auth, async (user) => {
   try {
@@ -171,6 +397,9 @@ onAuthStateChanged(auth, async (user) => {
 
     userNameEl.textContent = `${meEmp.name || "User"} (${meEmp.role || "staff"})`;
 
+    // Initialize translations
+    updateTranslations();
+
     listenTables();
     listenCategories();
     listenMenus();
@@ -196,21 +425,41 @@ function listenTables() {
     tablesGrid.innerHTML = "";
 
     if (snap.empty) {
-      tablesGrid.innerHTML = `<div class="muted">No tables.</div>`;
+      tablesGrid.innerHTML = `<div class="muted">${t('No tables.')}</div>`;
       return;
     }
 
     snap.forEach((d) => {
-      const t = { id: d.id, ...d.data() };
+      const table = { id: d.id, ...d.data() };
       const node = tplTableChip.content.firstElementChild.cloneNode(true);
 
       node.querySelector(".name").textContent =
-        (t.number != null) ? `Table ${t.number}` : t.id;
+        (table.number != null) ? `${t('Table')} ${table.number}` : table.id;
 
-      const isBusy = String(t.status || "").toLowerCase() === "busy";
-      node.querySelector(".status").textContent = isBusy ? "Busy" : "Free";
+      const status = String(table.status || "").toLowerCase();
+      const isBusy = status === "busy" || status === "occupied";
+      const isFree = status === "free" || !status;
+      
+      // Remove all status classes first
+      node.classList.remove("free", "busy", "occupied", "ready");
+      
+      // Add appropriate class based on status
+      if (isFree) {
+        node.classList.add("free");
+        node.querySelector(".status").textContent = t('Free');
+      } else if (isBusy) {
+        node.classList.add("busy");
+        node.querySelector(".status").textContent = t('Busy');
+      } else if (status === "ready") {
+        node.classList.add("ready");
+        node.querySelector(".status").textContent = t('Ready');
+      } else {
+        // Default to free if unknown status
+        node.classList.add("free");
+        node.querySelector(".status").textContent = t('Free');
+      }
 
-      node.addEventListener("click", () => openTable(t));
+      node.addEventListener("click", () => openTable(table));
       tablesGrid.appendChild(node);
     });
   }, (err) => {
@@ -257,14 +506,14 @@ async function openTable(t) {
 function listenOrder(orderId) {
   if (unsubOrder) unsubOrder();
 
-  orderItemsEl.innerHTML = `<div class="muted">Loading...</div>`;
+  orderItemsEl.innerHTML = `<div class="muted">${t('Loading...')}</div>`;
   totalValueEl.textContent = euro(0);
   amountValueEl.textContent = euro(0);
   currentTotal = 0;
 
   unsubOrder = onSnapshot(doc(db, "orders", orderId), (snap) => {
     if (!snap.exists()) {
-      orderItemsEl.innerHTML = `<div class="muted">Order not found.</div>`;
+      orderItemsEl.innerHTML = `<div class="muted">${t('Order not found.')}</div>`;
       return;
     }
 
@@ -273,7 +522,7 @@ function listenOrder(orderId) {
 
     orderItemsEl.innerHTML = "";
     if (!items.length) {
-      orderItemsEl.innerHTML = `<div class="muted">Empty order. Add items from menu.</div>`;
+      orderItemsEl.innerHTML = `<div class="muted">${t('Empty order. Add items from menu.')}</div>`;
       currentTotal = 0;
       totalValueEl.textContent = euro(0);
       amountValueEl.textContent = euro(0);
@@ -378,8 +627,8 @@ function listenCategories() {
     categoriesCache.sort((a, b) => a.order - b.order);
 
     if (!categoriesCache.length) {
-      categoryRow.innerHTML = `<div class="muted">No categories.</div>`;
-      menuItemsEl.innerHTML = `<div class="muted" style="padding:10px 0;">No categories.</div>`;
+      categoryRow.innerHTML = `<div class="muted">${t('No categories.')}</div>`;
+      menuItemsEl.innerHTML = `<div class="muted" style="padding:10px 0;">${t('No categories.')}</div>`;
       selectedCategory = null;
       return;
     }
@@ -502,6 +751,112 @@ customTipEl.addEventListener("input", () => {
   tipPercent = 0;
 });
 
+/* ======================= RECEIPT ======================= */
+function showReceipt(orderData, items, baseAmount, tipAmount, payMethod, tableNumber) {
+  if (!receiptModal || !receiptBody) return;
+
+  const date = new Date();
+  const dateStr = date.toLocaleString(currentLang === 'bg' ? 'bg-BG' : 'en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const totalAmount = baseAmount + tipAmount;
+
+  let itemsHtml = '';
+  if (items && items.length > 0) {
+    items.forEach((item) => {
+      const name = item.name || item.itemId || 'Item';
+      const price = Number(item.price) || 0;
+      const qty = Number(item.qty) || 0;
+      const lineTotal = price * qty;
+      
+      itemsHtml += `
+        <div class="receipt-item">
+          <div>
+            <div class="receipt-item-name">${name}</div>
+            <div class="receipt-item-details">${t('Quantity')}: ${qty} × ${euro(price)}</div>
+          </div>
+          <div class="receipt-item-price">${euro(lineTotal)}</div>
+        </div>
+      `;
+    });
+  }
+
+  const paymentMethodText = payMethod === 'cash' ? t('Cash') : t('Card');
+
+  receiptBody.innerHTML = `
+    <div class="receipt-info">
+      <div class="receipt-info-row">
+        <span class="receipt-info-label">${t('Table')}:</span>
+        <span class="receipt-info-value">${tableNumber || '-'}</span>
+      </div>
+      <div class="receipt-info-row">
+        <span class="receipt-info-label">${t('Date')}:</span>
+        <span class="receipt-info-value">${dateStr}</span>
+      </div>
+      <div class="receipt-info-row">
+        <span class="receipt-info-label">${t('Payment Method')}:</span>
+        <span class="receipt-info-value">${paymentMethodText}</span>
+      </div>
+    </div>
+
+    <div class="receipt-items">
+      ${itemsHtml}
+    </div>
+
+    <div class="receipt-totals">
+      <div class="receipt-total-row">
+        <span class="receipt-total-label">${t('Subtotal')}:</span>
+        <span class="receipt-total-value">${euro(baseAmount)}</span>
+      </div>
+      ${tipAmount > 0 ? `
+        <div class="receipt-total-row">
+          <span class="receipt-total-label">${t('Tip')}:</span>
+          <span class="receipt-total-value">${euro(tipAmount)}</span>
+        </div>
+      ` : ''}
+      <div class="receipt-total-row final">
+        <span class="receipt-total-label">${t('Total')}:</span>
+        <span class="receipt-total-value">${euro(totalAmount)}</span>
+      </div>
+    </div>
+  `;
+
+  receiptModal.classList.add('show');
+}
+
+function hideReceipt() {
+  if (receiptModal) {
+    receiptModal.classList.remove('show');
+  }
+}
+
+if (closeReceipt) {
+  closeReceipt.addEventListener("click", hideReceipt);
+}
+
+if (closeReceiptBtn) {
+  closeReceiptBtn.addEventListener("click", hideReceipt);
+}
+
+if (receiptModal) {
+  receiptModal.addEventListener("click", (e) => {
+    if (e.target === receiptModal) {
+      hideReceipt();
+    }
+  });
+}
+
+if (printReceipt) {
+  printReceipt.addEventListener("click", () => {
+    window.print();
+  });
+}
+
 /* ======================= COMPLETE PAYMENT ======================= */
 completePaymentBtn.addEventListener("click", async () => {
   try {
@@ -512,6 +867,12 @@ completePaymentBtn.addEventListener("click", async () => {
     const baseAmount = currentTotal;
     const tipAmount = tipPercent > 0 ? baseAmount * tipPercent : (Number(tipCustom) || 0);
 
+    // Get table data for receipt
+    const tableRef = doc(db, "tables", selectedTableId);
+    const tableSnap = await getDoc(tableRef);
+    const tableData = tableSnap.exists() ? tableSnap.data() : {};
+    const tableNumber = tableData.number != null ? tableData.number : selectedTableId;
+
     await addDoc(collection(db, "payments"), {
       orderId: selectedOrderId,
       tableId: selectedTableId,
@@ -519,7 +880,6 @@ completePaymentBtn.addEventListener("click", async () => {
       method: payMethod,
       amount: baseAmount,
       tipAmount,
-      comment: commentsEl.value || "",
       createdAt: serverTimestamp()
     });
 
@@ -528,36 +888,36 @@ completePaymentBtn.addEventListener("click", async () => {
       updatedAt: serverTimestamp()
     });
 
-    const tableRef = doc(db, "tables", selectedTableId);
     await updateDoc(tableRef, {
       activeOrders: arrayRemove(selectedOrderId),
       updatedAt: serverTimestamp()
     });
 
     const tSnap = await getDoc(tableRef);
-    const t = tSnap.exists() ? tSnap.data() : {};
-    const stillActive = Array.isArray(t.activeOrders) && t.activeOrders.length > 0;
+    const tableDataAfter = tSnap.exists() ? tSnap.data() : {};
+    const stillActive = Array.isArray(tableDataAfter.activeOrders) && tableDataAfter.activeOrders.length > 0;
 
     await updateDoc(tableRef, {
       status: stillActive ? "busy" : "free",
       updatedAt: serverTimestamp()
     });
 
+    // Show receipt before clearing state
+    showReceipt(currentOrder, items, baseAmount, tipAmount, payMethod, tableNumber);
+
     selectedTableId = null;
     selectedOrderId = null;
     currentOrder = null;
     currentTotal = 0;
 
-    orderItemsEl.innerHTML = `<div class="muted">No order selected. Tap a table to start.</div>`;
+    orderItemsEl.innerHTML = `<div class="muted">${t('No order selected. Tap a table to start.')}</div>`;
     totalValueEl.textContent = euro(0);
     amountValueEl.textContent = euro(0);
 
-    commentsEl.value = "";
     customTipEl.value = "";
     tipCustom = 0;
     tipPercent = 0;
 
-    alert("Payment completed ✅");
     setView("tables");
   } catch (err) {
     console.error(err);
@@ -580,7 +940,7 @@ function listenPaymentsHistory() {
     checksList.innerHTML = "";
 
     if (snap.empty) {
-      checksList.innerHTML = `<div class="muted">No payments yet.</div>`;
+      checksList.innerHTML = `<div class="muted">${t('No payments yet.')}</div>`;
       return;
     }
 

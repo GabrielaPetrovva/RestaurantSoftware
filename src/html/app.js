@@ -247,9 +247,6 @@ async function renderCategoryPage() {
 
   snap.forEach(doc => {
     const item = doc.data();
-    const lang = localStorage.getItem('language') || 'en';
-    const noDesc = lang === 'bg' ? 'Описание не е налично' : 'Description not available';
-    const noPrice = lang === 'bg' ? 'Цена не е зададена' : 'Price not set';
 
     const itemEl = document.createElement("div");
     itemEl.className = "menu-item";
@@ -262,12 +259,12 @@ async function renderCategoryPage() {
       const protein = item.protein || 0;
       const fat = item.fat || 0;
       const weight = item.weight || '';
-      const price = item.price != null ? item.price + ' лв' : noPrice;
+      const price = item.price != null ? item.price + ' €' : '';
       const priceValue = item.price || 0;
       
       showNutritionInfo(
         item.name || 'Unknown Item',
-        item.description || noDesc,
+        item.description || '',
         calories,
         carbs,
         protein,
@@ -279,14 +276,22 @@ async function renderCategoryPage() {
       );
     };
     
-    itemEl.innerHTML = `
-      <img src="${resolveImg(item.image)}" alt="${item.name || "Item"}">
+    // Build HTML with only available data
+    let itemHTML = `<img src="${resolveImg(item.image)}" alt="${item.name || "Item"}">
       <div class="item-info">
-        <h3>${item.name || "Unknown Item"}</h3>
-        <p>${item.description || noDesc}</p>
-        <span>${item.price != null ? item.price + " лв" : noPrice}</span>
-      </div>
-    `;
+        <h3>${item.name || "Unknown Item"}</h3>`;
+    
+    if (item.description) {
+      itemHTML += `<p>${item.description}</p>`;
+    }
+    
+    if (item.price != null) {
+      itemHTML += `<span>${item.price} €</span>`;
+    }
+    
+    itemHTML += `</div>`;
+    
+    itemEl.innerHTML = itemHTML;
     menuDiv.appendChild(itemEl);
   });
 }

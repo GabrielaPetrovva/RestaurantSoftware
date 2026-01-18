@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../css/menu.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 </head>
 <body>
@@ -33,6 +34,9 @@
                 <div class="order-icon" onclick="toggleOrderSummary()">
                     <img src="../images/shopping-cart.png" alt="Shopping Cart">
                     <span class="order-badge" id="order-count">0</span>
+                </div>
+                <div class="receipt-icon" id="receipt-icon" onclick="showLastOrderReceipt()" style="display: none;" title="Последна поръчка / Last Order">
+                    📄
                 </div>
             </div>
         </div>

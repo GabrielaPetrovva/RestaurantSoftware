@@ -20,6 +20,22 @@ let items = [];
 let selectedCat = "all";
 let search = "";
 
+/* ================= CATEGORY MATCH (FIXED) ================= */
+// ✅ accepts dessert and desserts as same category
+function catMatches(itemCat, selected) {
+  const a = String(itemCat ?? "").trim().toLowerCase();
+  const s = String(selected ?? "").trim().toLowerCase();
+
+  if (s === "all") return true;
+  if (a === s) return true;
+
+  // ✅ FIX: dessert <-> desserts (both ways)
+  if (s === "desserts" && a === "dessert") return true;
+  if (s === "dessert" && a === "desserts") return true;
+
+  return false;
+}
+
 /* ================= LIVE LISTENERS ================= */
 onSnapshot(
   collection(db, "menu_categories"),
@@ -126,9 +142,9 @@ function renderList() {
   // ✅ show ALL items (active + inactive)
   let visible = items.slice();
 
-  // category filter
+  // ✅ category filter (FIXED)
   if (selectedCat !== "all") {
-    visible = visible.filter((i) => String(i.category ?? "") === selectedCat);
+    visible = visible.filter((i) => catMatches(i.category, selectedCat));
   }
 
   // search filter

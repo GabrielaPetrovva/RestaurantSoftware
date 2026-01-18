@@ -3,6 +3,7 @@
 // Order data storage
 let orderItems = [];
 let orderTotal = 0;
+let lastOrder = []; // Store accumulated completed orders (all items from all QR generations)
 
 // Show nutrition information modal
 function showNutritionInfo(name, description, calories, carbs, protein, fat, weight, price, priceValue, imageUrl) {
@@ -255,74 +256,182 @@ function generateQR() {
         return;
     }
     
+    // Add current order items to accumulated receipt before clearing
+    // If item already exists in lastOrder, merge quantities
+    const currentOrderCopy = JSON.parse(JSON.stringify(orderItems)); // Deep copy
+    
+    currentOrderCopy.forEach(newItem => {
+        const existingItem = lastOrder.find(item => item.name === newItem.name);
+        if (existingItem) {
+            // Item exists - add quantities and update total price
+            existingItem.quantity += newItem.quantity;
+            existingItem.totalPrice = existingItem.price * existingItem.quantity;
+        } else {
+            // New item - add to receipt
+            lastOrder.push(newItem);
+        }
+    });
+    
+    localStorage.setItem('lastOrder', JSON.stringify(lastOrder));
+    
+    // Close order summary modal
+    const orderModal = document.getElementById('orderSummaryModal');
+    orderModal.style.display = 'none';
+    
     // Create order summary text
     const orderSummary = createOrderSummary();
     
-    // Generate QR code using QR.js library (you'll need to include this library)
-    generateQRCode(orderSummary);
+    // Generate QR code in full-screen modal
+    generateQRCodeModal(orderSummary);
     
-    const successMsg = lang === 'bg' ? 'QR кодът е генериран успешно!' : 'QR code generated successfully!';
-    showOrderMessage(successMsg);
+    // Clear current cart
+    orderItems = [];
+    orderTotal = 0;
+    updateOrderCount();
+    saveOrderToStorage();
+    
+    // Show receipt button
+    const receiptIcon = document.getElementById('receipt-icon');
+    if (receiptIcon) {
+        receiptIcon.style.display = 'flex';
+    }
 }
 
-// Create order summary text
+// Create order summary as JSON
 function createOrderSummary() {
     const lang = localStorage.getItem('language') || 'en';
-    const orderLabel = lang === 'bg' ? 'ПОРЪЧКА' : 'ORDER';
-    const totalLabel = lang === 'bg' ? 'ОБЩО' : 'TOTAL';
-    const dateLabel = lang === 'bg' ? 'Дата' : 'Date';
-    const timeLabel = lang === 'bg' ? 'Час' : 'Time';
     const locale = lang === 'bg' ? 'bg-BG' : 'en-US';
+    const now = new Date();
     
-    let summary = `${orderLabel}\n`;
-    summary += '==================\n\n';
+    const orderData = {
+        order: {
+            items: orderItems.map(item => ({
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                totalPrice: item.totalPrice
+            })),
+            total: parseFloat(orderTotal.toFixed(2)),
+            currency: '€',
+            date: now.toLocaleDateString(locale),
+            time: now.toLocaleTimeString(locale),
+            timestamp: now.toISOString()
+        }
+    };
     
-    orderItems.forEach(item => {
-        summary += `${item.name} x${item.quantity} - ${item.totalPrice.toFixed(2)} €\n`;
-    });
-    
-    summary += '\n==================\n';
-    summary += `${totalLabel}: ${orderTotal.toFixed(2)} €\n`;
-    summary += `${dateLabel}: ${new Date().toLocaleDateString(locale)}\n`;
-    summary += `${timeLabel}: ${new Date().toLocaleTimeString(locale)}`;
-    
-    return summary;
+    // Return JSON string
+    return JSON.stringify(orderData, null, 2);
 }
 
-// Generate QR code (using QR.js library)
-function generateQRCode(text) {
-    // Create QR code container if it doesn't exist
-    let qrContainer = document.querySelector('.qr-code-container');
-    if (!qrContainer) {
-        qrContainer = document.createElement('div');
-        qrContainer.className = 'qr-code-container';
-        document.querySelector('.order-summary-content').appendChild(qrContainer);
-    }
+// Generate QR code in full-screen modal
+function generateQRCodeModal(text) {
+    const qrModal = document.getElementById('qrModal');
+    const qrDisplay = document.getElementById('qr-code-display');
     
     // Clear previous QR code
-    const lang = localStorage.getItem('language') || 'en';
-    const qrTitle = lang === 'bg' ? 'QR код за поръчката' : 'QR Code for Order';
-    const qrScanMsg = lang === 'bg' ? 'Сканирайте този код за да видите детайлите на поръчката' : 'Scan this code to view order details';
+    qrDisplay.innerHTML = '';
     
-    qrContainer.innerHTML = `<h3>${qrTitle}</h3>`;
-    
-    // Create QR code element
-    const qrCodeElement = document.createElement('div');
+    // Create QR code canvas using QRCode.js (if available) or fallback
+    const qrCodeElement = document.createElement('canvas');
     qrCodeElement.id = 'qr-code';
     
-    // Simple QR code generation (you might want to use a proper QR library)
-    qrCodeElement.innerHTML = `
-        <div style="background: white; padding: 20px; border-radius: 8px; display: inline-block;">
-            <div style="font-family: monospace; font-size: 10px; line-height: 1; color: black;">
-                ${text.split('\n').map(line => line.replace(/./g, '█')).join('<br>')}
-            </div>
-        </div>
-        <p style="margin-top: 10px; color: #ccc; font-size: 0.9rem;">
-            ${qrScanMsg}
-        </p>
-    `;
+    // Try to use QRCode.js library if available
+    if (typeof QRCode !== 'undefined') {
+        QRCode.toCanvas(qrCodeElement, text, {
+            width: Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 600),
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        }, function (error) {
+            if (error) {
+                console.error('QR Code generation error:', error);
+                // Fallback to simple visual representation
+                generateQRCodeFallback(qrDisplay, text);
+            }
+        });
+    } else {
+        // Fallback if QRCode.js is not loaded
+        generateQRCodeFallback(qrDisplay, text);
+    }
     
-    qrContainer.appendChild(qrCodeElement);
+    qrDisplay.appendChild(qrCodeElement);
+    
+    // Show modal
+    qrModal.classList.add('show');
+    qrModal.style.display = 'flex';
+}
+
+// Fallback QR code display (simple text representation)
+function generateQRCodeFallback(container, text) {
+    const lang = localStorage.getItem('language') || 'en';
+    const qrScanMsg = lang === 'bg' ? 'Сканирайте този код за да видите детайлите на поръчката' : 'Scan this code to view order details';
+    
+    container.innerHTML = `
+        <div style="background: white; padding: 40px; border-radius: 8px; display: inline-block; max-width: 90vw; max-height: 90vh; overflow: auto;">
+            <div style="font-family: monospace; font-size: 12px; line-height: 1.2; color: black; white-space: pre-wrap; word-break: break-all;">
+                ${text}
+            </div>
+            <p style="margin-top: 20px; color: #666; font-size: 0.9rem; text-align: center;">
+                ${qrScanMsg}
+            </p>
+        </div>
+    `;
+}
+
+// Close QR modal
+function closeQRModal() {
+    const qrModal = document.getElementById('qrModal');
+    qrModal.style.display = 'none';
+    qrModal.classList.remove('show');
+}
+
+// Show last order receipt
+function showLastOrderReceipt() {
+    // Load last order from localStorage if not in memory
+    if (!lastOrder) {
+        const savedLastOrder = localStorage.getItem('lastOrder');
+        if (savedLastOrder) {
+            lastOrder = JSON.parse(savedLastOrder);
+        }
+    }
+    
+    if (!lastOrder || lastOrder.length === 0) {
+        const lang = localStorage.getItem('language') || 'en';
+        const noOrderMsg = lang === 'bg' ? 'Няма запазена поръчка' : 'No saved order';
+        showOrderMessage(noOrderMsg);
+        return;
+    }
+    
+    const receiptModal = document.getElementById('receiptModal');
+    const receiptItems = document.getElementById('receipt-items');
+    const receiptTotal = document.getElementById('receipt-total-price');
+    
+    // Calculate total from last order
+    const total = lastOrder.reduce((sum, item) => sum + item.totalPrice, 0);
+    
+    // Display receipt items (read-only)
+    receiptItems.innerHTML = lastOrder.map(item => `
+        <div class="receipt-item">
+            <div class="receipt-item-name">${item.name}</div>
+            <div class="receipt-item-quantity">x${item.quantity}</div>
+            <div class="receipt-item-price">${item.totalPrice.toFixed(2)} €</div>
+        </div>
+    `).join('');
+    
+    receiptTotal.textContent = total.toFixed(2);
+    
+    // Show modal
+    receiptModal.style.display = 'block';
+    receiptModal.classList.add('show');
+}
+
+// Close receipt modal
+function closeReceiptModal() {
+    const receiptModal = document.getElementById('receiptModal');
+    receiptModal.style.display = 'none';
+    receiptModal.classList.remove('show');
 }
 
 // Show order message
@@ -474,6 +583,22 @@ document.head.appendChild(style);
 // Load order when page loads
 window.addEventListener('DOMContentLoaded', function() {
     loadOrderFromStorage();
+    
+    // Check if last order exists and show receipt button
+    const savedLastOrder = localStorage.getItem('lastOrder');
+    if (savedLastOrder) {
+        const parsedOrder = JSON.parse(savedLastOrder);
+        // Ensure it's an array (handle both old format and new format)
+        lastOrder = Array.isArray(parsedOrder) ? parsedOrder : (parsedOrder ? [parsedOrder] : []);
+        
+        if (lastOrder.length > 0) {
+            const receiptIcon = document.getElementById('receipt-icon');
+            if (receiptIcon) {
+                receiptIcon.style.display = 'flex';
+            }
+        }
+    }
+    
     // Apply translations to nutrition modal if it exists
     if (document.getElementById('nutritionModal')) {
         updateNutritionTranslations();
@@ -484,6 +609,8 @@ window.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('click', function(event) {
     const orderModal = document.getElementById('orderSummaryModal');
     const nutritionModal = document.getElementById('nutritionModal');
+    const qrModal = document.getElementById('qrModal');
+    const receiptModal = document.getElementById('receiptModal');
     
     if (event.target === orderModal) {
         orderModal.style.display = 'none';
@@ -492,6 +619,14 @@ window.addEventListener('click', function(event) {
     if (event.target === nutritionModal) {
         nutritionModal.style.display = 'none';
     }
+    
+    if (event.target === qrModal) {
+        closeQRModal();
+    }
+    
+    if (event.target === receiptModal) {
+        closeReceiptModal();
+    }
 });
 
 // Keyboard navigation
@@ -499,13 +634,27 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const orderModal = document.getElementById('orderSummaryModal');
         const nutritionModal = document.getElementById('nutritionModal');
+        const qrModal = document.getElementById('qrModal');
+        const receiptModal = document.getElementById('receiptModal');
         
-        if (orderModal.style.display === 'block') {
-            orderModal.style.display = 'none';
+        if (qrModal && qrModal.style.display === 'flex') {
+            closeQRModal();
+            return;
         }
         
-        if (nutritionModal.style.display === 'block') {
+        if (receiptModal && receiptModal.style.display === 'block') {
+            closeReceiptModal();
+            return;
+        }
+        
+        if (orderModal && orderModal.style.display === 'block') {
+            orderModal.style.display = 'none';
+            return;
+        }
+        
+        if (nutritionModal && nutritionModal.style.display === 'flex') {
             nutritionModal.style.display = 'none';
+            return;
         }
     }
 });

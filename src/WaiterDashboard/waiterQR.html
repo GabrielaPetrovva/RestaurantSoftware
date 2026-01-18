@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Waiter QR Scanner</title>
+
+  <!-- ✅ Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- ✅ QR library -->
+  <script src="./html5-qrcode.min.js"></script>
+
+  <!-- ✅ Firebase compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root{
+      --bg1:#0d0705;
+      --bg2:#1b0f0a;
+      --bg3:#2a170e;
+      --bg4:#3b2416;
+
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(255,255,255,.09);
+      --border: rgba(255, 204, 102, 0.18);
+
+      --text:#f5f1eb;
+      --text-secondary: rgba(245,241,235,0.72);
+      --text-muted: rgba(245,241,235,0.45);
+
+      --gold1:#d6a64a;
+      --gold2:#ffcc66;
+
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+      --shadow-deep: 0 40px 100px rgba(0,0,0,.7);
+      --radius: 18px;
+    }
+
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    html,body{
+      height:100%;
+      overflow-x:hidden;
+    }
+
+    body{
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+      position:relative;
+
+      background:
+        radial-gradient(ellipse 1200px 600px at 20% 15%, rgba(255,204,102,.14), transparent 50%),
+        radial-gradient(ellipse 1000px 650px at 80% 80%, rgba(214,166,74,.18), transparent 55%),
+        linear-gradient(145deg, var(--bg1) 0%, var(--bg2) 35%, var(--bg3) 70%, var(--bg4) 100%);
+
+      background-attachment: fixed;
+      animation: breatheBackground 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes breatheBackground{
+      0%{ background-position: 0% 0%, 100% 100%, center; }
+      100%{ background-position: 10% 5%, 90% 95%, center; }
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-100px;
+      background:
+        radial-gradient(circle 800px at 30% 25%, rgba(255, 204, 102, 0.12), transparent 60%),
+        radial-gradient(circle 900px at 70% 75%, rgba(214, 166, 74, 0.14), transparent 65%);
+      filter: blur(40px);
+      animation: floatGlow 10s ease-in-out infinite alternate;
+      pointer-events:none;
+      opacity:.85;
+      z-index:0;
+    }
+
+    @keyframes floatGlow{
+      0%{ transform: translate3d(-15px,-12px,0) scale(1); }
+      100%{ transform: translate3d(18px,15px,0) scale(1.08); }
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.65) 100%);
+      pointer-events:none;
+      opacity:.7;
+      z-index:0;
+    }
+
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px 20px;
+      position:relative;
+      z-index:1;
+      perspective: 1200px;
+    }
+
+    .shell{
+      width: min(1080px, 100%);
+      border-radius: 28px;
+      padding: 28px;
+      background: rgba(13, 7, 5, 0.65);
+      border: 1px solid rgba(255, 204, 102, 0.12);
+      box-shadow:
+        var(--shadow-deep),
+        inset 0 1px 0 rgba(255,204,102,.08),
+        0 0 80px rgba(255,204,102,.04);
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transform-style: preserve-3d;
+      animation: cardFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes cardFloat{
+      0%, 100%{ transform: translateY(0px) rotateX(0deg); }
+      50%{ transform: translateY(-8px) rotateX(0.5deg); }
+    }
+
+    .shell::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(135deg,
+        rgba(255,204,102,.12) 0%,
+        transparent 40%,
+        rgba(214,166,74,.08) 100%
+      );
+      pointer-events:none;
+      opacity:.85;
+      animation: shimmerShell 8s ease-in-out infinite;
+    }
+
+    @keyframes shimmerShell{
+      0%, 100%{ opacity:.85; }
+      50%{ opacity:.95; }
+    }
+
+    .shell::after{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      border-radius: 28px;
+      padding:1px;
+      background: linear-gradient(145deg,
+        rgba(255,204,102,.3),
+        transparent 30%,
+        transparent 70%,
+        rgba(214,166,74,.25)
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events:none;
+      opacity:.4;
+      animation: edgeGlow 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes edgeGlow{
+      0%{ opacity:.3; }
+      100%{ opacity:.6; }
+    }
+
+    .header{
+      padding: 0 0 24px 0;
+      text-align:center;
+      position:relative;
+      z-index:2;
+    }
+
+    .title{
+      font-family: "Playfair Display", serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--gold2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: titleShine 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes titleShine{
+      0%{ filter: brightness(1); }
+      100%{ filter: brightness(1.15); }
+    }
+
+    .subtitle{
+      margin-top: 12px;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold2);
+      font-weight: 700;
+      opacity:.88;
+      animation: subtitlePulse 4s ease-in-out infinite;
+    }
+
+    @keyframes subtitlePulse{
+      0%, 100%{ opacity:.88; }
+      50%{ opacity:.65; }
+    }
+
+    .divider{
+      height:1px;
+      width:100%;
+      margin: 20px auto 0;
+      max-width: 600px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 204, 102, 0.6) 50%,
+        transparent 100%
+      );
+      opacity:.5;
+      animation: dividerPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes dividerPulse{
+      0%, 100%{ opacity:.5; transform: scaleX(1); }
+      50%{ opacity:.75; transform: scaleX(1.02); }
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 0;
+      position:relative;
+      z-index:2;
+    }
+
+    @media(max-width: 900px){
+      .grid{
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    .card{
+      border-radius: 20px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 24px;
+      position:relative;
+      overflow:hidden;
+      box-shadow:
+        0 15px 45px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,255,255,.08);
+      transition: transform .3s ease, box-shadow .3s ease;
+      transform-style: preserve-3d;
+      animation: cardAppear .6s ease-out backwards;
+    }
+
+    @keyframes cardAppear{
+      from{
+        opacity:0;
+        transform: translateY(30px) scale(.95);
+      }
+      to{
+        opacity:1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .card:hover{
+      transform: translateY(-4px) scale(1.01);
+      box-shadow:
+        0 25px 70px rgba(0,0,0,.55),
+        0 0 60px rgba(255,204,102,.08),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(145deg,
+        rgba(255, 204, 102, 0.10) 0%,
+        transparent 50%,
+        rgba(214, 166, 74, 0.08) 100%
+      );
+      pointer-events:none;
+      opacity:.75;
+      transition: opacity .3s ease;
+    }
+
+    .card:hover::before{
+      opacity:.95;
+    }
+
+    .card > *{ position:relative; z-index:1; }
+
+    .cardTitle{
+      font-weight: 800;
+      font-size: 18px;
+      margin: 0 0 8px 0;
+      letter-spacing:.3px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      color: var(--text);
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 204, 102, 0.3);
+      background: rgba(255, 204, 102, 0.12);
+      color: var(--gold2);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(255,204,102,.15);
+      animation: badgePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse{
+      0%, 100%{
+        box-shadow: 0 4px 12px rgba(255,204,102,.15);
+        transform: scale(1);
+      }
+      50%{
+        box-shadow: 0 6px 20px rgba(255,204,102,.25);
+        transform: scale(1.02);
+      }
+    }
+
+    .muted{
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top: 16px;
+    }
+
+    input, select{
+      flex:1;
+      min-width: 180px;
+      padding: 13px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 204, 102, 0.2);
+      background: rgba(10, 6, 4, 0.65);
+      color: var(--text);
+      outline: none;
+      transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.3);
+    }
+
+    input::placeholder{
+      color: var(--text-muted);
+      transition: opacity .3s ease;
+    }
+
+    input:focus::placeholder{
+      opacity:.3;
+    }
+
+    input:focus, select:focus{
+      border-color: var(--gold2);
+      background: rgba(10, 6, 4, 0.8);
+      box-shadow:
+        0 0 0 4px rgba(255, 204, 102, 0.15),
+        inset 0 2px 8px rgba(0,0,0,.4),
+        0 8px 24px rgba(255,204,102,.12);
+      transform: translateY(-2px);
+    }
+
+    button{
+      padding: 13px 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 204, 102, 0.3);
+      background: linear-gradient(135deg, rgba(255,204,102,.22), rgba(214,166,74,.14));
+      color: var(--text);
+      cursor:pointer;
+      font-weight: 800;
+      font-size: 14px;
+      transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      position:relative;
+      overflow:hidden;
+      box-shadow:
+        0 4px 12px rgba(0,0,0,.3),
+        inset 0 1px 0 rgba(255,255,255,.1);
+    }
+
+    button::before{
+      content:"";
+      position:absolute;
+      top:0; left:-100%;
+      width:100%; height:100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+      transition: left .5s ease;
+    }
+
+    button:hover::before{
+      left:100%;
+    }
+
+    button:hover{
+      transform: translateY(-3px) scale(1.02);
+      box-shadow:
+        0 12px 35px rgba(255,204,102,.2),
+        0 0 40px rgba(255,204,102,.1),
+        inset 0 1px 0 rgba(255,255,255,.15);
+      background: linear-gradient(135deg, rgba(255,204,102,.32), rgba(214,166,74,.20));
+      border-color: rgba(255, 204, 102, 0.45);
+    }
+
+    button:active{
+      transform: translateY(-1px) scale(.98);
+      box-shadow:
+        0 6px 20px rgba(255,204,102,.15),
+        inset 0 2px 4px rgba(0,0,0,.2);
+    }
+
+    button.secondary{
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,.4);
+    }
+
+    button.secondary:hover{
+      background: rgba(0,0,0,.5);
+      box-shadow: 0 12px 35px rgba(0,0,0,.6);
+      border-color: rgba(255,255,255,.25);
+    }
+
+    button:disabled{
+      opacity:.4;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,.2) !important;
+      background: rgba(0,0,0,.25) !important;
+    }
+
+    #reader{
+      width:100%;
+      border-radius: 18px;
+      overflow:hidden;
+      border: 2px solid rgba(255, 204, 102, 0.3);
+      background: rgba(10,6,4,.45);
+      min-height: 260px;
+      position:relative;
+      box-shadow:
+        inset 0 2px 8px rgba(0,0,0,.5),
+        0 0 30px rgba(255,204,102,.08);
+      animation: scannerBreath 3s ease-in-out infinite;
+    }
+
+    @keyframes scannerBreath{
+      0%, 100%{
+        border-color: rgba(255, 204, 102, 0.3);
+        box-shadow: inset 0 2px 8px rgba(0,0,0,.5), 0 0 30px rgba(255,204,102,.08);
+      }
+      50%{
+        border-color: rgba(255, 204, 102, 0.5);
+        box-shadow: inset 0 2px 8px rgba(0,0,0,.5), 0 0 50px rgba(255,204,102,.15);
+      }
+    }
+
+    #reader::before,
+    #reader::after{
+      content:"";
+      position:absolute;
+      width:40px; height:40px;
+      border: 3px solid var(--gold2);
+      z-index:10;
+      opacity:.7;
+      animation: cornerPulse 2s ease-in-out infinite;
+      pointer-events:none;
+    }
+
+    #reader::before{
+      top:12px; left:12px;
+      border-right:none;
+      border-bottom:none;
+    }
+
+    #reader::after{
+      bottom:12px; right:12px;
+      border-left:none;
+      border-top:none;
+    }
+
+    @keyframes cornerPulse{
+      0%, 100%{ opacity:.7; }
+      50%{ opacity:1; }
+    }
+
+    #decodedBox{
+      border-radius: 16px;
+      border: 1px solid rgba(255, 204, 102, 0.18);
+      background: rgba(0,0,0,.5);
+      padding: 14px 16px;
+      font-size: 13px;
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 70px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.4);
+      transition: all .3s ease;
+    }
+
+    .statusLine{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:14px;
+      padding:12px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.25);
+      font-size: 13px;
+      color: var(--text-secondary);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.3);
+    }
+
+    .ok{
+      color:#82ffb0 !important;
+      font-weight:800;
+      text-shadow: 0 0 10px rgba(130,255,176,.4);
+    }
+
+    .err{
+      color:#ff6f6f !important;
+      font-weight:800;
+      text-shadow: 0 0 10px rgba(255,111,111,.4);
+    }
+
+    #items{
+      margin-top: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.25);
+      padding: 12px 16px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.3);
+    }
+
+    #total{
+      margin-top: 14px;
+      font-weight: 900;
+      font-size: 18px;
+      color: var(--gold2);
+      text-shadow: 0 2px 8px rgba(255,204,102,.3);
+      animation: totalPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes totalPulse{
+      0%, 100%{ opacity:1; }
+      50%{ opacity:.85; }
+    }
+
+    #debugBox{
+      margin: 0 0 20px 0;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: rgba(255, 99, 99, 0.12);
+      border: 1px solid rgba(255, 99, 99, 0.3);
+      color: rgba(255, 170, 170, 0.95);
+      font-size: 12px;
+      display:none;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', 'Monaco', monospace;
+    }
+
+    #loginScreen{
+      display:block;
+      animation-delay: .1s;
+    }
+
+    #appBox{
+      display:none;
+      animation-delay: .2s;
+    }
+
+    #appBox.active{
+      display:block;
+    }
+
+    .foot{
+      padding: 20px 0 0 0;
+      text-align:center;
+      font-size:11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      position:relative;
+      z-index:2;
+    }
+
+    @media(max-width: 900px){
+      .shell{ padding: 20px; border-radius: 24px; }
+      .card{ padding: 20px; }
+      .title{ font-size: 32px; }
+      input, select, button{ min-width: 100%; }
+      .row{ flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="shell">
+      <div class="header">
+        <h1 class="title">Waiter QR Scanner</h1>
+        <div class="subtitle">STAFF ACCESS • QR ORDER FLOW</div>
+        <div class="divider"></div>
+      </div>
+
+      <div id="debugBox"></div>
+
+      <div class="grid">
+
+        <!-- ✅ LOGIN SCREEN (visible first) -->
+        <div id="loginScreen" class="card">
+          <div class="cardTitle">
+            <span>Вход (Staff)</span>
+            <span class="badge">Secure</span>
+          </div>
+
+          <div class="muted">
+            Логни се, за да се заредят масите и да стартираш камерата.
+          </div>
+
+          <div class="row">
+            <input id="loginEmail" type="email" placeholder="Email">
+            <input id="loginPass" type="password" placeholder="Password">
+          </div>
+
+          <div class="row">
+            <button id="btnLogin">Login</button>
+            <button id="btnLogout" class="secondary" disabled>Logout</button>
+          </div>
+
+          <div class="statusLine">
+            <span id="authStatus">Не си логнат.</span>
+            <span class="muted">Rules: isStaff()</span>
+          </div>
+        </div>
+
+        <!-- ✅ APP SCREEN (hidden until logged) -->
+        <div id="appBox" class="card">
+          <div class="cardTitle">
+            <span>Скенер + Поръчка</span>
+            <span class="badge">Live</span>
+          </div>
+
+          <div class="row" style="margin-top:6px;">
+            <button id="btnStart">Start camera</button>
+            <button id="btnStop" class="secondary" disabled>Stop</button>
+          </div>
+
+          <div class="statusLine">
+            <span id="scanStatus">Чакаме сканиране…</span>
+            <span id="tablesStatus" class="muted"></span>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div id="reader"></div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <div class="muted" style="margin-bottom:8px;">Decoded QR payload</div>
+            <div id="decodedBox">(empty)</div>
+          </div>
+
+          <div class="row">
+            <select id="tableSelect">
+              <option value="">— избери маса —</option>
+            </select>
+          </div>
+
+          <div id="meta" class="muted" style="margin-top:12px;">Няма заредена поръчка.</div>
+          <div id="items"></div>
+          <div id="total"></div>
+
+          <div class="row">
+            <button id="btnSend" disabled>Изпрати</button>
+            <button id="btnBack" class="secondary">Назад</button>
+          </div>
+
+          <div id="msg" class="muted" style="margin-top:12px;"></div>
+        </div>
+
+      </div>
+
+      <div class="foot">
+        Luxury brown × gold tech gradient • iPhone optimized
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Firebase initialize -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBE5Lv5HfSw8FmhFx3n44gKxQC7XbibY28",
+      authDomain: "reustarant-software.firebaseapp.com",
+      projectId: "reustarant-software",
+      storageBucket: "reustarant-software.firebasestorage.app",
+      messagingSenderId: "910706453590",
+      appId: "1:910706453590:web:f952cc3f40f7bef2009ff7"
+    };
+    firebase.initializeApp(firebaseConfig);
+    window.db = firebase.firestore();
+  </script>
+
+  <!-- ✅ Safety debug (shows errors on screen) -->
+  <script>
+    (function(){
+      const dbg = document.getElementById("debugBox");
+      function show(m){
+        if(!dbg) return;
+        dbg.style.display = "block";
+        dbg.textContent = String(m || "");
+      }
+
+      window.addEventListener("error", (e) => {
+        show("JS ERROR: " + (e.message || e.error || "unknown"));
+      });
+
+      window.addEventListener("unhandledrejection", (e) => {
+        show("PROMISE ERROR: " + (e.reason?.message || e.reason || "unknown"));
+      });
+    })();
+  </script>
+
+  <!-- ✅ Main logic (non-module, iPhone safe) -->
+  <script src="./waiterQR.ios.js"></script>
+
+  <!-- ✅ UI toggle: show login first, app after login -->
+  <script>
+    (function(){
+      const loginScreen = document.getElementById("loginScreen");
+      const appBox = document.getElementById("appBox");
+
+      try{
+        firebase.auth().onAuthStateChanged((user) => {
+          if(user){
+            if(loginScreen) loginScreen.style.display = "none";
+            if(appBox) appBox.style.display = "block";
+            appBox.classList.add("active");
+          }else{
+            if(loginScreen) loginScreen.style.display = "block";
+            if(appBox) appBox.style.display = "none";
+            appBox.classList.remove("active");
+          }
+        });
+      }catch(e){}
+    })();
+  </script>
+</body>
+</html>

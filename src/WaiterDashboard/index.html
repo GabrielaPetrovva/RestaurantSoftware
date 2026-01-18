@@ -16,7 +16,6 @@
         <button data-view="tables" class="active">Tables</button>
         <button data-view="orders">Orders</button>
         <button data-view="payments">Payments</button>
-        <button data-view="delivery">Delivery</button>
         <button data-view="stats">Statistics</button>
       </nav>
     </div>
@@ -66,8 +65,6 @@
             <div class="payment-types" id="paymentTypes">
               <button class="pay-btn active" data-type="cash">Cash</button>
               <button class="pay-btn" data-type="card">Card</button>
-              <button class="pay-btn" data-type="vouchers">Vouchers</button>
-              <button class="pay-btn" data-type="online">Online</button>
             </div>
 
             <div class="amount-row">
@@ -77,14 +74,8 @@
 
             <div><strong id="labelTip">Tip</strong></div>
             <div class="tips">
-              <button class="tip-btn" data-tip="0.10">10%</button>
-              <button class="tip-btn" data-tip="0.20">20%</button>
-              <button class="tip-btn" data-tip="0.30">30%</button>
               <input id="customTip" placeholder="€ 0.00" inputmode="decimal" />
             </div>
-
-            <div style="margin-top:8px;"><strong id="labelComments">Comments</strong></div>
-            <textarea id="comments" placeholder="Notes to kitchen/bar"></textarea>
 
             <button id="completePayment">Complete Payment</button>
           </div>
@@ -106,15 +97,6 @@
       </div>
     </section>
 
-    <section id="view-delivery" class="view">
-      <div class="card">
-        <h2 id="deliveryTitle">Delivery / Takeaway</h2>
-        <p class="muted" id="deliverySubtitle">Incoming Orders</p>
-        <div class="delivery-list" id="deliveryList"></div>
-        <button id="btnPrintOrders" class="action-btn">Print Orders</button>
-      </div>
-    </section>
-
     <section id="view-stats" class="view">
       <div class="card">
         <h2 id="statsTitle">Statistics</h2>
@@ -132,7 +114,6 @@
     <button data-view="tables" class="active"><span class="icon">▦</span><span>Tables</span></button>
     <button data-view="orders"><span class="icon">📄</span><span>Orders</span></button>
     <button data-view="payments"><span class="icon">💳</span><span>Pay</span></button>
-    <button data-view="delivery"><span class="icon">🚚</span><span>Delivery</span></button>
     <button data-view="stats"><span class="icon">📊</span><span>Stats</span></button>
   </nav>
 
@@ -152,6 +133,23 @@
       <button class="add">+ Add</button>
     </div>
   </template>
+
+  <!-- Receipt Modal -->
+  <div id="receiptModal" class="receipt-modal">
+    <div class="receipt-content">
+      <div class="receipt-header">
+        <h2 id="receiptTitle">Receipt</h2>
+        <button id="closeReceipt" class="close-receipt-btn">×</button>
+      </div>
+      <div class="receipt-body" id="receiptBody">
+        <!-- Receipt content will be populated here -->
+      </div>
+      <div class="receipt-footer">
+        <button id="printReceipt" class="print-receipt-btn">Print</button>
+        <button id="closeReceiptBtn" class="close-receipt-btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
 
  <script src="./config.js"></script>
 <script type="module" src="./script.js"></script>

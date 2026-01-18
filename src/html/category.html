@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="../css/category.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 </head>
 <body>
@@ -31,6 +33,9 @@
                 <div class="order-icon" onclick="toggleOrderSummary()">
                     <img src="../images/shopping-cart.png" alt="Shopping Cart">
                     <span class="order-badge" id="order-count">0</span>
+                </div>
+                <div class="receipt-icon" id="receipt-icon" onclick="showLastOrderReceipt()" style="display: none;" title="Последна поръчка / Last Order">
+                    📄
                 </div>
             </div>
         </div>
@@ -56,6 +61,26 @@
             <h3><span data-translate="order.total">Общо</span>: <span id="total-price">0.00</span> €</h3>
         </div>
         <button class="generate-qr-btn" onclick="generateQR()" data-translate="order.generateQR">Генерирай QR код</button>
+    </div>
+</div>
+
+<!-- QR Code Full Screen Modal -->
+<div id="qrModal" class="qr-modal">
+    <div class="qr-modal-content">
+        <span class="qr-close" onclick="closeQRModal()">&times;</span>
+        <div id="qr-code-display" class="qr-code-display"></div>
+    </div>
+</div>
+
+<!-- Last Order Receipt Modal -->
+<div id="receiptModal" class="receipt-modal">
+    <div class="receipt-modal-content">
+        <span class="receipt-close" onclick="closeReceiptModal()">&times;</span>
+        <h2 data-translate="receipt.title">Last Order Receipt</h2>
+        <div id="receipt-items" class="receipt-items"></div>
+        <div class="receipt-total">
+            <h3><span data-translate="order.total">Total</span>: <span id="receipt-total-price">0.00</span> €</h3>
+        </div>
     </div>
 </div>
 

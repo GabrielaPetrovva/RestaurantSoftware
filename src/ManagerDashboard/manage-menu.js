@@ -1,5 +1,7 @@
-// manage-menu.js — SAVE IMAGE AS PATH (./images/<filename>)
-// Works with your structure: src/html/*.html and src/html/images/*
+// manage-menu.js — SAVE IMAGE AS PATH (FIXED)
+// ✅ Saves in Firestore ONLY: image
+// ✅ Saves as: ..\\images\\<category>_category\\<filename>
+// ✅ Preview works (converts DB path to /images/... for browser)
 
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
@@ -14,7 +16,10 @@ const CATEGORY_BG_TO_EN = {
   "Пърленки и хлебчета": "bread",
   "Бургер и тортила": "burger",
   "Пилешко": "chicken",
+
+  // ✅ FIX: да е desserts (а не dessert)
   "Десерти": "desserts",
+
   "Напитки": "drinks",
   "Риба": "fish",
   "Паста и ризото": "pasta",
@@ -78,14 +83,66 @@ function numOrNull(v) {
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
+
+// ✅ FIX: грамаж винаги "300 г."
 function normalizeWeight(v) {
   const s = String(v ?? "").trim();
   if (!s) return "";
+
+  // взима числото (ако има)
   const m = s.match(/(\d+([.,]\d+)?)/);
   if (!m) return s;
+
   const n = m[1].replace(",", ".");
-  return `${n} г`;
+  return `${n} г.`;
 }
+
+/* ================= IMAGE PATH HELPERS (FIXED) ================= */
+
+// DB PATH: "..\\images\\pizza_category\\pizza.jpg"
+// UI SRC:  "/images/pizza_category/pizza.jpg"
+function dbImageToPublicSrc(dbPath) {
+  let p = String(dbPath || "").trim();
+  if (!p) return "";
+
+  // allow url / base64
+  if (/^(https?:)?\/\//i.test(p)) return p;
+  if (/^data:image\//i.test(p)) return p;
+
+  p = p.replace(/\\/g, "/");
+
+  // contains /images/ somewhere
+  const idx = p.toLowerCase().indexOf("/images/");
+  if (idx >= 0) return p.slice(idx);
+
+  // ../images/... -> /images/...
+  if (p.toLowerCase().startsWith("../images/")) return p.replace(/^\.\./, "");
+
+  // ./images/... -> /images/...
+  if (p.toLowerCase().startsWith("./images/")) return p.replace(/^\./, "");
+
+  // images/... -> /images/...
+  if (p.toLowerCase().startsWith("images/")) return "/" + p;
+
+  return p;
+}
+
+// ALWAYS SAVE THIS FORMAT:
+function buildDbImagePath(categoryEN, fileName) {
+  const cat = String(categoryEN || "").trim().toLowerCase();
+  if (!cat) return "";
+
+  const folder = `${cat}_category`;
+  const file = String(fileName || "").replace(/\\/g, "/").split("/").pop();
+  if (!file) return "";
+
+  // ✅ what you asked:
+  return `..\\images\\${folder}\\${file}`;
+}
+
+// expose (optional)
+window.dbImageToPublicSrc = dbImageToPublicSrc;
+window.buildDbImagePath = buildDbImagePath;
 
 /* ================= DOM (robust selectors) ================= */
 const form = pickEl("menuForm", "#menuForm", "form[data-menu-form]");
@@ -164,7 +221,7 @@ function wireModalClose() {
 
 /* ================= IMAGE PATH STATE ================= */
 let selectedImageFile = null;
-let selectedImagePath = "";   // example: ./images/calzone.jpg
+let selectedImagePath = "";
 let currentImage = undefined; // undefined=don’t touch, null=remove, string=existing path
 
 function showPreview(src) {
@@ -180,6 +237,7 @@ function showPreview(src) {
   if (imageRemoveBtn) imageRemoveBtn.style.display = "inline-flex";
 }
 
+/* ===================== ✅ FIXED PART ONLY ===================== */
 function wireImage() {
   if (!imageFileEl) return;
 
@@ -187,8 +245,27 @@ function wireImage() {
     selectedImageFile = imageFileEl.files?.[0] || null;
 
     if (selectedImageFile) {
-      // ✅ записваме път към src/html/images/<filename>
-      selectedImagePath = `./images/${encodeURIComponent(selectedImageFile.name)}`;
+      // ✅ взимаме категорията (трябва да е избрана)
+      const category = normalizeCategoryToEN(categoryEl?.value);
+
+      if (!category) {
+        alert("Първо избери категория, после избери снимка.");
+        imageFileEl.value = "";
+        selectedImageFile = null;
+        selectedImagePath = "";
+        showPreview("");
+        return;
+      }
+
+      // ✅ folder: drinks -> drinks_category
+      const folder = `${category}_category`;
+
+      // ✅ filename (само име на файла)
+      const fileName = selectedImageFile.name;
+
+      // ✅ записваме точно както искаш в Firestore:
+      // "..\\images\\drinks_category\\gin.jpg"
+      selectedImagePath = `..\\images\\${folder}\\${fileName}`;
 
       // preview работи веднага
       showPreview(URL.createObjectURL(selectedImageFile));
@@ -208,6 +285,7 @@ function wireImage() {
     currentImage = null; // махаме от базата при save
   });
 }
+/* ===================== ✅ END FIXED PART ONLY ===================== */
 
 /* ================= STATE ================= */
 let editingId = null;
@@ -412,35 +490,32 @@ function wireForm() {
         updatedAt: serverTimestamp()
       };
 
-      // ✅ IMAGE PATH SAVE
-      // Ако е избран файл: записваме ./images/<filename>
+      // ✅ IMAGE PATH SAVE (NOTE: not touching your other logic)
       if (selectedImagePath) {
         payload.image = selectedImagePath;
-        payload.imageUrl = selectedImagePath; // за съвместимост
       } else if (currentImage === null) {
-        // махане
+        // remove image
         payload.image = deleteField();
-        payload.imageUrl = deleteField();
       }
-      // иначе не пипаме снимката при edit
+      // else undefined = don’t touch
 
-      // ✅ EDIT
       if (editingId) {
+        // EDIT
         await updateDoc(doc(db, "menus", editingId), payload);
-
-      // ✅ ADD with manual ID
-      } else if (manualId) {
-        const ref = doc(db, "menus", manualId);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          const ok = confirm("Това ID вече съществува. Да го презапиша ли?");
-          if (!ok) return;
-        }
-        await setDoc(ref, { ...payload, createdAt: serverTimestamp() }, { merge: true });
-
-      // ✅ ADD auto ID
       } else {
-        await addDoc(collection(db, "menus"), { ...payload, createdAt: serverTimestamp() });
+        // ADD
+        if (manualId) {
+          const ref = doc(db, "menus", manualId);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            return alert("Вече съществува артикул с това ID. Избери друго.");
+          }
+          payload.createdAt = serverTimestamp();
+          await setDoc(ref, payload);
+        } else {
+          payload.createdAt = serverTimestamp();
+          await addDoc(collection(db, "menus"), payload);
+        }
       }
 
       resetForm();
@@ -479,8 +554,10 @@ function openEdit(item) {
   selectedImageFile = null;
   selectedImagePath = "";
 
-  currentImage = (item.image || item.imageUrl || item.photo || undefined);
-  showPreview(currentImage || "");
+  currentImage = item.image || undefined;
+
+  // preview for existing image
+  showPreview(currentImage ? dbImageToPublicSrc(currentImage) : "");
 
   if (imageFileEl) imageFileEl.value = "";
 

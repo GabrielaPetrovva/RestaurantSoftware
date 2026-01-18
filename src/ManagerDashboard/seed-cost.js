@@ -7,7 +7,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /**
- * Масово попълване на cost:
+ * Масово попъ€ане на cost:
  * - за документи в "menus" без валиден cost
  * - cost = price * ratio (по default 0.6)
  */

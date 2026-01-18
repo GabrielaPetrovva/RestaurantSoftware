@@ -336,7 +336,7 @@
 }
 
 .item-info {
-    padding: 1.5rem;
+    padding: 1rem;
     background-color: white;
     flex: 1;
     display: flex;
@@ -409,7 +409,7 @@
 }
 
 .salad-content {
-    padding: 1.5rem;
+    padding: 1rem;
     background-color: white;
 }
 
@@ -708,25 +708,234 @@
     box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
 }
 
-/* QR Code Display */
+/* QR Code Display - Old container (hidden when using new modal) */
 .qr-code-container {
-    text-align: center;
-    margin-top: 2rem;
+    display: none;
+}
+
+/* QR Code Full Screen Modal */
+.qr-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.95);
+    animation: fadeInModal 0.3s ease;
+}
+
+.qr-modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-modal-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.qr-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #ff8c00;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 3001;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.qr-close:hover {
+    background: rgba(255, 140, 0, 0.2);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.qr-code-display {
+    max-width: 90%;
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-code-display #qr-code {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Receipt Icon in Navbar */
+.receipt-icon {
+    margin-left: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    line-height: 1;
+    width: 40px;
+    height: 40px;
+}
+
+.receipt-icon:hover {
+    background-color: rgba(255, 140, 0, 0.2);
+    transform: scale(1.1);
+}
+
+/* Last Order Receipt Modal */
+.receipt-modal {
+    display: none;
+    position: fixed;
+    z-index: 2500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    animation: fadeInModal 0.3s ease;
+}
+
+.receipt-modal.show {
+    display: block !important;
+}
+
+.receipt-modal-content {
+    background-color: #2c1810;
+    margin: 5% auto;
     padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    border: 2px solid #ff8c00;
+    animation: slideUpModal 0.4s ease;
+}
+
+.receipt-close {
+    color: #ff8c00;
+    float: right;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    transition: all 0.3s ease;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 140, 0, 0.1);
+}
+
+.receipt-close:hover {
+    color: #ff6b00;
+    background: rgba(255, 140, 0, 0.2);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.receipt-modal-content h2 {
+    color: #ff8c00;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 2rem;
+}
+
+.receipt-items {
+    margin-bottom: 2rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.receipt-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #4a3a2a;
+    background-color: #1a0f0a;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+}
+
+.receipt-item-name {
+    color: white;
+    font-weight: 500;
+    flex: 1;
+}
+
+.receipt-item-quantity {
+    color: #ccc;
+    margin: 0 1rem;
+    min-width: 60px;
+    text-align: center;
+}
+
+.receipt-item-price {
+    color: #ff8c00;
+    font-weight: bold;
+    min-width: 80px;
+    text-align: right;
+}
+
+.receipt-total {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
     background-color: #1a0f0a;
     border-radius: 8px;
     border: 1px solid #ff8c00;
 }
 
-.qr-code-container h3 {
+.receipt-total h3 {
     color: #ff8c00;
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
 }
 
-#qr-code {
-    max-width: 200px;
-    height: auto;
-    border-radius: 8px;
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUpModal {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* Responsive Design */
@@ -1111,6 +1320,40 @@
         font-size: 1.25rem;
         right: 0.5rem;
         top: 0.5rem;
+    }
+    
+    /* QR Modal responsive */
+    .qr-close {
+        font-size: 2rem;
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .qr-code-display {
+        max-width: 95%;
+        max-height: 95%;
+    }
+    
+    /* Receipt modal responsive */
+    .receipt-modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 1rem;
+    }
+    
+    .receipt-close {
+        font-size: 1.25rem;
+        right: 0.5rem;
+        top: 0.5rem;
+    }
+    
+    .receipt-icon {
+        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        margin-left: 0.5rem;
     }
 }
 
