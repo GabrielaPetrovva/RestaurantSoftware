@@ -259,7 +259,7 @@ async function renderCategoryPage() {
       const protein = item.protein || 0;
       const fat = item.fat || 0;
       const weight = item.weight || '';
-      const price = item.price != null ? item.price + ' €' : '';
+      const price = item.price != null ? Number(item.price).toFixed(2) + ' €' : '';
       const priceValue = item.price || 0;
       
       showNutritionInfo(
@@ -286,7 +286,7 @@ async function renderCategoryPage() {
     }
     
     if (item.price != null) {
-      itemHTML += `<span>${item.price} €</span>`;
+      itemHTML += `<span>${Number(item.price).toFixed(2)} €</span>`;
     }
     
     itemHTML += `</div>`;

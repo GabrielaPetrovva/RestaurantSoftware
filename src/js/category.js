@@ -38,12 +38,32 @@ function showNutritionInfo(name, description, calories, carbs, protein, fat, wei
     const lang = localStorage.getItem('language') || 'en';
     if (weight) {
         const weightLabel = lang === 'bg' ? 'Тегло' : 'Weight';
-        weightEl.textContent = `${weightLabel}: ${weight}`;
+        // Ensure weight ends with "г." (gram symbol with period)
+        let displayWeight = weight.trim();
+        if (displayWeight && !displayWeight.endsWith('г.')) {
+            // If it ends with just "г", add period; otherwise append " г."
+            if (displayWeight.endsWith('г')) {
+                displayWeight = displayWeight + '.';
+            } else if (!displayWeight.includes('г')) {
+                displayWeight = displayWeight + ' г.';
+            }
+        }
+        weightEl.textContent = `${weightLabel}: ${displayWeight}`;
         weightEl.style.display = 'block';
     } else {
         weightEl.style.display = 'none';
     }
-    priceEl.textContent = price;
+    // Format price to always show 2 decimal places
+    if (price && price.includes('€')) {
+        const priceNum = parseFloat(price.replace(' €', '').replace(',', '.'));
+        if (!isNaN(priceNum)) {
+            priceEl.textContent = priceNum.toFixed(2) + ' €';
+        } else {
+            priceEl.textContent = price;
+        }
+    } else {
+        priceEl.textContent = price;
+    }
     
     // Update add button
     addBtn.onclick = function() {
