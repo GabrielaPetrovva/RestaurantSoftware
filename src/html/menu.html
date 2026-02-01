@@ -65,6 +65,18 @@
         </div>
     </div>
 
+    <!-- Last Order Receipt Modal -->
+    <div id="receiptModal" class="receipt-modal">
+        <div class="receipt-modal-content">
+            <span class="receipt-close" onclick="closeReceiptModal()">&times;</span>
+            <h2 data-translate="receipt.title">Last Order Receipt</h2>
+            <div id="receipt-items" class="receipt-items"></div>
+            <div class="receipt-total">
+                <h3><span data-translate="order.total">Total</span>: <span id="receipt-total-price">0.00</span> €</h3>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-grid">

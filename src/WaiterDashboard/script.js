@@ -902,8 +902,9 @@ completePaymentBtn.addEventListener("click", async () => {
       updatedAt: serverTimestamp()
     });
 
-    // Show receipt before clearing state
-    showReceipt(currentOrder, items, baseAmount, tipAmount, payMethod, tableNumber);
+    // Receipt must be deleted after waiter completes payment (do not show; hide and clear)
+    hideReceipt();
+    if (receiptBody) receiptBody.innerHTML = '';
 
     selectedTableId = null;
     selectedOrderId = null;

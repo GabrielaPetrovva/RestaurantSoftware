@@ -9,7 +9,12 @@ function pickNameEl() {
 
 onAuthStateChanged(auth, async (user) => {
   const el = pickNameEl();
-  if (!user || !el) return;
+  if (!user) {
+    if (typeof window !== "undefined") window.__managerEmail = null;
+    return;
+  }
+  if (typeof window !== "undefined") window.__managerEmail = user.email || null;
+  if (!el) return;
 
   try {
     const snap = await getDoc(doc(db, "employees", user.uid));

@@ -5,7 +5,7 @@ const translations = {
             home: 'Home',
             menu: 'Menu',
             about: 'About us',
-            contact: 'Contact us'
+            contact: 'Contact Us'
         },
         hero: {
             title: 'Taste The Difference',
@@ -17,8 +17,8 @@ const translations = {
             text: 'The restaurant opened its doors in 2015 with one simple idea – to offer genuine taste and comfort in the heart of the city. Since then, we have been combining traditional recipes with modern culinary techniques to create experiences that are truly unforgettable.'
         },
         contact: {
-            title: 'Contact Us',
-            subtitle: 'Get In Touch',
+            title: 'Leave a Review',
+            subtitle: 'We’d love to hear your thoughts.',
             name: 'Your Name',
             email: 'Email Address',
             message: 'Your Message',
@@ -52,8 +52,8 @@ const translations = {
             text: 'Ресторантът отвори врати през 2015 г. с една проста идея – да предложи автентичен вкус и комфорт в сърцето на града. Оттогава комбинираме традиционни рецепти с модерни кулинарни техники, за да създадем преживявания, които са наистина незабравими.'
         },
         contact: {
-            title: 'Свържете се с нас',
-            subtitle: 'Оставете съобщение',
+            title: 'Оставете отзив',
+            subtitle: 'Вашето мнение е важно за нас.',
             name: 'Вашето име',
             email: 'Имейл адрес',
             message: 'Вашето съобщение',

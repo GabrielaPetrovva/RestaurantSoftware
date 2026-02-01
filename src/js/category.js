@@ -19,9 +19,25 @@ function showNutritionInfo(name, description, calories, carbs, protein, fat, wei
     const priceEl = document.getElementById('nutrition-price');
     const addBtn = document.getElementById('nutrition-add-btn');
     
-    // Set content
+    const lang = localStorage.getItem('language') || 'en';
+    
+    // Set content immediately (show original, then translate if English)
     title.textContent = name;
     desc.textContent = description;
+    
+    // Translate dish name and description to English when app language is English
+    if (lang === 'en' && typeof window.translateText === 'function') {
+        if (description && description.trim()) {
+            window.translateText(description, 'bg', 'en').then(function(translated) {
+                if (desc) desc.textContent = translated || description;
+            }).catch(function() {});
+        }
+        if (name && name.trim()) {
+            window.translateText(name, 'bg', 'en').then(function(translated) {
+                if (title) title.textContent = translated || name;
+            }).catch(function() {});
+        }
+    }
     if (imageUrl) {
         imageEl.src = imageUrl;
         imageEl.alt = name;
@@ -35,7 +51,6 @@ function showNutritionInfo(name, description, calories, carbs, protein, fat, wei
     fatEl.textContent = fat;
     
     // Set weight and price
-    const lang = localStorage.getItem('language') || 'en';
     if (weight) {
         const weightLabel = lang === 'bg' ? 'Тегло' : 'Weight';
         // Ensure weight ends with "г." (gram symbol with period)

@@ -12,23 +12,55 @@
         <div class="dashboard-header">
             <div class="dashboard-title">Manager Dashboard</div>
             <div class="user-info">
-             <span id="userFullName" class="user-name">Loading...</span>
-              <button class="exit-btn" onclick="logout()">Exit</button>
-
+                <button type="button" class="profile-icon-btn" id="openProfileBtn" title="Моят профил" aria-label="Моят профил">
+                    <span class="profile-icon">👤</span>
+                    <span id="userFullName" class="user-name">Loading...</span>
+                </button>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('finance', event)">Финанси</button>
-      <button class="tab-btn" onclick="switchTab('staff', event)">Персонал</button>
-      <button class="tab-btn" onclick="switchTab('menu', event)">Меню</button>
-      <button class="tab-btn" onclick="switchTab('analytics', event)">Анализи</button>
-      <button class="tab-btn" onclick="switchTab('settings', event)">Настройки</button>
-</div>
-
+        <!-- Manager Profile Modal (profile icon opens this) -->
+        <div id="managerProfileModal" class="modal" style="display: none;" aria-hidden="true">
+            <div class="modal-overlay" data-close-profile-modal></div>
+            <div class="modal-card modal-profile-card">
+                <div class="modal-head">
+                    <b>Моят профил</b>
+                    <button type="button" class="modal-close" data-close-profile-modal aria-label="Затвори">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="profile-info-card">
+                        <div class="profile-avatar">👤</div>
+                        <div class="profile-details">
+                            <div class="profile-row">
+                                <span class="profile-label">Име</span>
+                                <span id="profileFullName" class="profile-value">—</span>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Имейл</span>
+                                <span id="profileEmail" class="profile-value">—</span>
+                            </div>
+                            <div class="profile-row">
+                                <span class="profile-label">Роля</span>
+                                <span id="profileRole" class="profile-value">Мениджър</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="profile-hint">Настройките на ресторанта са в раздела <strong>Настройки</strong>.</p>
+                    <div class="profile-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeProfileModal(); logout();">Изход</button>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- Top Navigation (desktop only) -->
+        <nav class="nav-tabs nav-tabs-top">
+            <button type="button" class="tab-btn active" data-view="finance" onclick="switchTab('finance', event)">Финанси</button>
+            <button type="button" class="tab-btn" data-view="staff" onclick="switchTab('staff', event)">Персонал</button>
+            <button type="button" class="tab-btn" data-view="menu" onclick="switchTab('menu', event)">Меню</button>
+            <button type="button" class="tab-btn" data-view="analytics" onclick="switchTab('analytics', event)">Анализи</button>
+            <button type="button" class="tab-btn" data-view="settings" onclick="switchTab('settings', event)">Настройки</button>
+        </nav>
 
         <!-- Dashboard Content -->
         <div class="dashboard-content">
@@ -78,11 +110,6 @@
                                     <td>Напитки</td>
                                     <td>520 €</td>
                                     <td>21.2%</td>
-                                </tr>
-                                <tr>
-                                    <td>Доставка</td>
-                                    <td>250 €</td>
-                                    <td>10.2%</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -185,7 +212,7 @@
 
 
                 <!-- Approvals (Pending employees) -->
-<div class="card">
+<div class="card card-approvals">
   <div class="card-header">Чакащи за одобрение</div>
   <div id="approveList"></div>
 </div>
@@ -659,36 +686,7 @@
   </div>
 
   <div class="card" style="margin-top:16px;">
-    <div class="card-header">Menu Engineering Matrix</div>
-    <div class="menu-matrix">
-      <div class="matrix-quadrant star">
-        <h4>STARS (Висока популярност + Висок марж)</h4>
-        <ul id="matrixStars"></ul>
-        <p style="margin-top: 10px; font-weight: 600; color: #4CAF50;">Действие: Запази и промотирай</p>
-      </div>
-
-      <div class="matrix-quadrant plow">
-        <h4>PLOWHORSES (Висока популярност + Нисък марж)</h4>
-        <ul id="matrixPlow"></ul>
-        <p style="margin-top: 10px; font-weight: 600; color: #ff9800;">Действие: Увеличи цената или намали разходите</p>
-      </div>
-
-      <div class="matrix-quadrant puzzle">
-        <h4>PUZZLES (Ниска популярност + Висок марж)</h4>
-        <ul id="matrixPuzzle"></ul>
-        <p style="margin-top: 10px; font-weight: 600; color: #2196F3;">Действие: Промени позицията в менюто или маркетинга</p>
-      </div>
-
-      <div class="matrix-quadrant dog">
-        <h4>DOGS (Ниска популярност + Нисък марж)</h4>
-        <ul id="matrixDogs"></ul>
-        <p style="margin-top: 10px; font-weight: 600; color: #f44336;">Действие: Премахни от менюто</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px;">
-    <div class="card-header">AI Препоръки за Меню</div>
+    <div class="card-header">Препоръки за Меню</div>
     <div id="aiRecs"></div>
   </div>
 
@@ -719,10 +717,37 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">Heatmap - Натоварване по Часове и Дни</div>
-                    <div style="margin: 20px 0;">
-                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 10px;">
+                <!-- Menu Engineering Matrix (moved to Analysis) -->
+                <div class="card card-menu-matrix">
+                    <div class="card-header">Menu Engineering Matrix</div>
+                    <div class="menu-matrix">
+                        <div class="matrix-quadrant star">
+                            <h4>STARS (Висока популярност + Висок марж)</h4>
+                            <ul id="matrixStars"></ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #4CAF50;">Действие: Запази и промотирай</p>
+                        </div>
+                        <div class="matrix-quadrant plow">
+                            <h4>PLOWHORSES (Висока популярност + Нисък марж)</h4>
+                            <ul id="matrixPlow"></ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #ff9800;">Действие: Увеличи цената или намали разходите</p>
+                        </div>
+                        <div class="matrix-quadrant puzzle">
+                            <h4>PUZZLES (Ниска популярност + Висок марж)</h4>
+                            <ul id="matrixPuzzle"></ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #2196F3;">Действие: Промени позицията в менюто или маркетинга</p>
+                        </div>
+                        <div class="matrix-quadrant dog">
+                            <h4>DOGS (Ниска популярност + Нисък марж)</h4>
+                            <ul id="matrixDogs"></ul>
+                            <p style="margin-top: 10px; font-weight: 600; color: #f44336;">Действие: Премахни от менюто</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card heatmap-card">
+                    <div class="card-header">Heatmap - Ястия по Часове и Дни</div>
+                    <div class="heatmap-wrapper" style="margin: 20px 0;">
+                        <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 10px;">
                             <div></div>
                             <div style="text-align: center; font-size: 12px; font-weight: 600;">Пон</div>
                             <div style="text-align: center; font-size: 12px; font-weight: 600;">Вто</div>
@@ -732,7 +757,7 @@
                             <div style="text-align: center; font-size: 12px; font-weight: 600;">Съб</div>
                             <div style="text-align: center; font-size: 12px; font-weight: 600;">Нед</div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
+                        <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
                             <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">12:00-14:00</div>
                             <div class="heatmap-cell heat-medium">35</div>
                             <div class="heatmap-cell heat-medium">38</div>
@@ -742,7 +767,7 @@
                             <div class="heatmap-cell heat-high">58</div>
                             <div class="heatmap-cell heat-medium">45</div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
+                        <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
                             <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">18:00-20:00</div>
                             <div class="heatmap-cell heat-medium">42</div>
                             <div class="heatmap-cell heat-high">48</div>
@@ -752,7 +777,7 @@
                             <div class="heatmap-cell heat-high">72</div>
                             <div class="heatmap-cell heat-high">65</div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px;">
+                        <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px;">
                             <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">20:00-22:00</div>
                             <div class="heatmap-cell heat-low">25</div>
                             <div class="heatmap-cell heat-medium">32</div>
@@ -763,55 +788,39 @@
                             <div class="heatmap-cell heat-medium">42</div>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px; font-size: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 20px; height: 20px; background: #90caf9; border-radius: 4px;"></div>
-                            <span>Ниско (0-30)</span>
+                    <div class="heatmap-legend">
+                        <div class="heatmap-legend-item">
+                            <div class="heatmap-legend-swatch" style="background: #90caf9;"></div>
+                            <span>Ниско (0-30 ястия)</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 20px; height: 20px; background: #ffa726; border-radius: 4px;"></div>
-                            <span>Средно (31-50)</span>
+                        <div class="heatmap-legend-item">
+                            <div class="heatmap-legend-swatch" style="background: #ffa726;"></div>
+                            <span>Средно (31-50 ястия)</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 20px; height: 20px; background: #ef5350; border-radius: 4px;"></div>
-                            <span>Високо (51+)</span>
+                        <div class="heatmap-legend-item">
+                            <div class="heatmap-legend-swatch" style="background: #ef5350;"></div>
+                            <span>Високо (51+ ястия)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card delivery-performance-card">
+                    <div class="card-header">Delivery Performance</div>
+                    <div class="stats-grid" style="margin-bottom: 0;">
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Средно Време</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #4CAF50;">28 мин</div>
+                            <div style="font-size: 12px; color: #4CAF50;">↓ 3 мин подобрение</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Рейтинг</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #ff9800;">4.8 ⭐</div>
+                            <div style="font-size: 12px; color: #4CAF50;">↑ 0.2 точки</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="content-grid">
-                    <div class="card">
-                        <div class="card-header">Прогноза за Натоварване (Следващи 7 дни)</div>
-                        <div class="chart-bar">
-                            <div class="bar" style="height: 65%;">
-                                <span class="bar-value">52</span>
-                                <span class="bar-label">Пон</span>
-                            </div>
-                            <div class="bar" style="height: 70%;">
-                                <span class="bar-value">56</span>
-                                <span class="bar-label">Вто</span>
-                            </div>
-                            <div class="bar" style="height: 75%;">
-                                <span class="bar-value">60</span>
-                                <span class="bar-label">Сря</span>
-                            </div>
-                            <div class="bar" style="height: 80%;">
-                                <span class="bar-value">64</span>
-                                <span class="bar-label">Чет</span>
-                            </div>
-                            <div class="bar" style="height: 95%;">
-                                <span class="bar-value">76</span>
-                                <span class="bar-label">Пет</span>
-                            </div>
-                            <div class="bar" style="height: 100%;">
-                                <span class="bar-value">80</span>
-                                <span class="bar-label">Съб</span>
-                            </div>
-                            <div class="bar" style="height: 85%;">
-                                <span class="bar-value">68</span>
-                                <span class="bar-label">Нед</span>
-                            </div>
-                        </div>
                         <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 8px;">
                             <div style="font-weight: 600; color: #856404; margin-bottom: 5px;">⚠ AI Препоръка</div>
                             <div style="font-size: 13px; color: #856404;">Очаква се високо натоварване в петък и събота. Препоръчваме +2 сервитьора и +1 готвач.</div>
@@ -850,58 +859,12 @@
                                 <span>Разход: 104 € (20%)</span>
                             </div>
                         </div>
-                        <div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span style="font-weight: 600;">Доставка</span>
-                                <span style="font-weight: 600;">250 EUR / 75 EUR</span>
-                            </div>
-                            <div class="progress-bar" style="height: 12px;">
-                                <div style="height: 100%; background: #9c27b0; width: 70%; border-radius: 10px; position: relative;">
-                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 30%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
-                                </div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666;">
-                                <span>Приход: 250 EUR</span>
-                                <span>Разход: 75 EUR (30%)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">Delivery Performance</div>
-                    <div class="stats-grid" style="margin-bottom: 0;">
-                        <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Средно Време</div>
-                            <div style="font-size: 32px; font-weight: 700; color: #4CAF50;">28 мин</div>
-                            <div style="font-size: 12px; color: #4CAF50;">↓ 3 мин подобрение</div>
-                        </div>
-                        <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Рейтинг</div>
-                            <div style="font-size: 32px; font-weight: 700; color: #ff9800;">4.8 ⭐</div>
-                            <div style="font-size: 12px; color: #4CAF50;">↑ 0.2 точки</div>
-                        </div>
-                        <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Успешни Доставки</div>
-                            <div style="font-size: 32px; font-weight: 700; color: #2196F3;">97.5%</div>
-                            <div style="font-size: 12px; color: #4CAF50;">↑ 1.2%</div>
-                        </div>
-                        <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Такси за Доставка</div>
-                            <div style="font-size: 32px; font-weight: 700; color: #9c27b0;">75 EUR</div>
-                            <div style="font-size: 12px; color: #666;">днес</div>
-                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Settings Section -->
             <div id="settings" class="section">
-               
-                <div class="card">
-                
-               
-
 
 <!-- STAFF MODAL -->
 <div id="staffEditorModal" class="modal" style="display:none;">
@@ -944,10 +907,7 @@
   </div>
 </div>
 
-
-
-
-                                <div class="card">
+                <div class="card">
                     <div class="card-header">Данъчни Ставки и Отстъпки</div>
                     <div class="form-group">
                         <label class="form-label">ДДС (%)</label>
@@ -1036,6 +996,31 @@
 
 
 
+    </div>
+
+        <!-- Bottom Navigation (like Waiter Dashboard) -->
+        <nav class="bottom-nav">
+            <button type="button" class="tab-btn active" data-view="finance" onclick="switchTab('finance', event)">
+                <span class="icon">💰</span>
+                <span>Финанси</span>
+            </button>
+            <button type="button" class="tab-btn" data-view="staff" onclick="switchTab('staff', event)">
+                <span class="icon">👥</span>
+                <span>Персонал</span>
+            </button>
+            <button type="button" class="tab-btn" data-view="menu" onclick="switchTab('menu', event)">
+                <span class="icon">📋</span>
+                <span>Меню</span>
+            </button>
+            <button type="button" class="tab-btn" data-view="analytics" onclick="switchTab('analytics', event)">
+                <span class="icon">📊</span>
+                <span>Анализи</span>
+            </button>
+            <button type="button" class="tab-btn" data-view="settings" onclick="switchTab('settings', event)">
+                <span class="icon">⚙️</span>
+                <span>Настройки</span>
+            </button>
+        </nav>
     </div>
 
 

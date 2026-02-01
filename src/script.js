@@ -5,7 +5,7 @@
         home: 'Home',
         menu: 'Menu',
         about: 'About us',
-        contact: 'Contact us'
+        contact: 'Contact Us'
       },
       hero: {
         title: 'Taste The Difference',
@@ -17,8 +17,8 @@
         text: 'The restaurant opened its doors in 2015 with one simple idea – to offer genuine taste and comfort in the heart of the city. Since then, we have been combining traditional recipes with modern culinary techniques to create experiences that are truly unforgettable.'
       },
       contact: {
-        title: 'Contact Us',
-        subtitle: 'Get In Touch',
+        title: 'Contact Us',    
+        subtitle: 'We’d love to hear your thoughts.',
         name: 'Your Name',
         email: 'Email Address',
         message: 'Your Message',
@@ -89,8 +89,8 @@
         text: 'Ресторантът отвори врати през 2015 г. с една проста идея – да предложи автентичен вкус и комфорт в сърцето на града. Оттогава комбинираме традиционни рецепти с модерни кулинарни техники, за да създадем преживявания, които са наистина незабравими.'
       },
       contact: {
-        title: 'Свържете се с нас',
-        subtitle: 'Оставете съобщение',
+        title: 'Оставете отзив',
+        subtitle: 'Вашето мнение е важно за нас.',
         name: 'Вашето име',
         email: 'Имейл адрес',
         message: 'Вашето съобщение',
@@ -143,6 +143,29 @@
         title: 'Последна поръчка'
       }
     }
+  };
+
+  // Translation cache and API helper for dish descriptions (BG -> EN)
+  const translationCache = {};
+  window.translateText = function(text, fromLang, toLang) {
+    if (!text || typeof text !== 'string' || text.trim() === '') return Promise.resolve(text || '');
+    const to = toLang != null ? toLang : (localStorage.getItem('language') || 'en');
+    const from = fromLang != null ? fromLang : 'bg';
+    if (to === from) return Promise.resolve(text);
+    const key = text.trim() + '|' + to;
+    if (translationCache[key]) return Promise.resolve(translationCache[key]);
+    const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.trim()) + '&langpair=' + from + '|' + to;
+    return fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var translated = data && data.responseData && data.responseData.translatedText;
+        if (translated) {
+          translationCache[key] = translated;
+          return translated;
+        }
+        return text;
+      })
+      .catch(function() { return text; });
   };
 
   // Get saved language or default to English
