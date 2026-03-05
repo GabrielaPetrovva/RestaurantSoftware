@@ -1,6 +1,6 @@
 // src/js/seed.js
 import { db } from "./firebase.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 export async function seedTablesAndMenu() {
   // Tables 1..10

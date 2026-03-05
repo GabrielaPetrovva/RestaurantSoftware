@@ -202,7 +202,16 @@ function wireActions() {
 
     if (action === "delete") {
       if (!confirm("Сигурен ли си, че триеш този служител?")) return;
-      await deleteDoc(doc(db, "employees", id));
+      try {
+        clearErr();
+        await deleteDoc(doc(db, "employees", id));
+        staff = staff.filter(x => x.id !== id);
+        if (totalEl) totalEl.textContent = String(staff.length);
+        render();
+      } catch (err) {
+        console.error("Delete employee failed:", err);
+        setErr("Delete error: " + err.message);
+      }
       return;
     }
   });
@@ -277,6 +286,3 @@ function ensureCss() {
   document.head.appendChild(style);
 }
 /* ===================== END STAFF SETTINGS ===================== */
-
-// Expose function to fill form for editing
-window.fillEditForm = fillEditForm;

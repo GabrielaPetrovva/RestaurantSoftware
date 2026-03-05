@@ -16,6 +16,8 @@ window.switchTab = function (tabName, ev) {
   document.querySelectorAll(".tab-btn[data-view=\"" + tabName + "\"]").forEach(btn =>
     btn.classList.add("active")
   );
+
+  window.dispatchEvent(new CustomEvent("manager:tabchange", { detail: { tabName } }));
 };
 
 // 🔹 Logout (UI only – auth signOut е в auth-redirect или отделно)

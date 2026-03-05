@@ -4,6 +4,7 @@ import {
   query,
   orderBy,
   limit,
+  getDocs,
   onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
@@ -24,6 +25,7 @@ const el = {
   kpiTotalStaff: document.getElementById("kpiTotalStaff"),
   tblWaiterSales: document.getElementById("tblWaiterSales"),
   tblSystemLogs: document.getElementById("tblSystemLogs"),
+  logsToggleBtn: document.getElementById("logsToggleBtn"),
 };
 
 // Ако липсват елементи – не чупим страницата
@@ -34,7 +36,11 @@ if (!el.tblSystemLogs) console.warn("Missing #tblSystemLogs (tbody)");
 
 let employees = [];
 let orders = [];
-let logs = [];
+let latestLogs = [];
+let logsMode = "latest";
+let cachedAllLogs = null;
+let latestLogsHasMore = false;
+let systemLogsLoaded = false;
 
 const PAID_STATUSES = new Set(["paid", "closed"]); // ако имаш други, добави тук
 
@@ -52,20 +58,116 @@ onSnapshot(
   }
 );
 
-onSnapshot(
-  query(collection(db, "logs"), orderBy("createdAt", "desc"), limit(30)),
-  (snap) => {
-    logs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    renderAll();
-  }
-);
-
 // ============ RENDER ============
 function renderAll() {
   renderKpis();
   renderWaiterSales();
-  renderLogs();
 }
+
+function ensureLogsToggleBtn() {
+  if (el.logsToggleBtn) return el.logsToggleBtn;
+  if (!el.tblSystemLogs) return null;
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.id = "logsToggleBtn";
+  btn.className = "btn btn-secondary";
+  btn.hidden = true;
+  btn.textContent = "Виж всички";
+
+  const table = el.tblSystemLogs.closest("table");
+  if (table) {
+    table.insertAdjacentElement("afterend", btn);
+  } else {
+    el.tblSystemLogs.parentElement?.appendChild(btn);
+  }
+
+  el.logsToggleBtn = btn;
+  return btn;
+}
+
+function setLogsToggleButton() {
+  if (!ensureLogsToggleBtn()) return;
+
+  const shouldShow = logsMode === "all" || latestLogsHasMore;
+  el.logsToggleBtn.hidden = !shouldShow;
+  if (!shouldShow) return;
+
+  el.logsToggleBtn.textContent = logsMode === "all" ? "Скрий" : "Виж всички";
+}
+
+async function refreshLatestLogsHasMore() {
+  try {
+    const snap = await getDocs(
+      query(collection(db, "logs"), orderBy("createdAt", "desc"), limit(4))
+    );
+    latestLogsHasMore = snap.docs.length > 3;
+  } catch (err) {
+    latestLogsHasMore = false;
+    console.error("logs count check:", err);
+  }
+  setLogsToggleButton();
+}
+
+function startLatestLogsListener() {
+  if (systemLogsLoaded) return;
+  systemLogsLoaded = true;
+
+  onSnapshot(
+    query(collection(db, "logs"), orderBy("createdAt", "desc"), limit(3)),
+    (snap) => {
+      latestLogs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      cachedAllLogs = null;
+      if (logsMode === "latest") {
+        renderLogs(latestLogs, "latest");
+      }
+      refreshLatestLogsHasMore();
+    },
+    (err) => {
+      console.error("logs listener:", err);
+    }
+  );
+}
+
+async function ensureAllLogsCached() {
+  if (cachedAllLogs !== null) return;
+  const snap = await getDocs(query(collection(db, "logs"), orderBy("createdAt", "desc")));
+  cachedAllLogs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+function loadSystemLogs() {
+  startLatestLogsListener();
+  logsMode = "latest";
+  renderLogs(latestLogs, "latest");
+  setLogsToggleButton();
+  refreshLatestLogsHasMore();
+}
+
+window.addEventListener("manager:tabchange", (e) => {
+  if (e?.detail?.tabName === "settings") {
+    loadSystemLogs();
+  }
+});
+
+async function onLogsToggleClick() {
+  try {
+    if (logsMode === "latest") {
+      await ensureAllLogsCached();
+      logsMode = "all";
+      renderLogs(cachedAllLogs ?? [], "all");
+      setLogsToggleButton();
+      return;
+    }
+
+    logsMode = "latest";
+    renderLogs(latestLogs, "latest");
+    setLogsToggleButton();
+  } catch (err) {
+    console.error("logs toggle:", err);
+  }
+}
+
+ensureLogsToggleBtn()?.addEventListener("click", onLogsToggleClick);
 
 function renderKpis() {
   if (!el.kpiActiveStaff && !el.kpiTotalStaff) return;
@@ -144,11 +246,14 @@ function renderWaiterSales() {
     </tr>`;
 }
 
-function renderLogs() {
+function renderLogs(logRows, mode = "latest") {
   if (!el.tblSystemLogs) return;
 
-  el.tblSystemLogs.innerHTML = logs.length
-    ? logs
+  const sorted = [...(logRows ?? [])].sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+  const rows = mode === "latest" ? sorted.slice(0, 3) : sorted;
+
+  el.tblSystemLogs.innerHTML = rows.length
+    ? rows
         .map(
           (l) => `
       <tr>
@@ -185,6 +290,12 @@ function fmtMoney(n) {
   return Number.isFinite(x)
     ? x.toLocaleString("bg-BG", { maximumFractionDigits: 0 })
     : "0";
+}
+
+function toMillis(ts) {
+  const d = ts?.toDate ? ts.toDate() : ts ? new Date(ts) : null;
+  if (!d || isNaN(d.getTime())) return 0;
+  return d.getTime();
 }
 
 function fmtDate(ts) {

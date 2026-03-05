@@ -1,5 +1,6 @@
 // src/js/db.js
 import { db } from "./firebase.js";
+import { normalizeStationValue, looksLikeDrink } from "./station-utils.js";
 import {
   collection, collectionGroup, doc,
   getDoc, getDocs,
@@ -7,10 +8,25 @@ import {
   query, where, orderBy,
   onSnapshot,
   serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 const ts = () => serverTimestamp();
 const norm = (x) => String(x ?? "").trim().toLowerCase();
+const DRINK_CATEGORY_HINTS = ["drink", "drinks", "beverage", "beverages", "napit", "coffee", "tea", "bar"];
+
+function resolveStationForWrite(item) {
+  const direct = normalizeStationValue(item?.station || item?.department || "");
+  if (direct) return direct;
+
+  const category = norm(item?.category || item?.type || "");
+  if (category) {
+    const isDrinkCategory = DRINK_CATEGORY_HINTS.some((hint) => category.includes(hint));
+    return isDrinkCategory ? "bar" : "kitchen";
+  }
+
+  const name = String(item?.name || item?.itemId || item?.menuId || "").trim();
+  return looksLikeDrink(name) ? "bar" : "kitchen";
+}
 
 /* ---------------- LOGS ---------------- */
 export async function logAction({ actorUid, actorEmail, type, message, meta = {} }) {
@@ -146,11 +162,20 @@ export async function createOrder({ tableId, createdBy }) {
 }
 
 export async function addOrderItem(orderId, item) {
+  const menuId = String(item?.menuId || item?.itemId || "").trim();
+  const itemId = String(item?.itemId || item?.menuId || "").trim();
+  const name = String(item?.name || itemId || menuId || "Item").trim();
+  const category = String(item?.category || "").trim();
+  const station = resolveStationForWrite({ ...item, name, category, menuId, itemId });
+
   await addDoc(collection(db, "orders", orderId, "items"), {
-    name: item.name,
+    menuId,
+    itemId,
+    category,
+    name,
     price: Number(item.price),
     qty: Number(item.qty),
-    station: norm(item.station),    // kitchen | bar
+    station,                        // kitchen | bar
     status: "new",                  // new | preparing | ready | served
     createdAt: ts()
   });
@@ -163,18 +188,89 @@ export function watchOrderItems(orderId, cb) {
   return onSnapshot(q, (snap) => cb(snap.docs.map(d => ({ id: d.id, path: d.ref.path, ...d.data() }))));
 }
 
-export function watchStationQueue(station, cb) {
+function fsErrInfo(err) {
+  return {
+    code: err?.code ? String(err.code) : "",
+    message: err?.message ? String(err.message) : String(err || "")
+  };
+}
+
+function logFsError(tag, err, extra = {}) {
+  const info = fsErrInfo(err);
+  console.warn(`⚠️ ${tag}`, { ...info, ...extra, raw: err });
+  return info;
+}
+
+export function watchStationQueue(station, cb, onError) {
+  const stationName = norm(station);
+  const activeStatuses = new Set(["new", "preparing", "ready"]);
+  const queryHint = `collectionGroup(items) where station=="${stationName}" orderBy(createdAt asc)`;
   const q = query(
     collectionGroup(db, "items"),
-    where("station", "==", norm(station)),
-    where("status", "in", ["new", "preparing", "ready"]),
+    where("station", "==", stationName),
     orderBy("createdAt", "asc")
   );
-  return onSnapshot(q, (snap) => cb(snap.docs.map(d => ({ id: d.id, path: d.ref.path, ...d.data() }))));
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const rows = snap.docs
+        .map((d) => ({ id: d.id, path: d.ref.path, ...d.data() }))
+        .filter((row) => activeStatuses.has(norm(row.status)));
+      cb(rows);
+    },
+    (err) => {
+      const info = logFsError(`watchStationQueue [station=${stationName}]`, err, {
+        query: queryHint,
+        collectionGroup: "items"
+      });
+      if (String(info.code || "").replace("firestore/", "") === "failed-precondition") {
+        const idx = String(info.message || "").match(/https?:\/\/\S+/)?.[0] || "";
+        console.warn("create index", idx || "Firestore -> Indexes (collectionGroup: items)");
+      }
+      if (typeof onError === "function") onError(err, info);
+    }
+  );
+}
+
+export function watchStationItems(station, cb, onError) {
+  const stationName = norm(station);
+  const queryHint = `collectionGroup(items) where station=="${stationName}" orderBy(createdAt desc)`;
+  const q = query(
+    collectionGroup(db, "items"),
+    where("station", "==", stationName),
+    orderBy("createdAt", "desc")
+  );
+
+  return onSnapshot(
+    q,
+    (snap) => cb(snap.docs.map(d => ({ id: d.id, path: d.ref.path, ...d.data() }))),
+    (err) => {
+      const info = logFsError(`watchStationItems [station=${stationName}]`, err, {
+        query: queryHint,
+        collectionGroup: "items"
+      });
+      if (String(info.code || "").replace("firestore/", "") === "failed-precondition") {
+        const idx = String(info.message || "").match(/https?:\/\/\S+/)?.[0] || "";
+        console.warn("create index", idx || "Firestore -> Indexes (collectionGroup: items)");
+      }
+      if (typeof onError === "function") onError(err, info);
+    }
+  );
 }
 
 export async function setItemStatusByPath(itemPath, status) {
-  await updateDoc(doc(db, itemPath), { status: norm(status) });
+  const st = norm(status);
+  const payload = {
+    status: st,
+    updatedAt: ts()
+  };
+
+  if (st === "preparing") payload.startedAt = ts();
+  if (st === "ready") payload.readyAt = ts();
+  if (st === "served") payload.servedAt = ts();
+
+  await updateDoc(doc(db, itemPath), payload);
 }
 
 /* --------- helper: compute totals by reading items (realtime by listeners in Manager) --------- */

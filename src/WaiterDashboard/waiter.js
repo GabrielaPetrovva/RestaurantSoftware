@@ -5,6 +5,7 @@ import {
   serverTimestamp, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+import { normalizeStationValue, looksLikeDrink } from "../js/station-utils.js";
 
 /* ================== CONFIG ================== */
 if (!window.firebaseConfig) alert("Липсва config.js (window.firebaseConfig).");
@@ -71,11 +72,25 @@ let tipCustom = 0;
 
 /* ================== HELPERS ================== */
 const euro = (n) => `${(Number(n) || 0).toFixed(2)}€`;
+const DRINK_CATEGORY_HINTS = ["drink", "drinks", "beverage", "beverages", "napit", "coffee", "tea", "bar"];
 const parseEuroInput = (s) => {
   if (!s) return 0;
   const cleaned = String(s).replace(",", ".").replace(/[^\d.]/g, "");
   return Number(cleaned) || 0;
 };
+
+function resolveStationForMenuItem(menuItem, fallbackName, fallbackCategory) {
+  const direct = normalizeStationValue(menuItem?.station || menuItem?.department || "");
+  if (direct) return direct;
+
+  const category = String(fallbackCategory || menuItem?.category || menuItem?.type || "").trim().toLowerCase();
+  if (category) {
+    const isDrinkCategory = DRINK_CATEGORY_HINTS.some((hint) => category.includes(hint));
+    return isDrinkCategory ? "bar" : "kitchen";
+  }
+
+  return looksLikeDrink(fallbackName || menuItem?.name || menuItem?.id || "") ? "bar" : "kitchen";
+}
 
 function setView(viewName) {
   views.forEach(v => v.classList.remove("active"));
@@ -415,14 +430,35 @@ async function addMenuToOrder(m) {
     return;
   }
 
-  const name = m.name || m.id;
+  const menuId = String(m.id || "").trim();
+  const name = String(m.name || m.id || "Item").trim();
   const price = (m.price != null) ? Number(m.price) : Number(m.cost);
+  const category = String(m.category || m.categoryKey || "").trim();
+  const station = resolveStationForMenuItem(m, name, category);
+  const itemId = menuId || name;
 
   const items = Array.isArray(currentOrder.items) ? [...currentOrder.items] : [];
-  const idx = items.findIndex(x => x.itemId === name);
+  const idx = items.findIndex(x => String(x.menuId || x.itemId || "").trim() === itemId);
 
-  if (idx === -1) items.push({ itemId: name, price, qty: 1 });
-  else items[idx].qty = (Number(items[idx].qty) || 0) + 1;
+  if (idx === -1) {
+    items.push({
+      menuId,
+      itemId,
+      category,
+      station,
+      name,
+      price,
+      qty: 1
+    });
+  } else {
+    items[idx].qty = (Number(items[idx].qty) || 0) + 1;
+    items[idx].menuId = items[idx].menuId || menuId;
+    items[idx].itemId = items[idx].itemId || itemId;
+    items[idx].category = items[idx].category || category;
+    items[idx].station = items[idx].station || station;
+    items[idx].name = items[idx].name || name;
+    items[idx].price = Number(items[idx].price) || price;
+  }
 
   await updateDoc(doc(db, "orders", selectedOrderId), { items, updatedAt: serverTimestamp() });
 }

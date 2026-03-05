@@ -144,7 +144,6 @@ const translations = {
     'Complete Payment': 'Завърши Плащане',
     'Menu': 'Меню',
     'Open checks and payment history': 'Отворени сметки и история на плащания',
-    'Delivery / Takeaway': 'Доставка / За вкъщи',
     'Incoming Orders': 'Входящи Поръчки',
     'Print Orders': 'Принтирай Поръчки',
     'Sales this shift': 'Продажби тази смяна',

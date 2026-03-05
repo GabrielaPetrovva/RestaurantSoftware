@@ -4,7 +4,7 @@ import {
   getDocs,
   doc,
   writeBatch
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 /**
  * Масово попъ€ане на cost:

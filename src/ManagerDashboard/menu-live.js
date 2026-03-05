@@ -133,7 +133,7 @@ function renderList() {
   if (!hasSearch) {
     listEl.innerHTML = `
       <div style="opacity:.7;padding:10px;">
-        Напиши в търсачката, за да провериш дали артикулът съществува.
+        Провери или добави артикул в менюто.
       </div>
     `;
     return;
@@ -288,6 +288,3 @@ function esc(s) {
   }[m]));
 }
 /* ===================== END MENU LIVE ===================== */
-
-// Expose function to fill form for editing
-window.fillMenuFormForEdit = fillFormForEdit;

@@ -1,6 +1,6 @@
 // src/WaiterDashboard/waiter-data.js
 import { auth } from "../js/firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import {
   watchTables, watchMenu,
   createOrder, addOrderItem, watchOrderItems,
@@ -84,6 +84,7 @@ function renderMenu() {
               data-id="${m.id}"
               data-name="${encodeURIComponent(m.name)}"
               data-price="${m.price}"
+              data-category="${encodeURIComponent(m.category || "")}"
               data-station="${m.station}"
               style="padding:8px 12px;border-radius:10px;border:1px solid #ccc;cursor:pointer;">
         + Add
@@ -102,17 +103,27 @@ function renderMenu() {
       }
 
       const name = decodeURIComponent(btn.dataset.name);
+      const menuId = String(btn.dataset.id || "").trim();
       const price = Number(btn.dataset.price);
+      const category = decodeURIComponent(btn.dataset.category || "");
       const station = norm(btn.dataset.station);
 
-      await addOrderItem(orderId, { name, price, qty: 1, station });
+      await addOrderItem(orderId, {
+        menuId,
+        itemId: menuId,
+        name,
+        category,
+        price,
+        qty: 1,
+        station
+      });
 
       await logAction({
         actorUid: auth.currentUser.uid,
         actorEmail: auth.currentUser.email,
         type: "ORDER",
         message: `Добавен артикул: ${name}`,
-        meta: { tableId, orderId, name, price, station }
+        meta: { tableId, orderId, menuId, name, category, price, station }
       });
     });
   });

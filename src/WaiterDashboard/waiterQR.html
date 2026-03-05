@@ -123,8 +123,8 @@
         0 0 80px rgba(255,204,102,.04);
       position:relative;
       overflow:hidden;
-      backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
       transform-style: preserve-3d;
       animation: cardFloat 6s ease-in-out infinite;
     }
@@ -167,6 +167,7 @@
       );
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask-composite: exclude;
       pointer-events:none;
       opacity:.4;
@@ -258,8 +259,8 @@
       border-radius: 20px;
       background: var(--glass);
       border: 1px solid var(--border);
-      backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
       padding: 24px;
       position:relative;
       overflow:hidden;
@@ -640,7 +641,7 @@
     <div class="shell">
       <div class="header">
         <h1 class="title">Waiter QR Scanner</h1>
-        <div class="subtitle">STAFF ACCESS • QR ORDER FLOW</div>
+        <div class="subtitle">WAITER &amp; MANAGER ACCESS • QR ORDER FLOW</div>
         <div class="divider"></div>
       </div>
 
@@ -651,7 +652,7 @@
         <!-- ✅ LOGIN SCREEN (visible first) -->
         <div id="loginScreen" class="card">
           <div class="cardTitle">
-            <span>Вход (Staff)</span>
+            <span>Вход (Waiter/Manager)</span>
             <span class="badge">Secure</span>
           </div>
 
@@ -671,7 +672,7 @@
 
           <div class="statusLine">
             <span id="authStatus">Не си логнат.</span>
-            <span class="muted">Rules: isStaff()</span>
+            <span class="muted">Rules: active waiter or manager</span>
           </div>
         </div>
 
@@ -762,6 +763,7 @@
   </script>
 
   <!-- ✅ Main logic (non-module, iPhone safe) -->
+  <script src="../shared/orders.js"></script>
   <script src="./waiterQR.ios.js"></script>
 
   <!-- ✅ UI toggle: show login first, app after login -->
