@@ -92,6 +92,7 @@ const DRINK_WORDS = [
 const state = {
   lang: localStorage.getItem("kitchenLang") || "bg",
   me: null,
+  userEmail: null,
   ordersRaw: [],
   queueItems: [],
   allStationItems: [],
@@ -122,6 +123,9 @@ let kitchenClickDelegationInitialized = false;
 const i18n = {
   bg: {
     headerTitle: "Кухненско Табло",
+    settingsModalTitle: "Настройки",
+    roleKitchen: "Кухня",
+    profileHint: "Кухненското табло показва активните поръчки.",
     exitBtn: "Изход",
     tabOrders: "Поръчки",
     tabMetrics: "Статистики",
@@ -142,6 +146,9 @@ const i18n = {
   },
   en: {
     headerTitle: "Kitchen Dashboard",
+    settingsModalTitle: "Settings",
+    roleKitchen: "Kitchen",
+    profileHint: "The kitchen dashboard shows active orders.",
     exitBtn: "Exit",
     tabOrders: "Orders",
     tabMetrics: "Metrics",
@@ -630,25 +637,30 @@ function rebuildOrdersFromQueueItems() {
 
 function updateLanguageTexts() {
   const headerTitle = el("headerTitle");
-  const exitBtn = el("exitBtn");
   const tabMetrics = el("tabMetrics");
   const metricsTitle = el("metricsTitle");
   const avgTimeLabel = el("avgTimeLabel");
   const lateOrdersLabel = el("lateOrdersLabel");
   const totalOrdersLabel = el("totalOrdersLabel");
   const takeawayTitle = el("takeawayTitle");
-  const langBtn = el("langBtn");
+  const modalLangBtn = el("modalLangBtn");
+  const modalExitBtn = el("modalExitBtn");
+  const kitchenModalTitle = el("kitchenModalTitle");
+  const kitchenProfileRole = el("kitchenProfileRole");
   const tabOrders = el("tabOrders");
 
   if (headerTitle) headerTitle.textContent = t("headerTitle");
-  if (exitBtn) exitBtn.textContent = t("exitBtn");
   if (tabMetrics) tabMetrics.textContent = t("tabMetrics");
   if (metricsTitle) metricsTitle.textContent = t("metricsTitle");
   if (avgTimeLabel) avgTimeLabel.textContent = t("avgTimeLabel");
   if (lateOrdersLabel) lateOrdersLabel.textContent = t("lateOrdersLabel");
   if (totalOrdersLabel) totalOrdersLabel.textContent = t("totalOrdersLabel");
   if (takeawayTitle) takeawayTitle.textContent = t("takeawayTitle");
-  if (langBtn) langBtn.textContent = state.lang === "bg" ? "EN" : "BG";
+  if (modalLangBtn) modalLangBtn.textContent = state.lang === "bg" ? "EN" : "BG";
+  if (modalExitBtn) modalExitBtn.textContent = t("exitBtn");
+  const kitchenProfileHint = el("kitchenProfileHint");
+  if (kitchenProfileRole) kitchenProfileRole.textContent = t("roleKitchen");
+  if (kitchenProfileHint) kitchenProfileHint.textContent = t("profileHint");
 
   if (tabOrders) {
     tabOrders.innerHTML = `${t("tabOrders")} <span class="badge" id="ordersBadge">${Math.min(state.kitchenOrders.length, 10)}</span>`;
@@ -760,6 +772,8 @@ function renderOrders() {
 function renderTakeaway() {
   const container = el("takeawayOrders");
   if (!container) return;
+  if (!state.takeawayOrders) return; // ← добави този ред
+
 
   const top10 = state.takeawayOrders.slice(0, 10);
   if (DEBUG_SPLIT) {
@@ -792,8 +806,7 @@ function renderTakeaway() {
 }
 
 function renderMetrics() {
-  const all = [...state.kitchenOrders, ...state.takeawayOrders];
-  const totalEl = el("totalOrders");
+  const all = [...(state.kitchenOrders || []), ...(state.takeawayOrders || [])];  const totalEl = el("totalOrders");
   const lateEl = el("lateOrders");
   const avgEl = el("avgTime");
 
@@ -1022,17 +1035,57 @@ function switchTab(tab) {
   if (activeTab) activeTab.classList.add("active");
 }
 
+function openKitchenProfileModal() {
+  const modal = el("kitchenProfileModal");
+  const nameEl = el("kitchenUserName");
+  const profileName = el("kitchenProfileName");
+  const profileEmail = el("kitchenProfileEmail");
+  if (modal) {
+    if (profileName && nameEl) profileName.textContent = nameEl.textContent || "—";
+    if (profileEmail) profileEmail.textContent = (typeof window !== "undefined" && window.__kitchenEmail) ? window.__kitchenEmail : "—";
+    modal.style.display = "block";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeKitchenProfileModal() {
+  const modal = el("kitchenProfileModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+}
+
 function bindUiActions() {
-  const langBtn = el("langBtn");
-  if (langBtn) {
-    langBtn.addEventListener("click", () => {
+  const openProfileBtn = el("openProfileBtn");
+  if (openProfileBtn) {
+    openProfileBtn.addEventListener("click", openKitchenProfileModal);
+  }
+
+  document.querySelectorAll("[data-close-kitchen-profile]").forEach((node) => {
+    node.addEventListener("click", closeKitchenProfileModal);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      const modal = el("kitchenProfileModal");
+      if (modal && modal.getAttribute("aria-hidden") === "false") closeKitchenProfileModal();
+    }
+  });
+
+  const modalLangBtn = el("modalLangBtn");
+  if (modalLangBtn) {
+    modalLangBtn.addEventListener("click", () => {
       if (typeof window.toggleLanguage === "function") window.toggleLanguage();
     });
   }
 
-  const exitBtn = el("exitBtn");
-  if (exitBtn) {
-    exitBtn.addEventListener("click", () => {
+  const modalExitBtn = el("modalExitBtn");
+  if (modalExitBtn) {
+    modalExitBtn.addEventListener("click", () => {
+      closeKitchenProfileModal();
       void exitDashboard();
     });
   }
@@ -1215,7 +1268,7 @@ bindUiActions();
 initKitchenClickDelegation();
 
 setInterval(() => {
-  if (!state.kitchenOrders.length && !state.takeawayOrders.length) return;
+  if (!state.kitchenOrders?.length && !state.takeawayOrders?.length) return;
   renderOrders();
   renderTakeaway();
   renderMetrics();
@@ -1241,6 +1294,8 @@ onAuthStateChanged(auth, async (user) => {
       const msg = "❌ Нямаш активна роля. В employees/{uid} трябва role='kitchen' и status='active'.";
       console.warn("kitchen access check failed", { uid: user.uid, role, status, me });
       state.me = me || {};
+      state.userEmail = user.email || null;
+      if (typeof window !== "undefined") window.__kitchenEmail = user.email || null;
       state.ordersRaw = [];
       state.queueItems = [];
       state.allStationItems = [];
@@ -1253,9 +1308,9 @@ onAuthStateChanged(auth, async (user) => {
 
     clearListenerError("role");
     state.me = me || {};
-    const waiterNameEl = el("waiterName");
-    if (waiterNameEl) waiterNameEl.textContent = nameFromEmployee(me || {}, user.email || "Kitchen");
-
+    state.userEmail = user.email || null;
+    if (typeof window !== "undefined") window.__kitchenEmail = user.email || null;
+    /* kitchenUserName is updated by kitchen-name-live.js (same as Manager user-name-live.js) */
     listenData();
   } catch (err) {
     console.error("Kitchen init error:", err);

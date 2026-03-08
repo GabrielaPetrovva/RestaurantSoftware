@@ -847,11 +847,12 @@
             font-weight: 600;
             color: white;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: box-shadow 0.2s, filter 0.2s;
         }
 
         .heatmap-cell:hover {
-            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            filter: brightness(1.1);
         }
 
         .heat-low { background: #90caf9; }
@@ -899,6 +900,8 @@
         /* Settings section – less top gap below menu bar */
         #settings.section {
             margin-top: -100px;
+            margin-left: 24px;
+            margin-right: 24px;
         }
 
         /* Settings: Данъчни ставки + Интеграции side by side, smaller */
@@ -948,6 +951,16 @@
         }
         .card-settings-logs {
             margin-top: 0;
+            padding-bottom: 24px;
+        }
+        .card-settings-logs #logsToggleBtn {
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 768px) {
+            .card-settings-logs {
+                margin-bottom: 96px; /* keep "Виж повече" above bottom nav */
+            }
         }
         @media (max-width: 768px) {
             .settings-top-grid {

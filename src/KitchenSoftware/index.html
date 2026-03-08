@@ -10,9 +10,45 @@
   <div class="header">
     <h1 id="headerTitle">Kitchen Dashboard</h1>
     <div class="header-actions">
-      <span class="waiter-name" id="waiterName">Kitchen</span>
-      <button class="lang-btn" id="langBtn" type="button">EN</button>
-      <button class="exit-btn" id="exitBtn" type="button">Exit</button>
+      <button type="button" class="profile-icon-btn" id="openProfileBtn" title="Моят профил" aria-label="Моят профил">
+        <span class="profile-icon">👤</span>
+        <span id="kitchenUserName" class="user-name">Loading...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Kitchen Profile Modal (same design as Manager) -->
+  <div id="kitchenProfileModal" class="modal" style="display: none;" aria-hidden="true">
+    <div class="modal-overlay" data-close-kitchen-profile></div>
+    <div class="modal-card modal-profile-card">
+      <div class="modal-head">
+        <b>Моят профил</b>
+        <button type="button" class="modal-close" data-close-kitchen-profile aria-label="Затвори">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-info-card">
+          <div class="profile-avatar">👤</div>
+          <div class="profile-details">
+            <div class="profile-row">
+              <span class="profile-label">Име</span>
+              <span id="kitchenProfileName" class="profile-value">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Имейл</span>
+              <span id="kitchenProfileEmail" class="profile-value">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Роля</span>
+              <span id="kitchenProfileRole" class="profile-value">Кухня</span>
+            </div>
+          </div>
+        </div>
+        <p class="profile-hint" id="kitchenProfileHint">Кухненското табло показва активните поръчки.</p>
+        <div class="profile-actions">
+          <button type="button" class="btn btn-secondary" id="modalLangBtn">EN</button>
+          <button type="button" class="btn btn-secondary" id="modalExitBtn">Изход</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -77,6 +113,7 @@
   </div>
 
   <script type="module" src="../js/logout.js"></script>
+  <script type="module" src="./kitchen-name-live.js"></script>
   <script type="module" src="./kitchen-data.js"></script>
 </body>
 </html>

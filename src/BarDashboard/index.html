@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bg">
 <head>
   <meta charset="UTF-8">
@@ -10,9 +10,45 @@
   <div class="header">
     <h1 id="headerTitle">Bar Dashboard</h1>
     <div class="header-right">
-      <span class="user-name" id="userName">Bar</span>
-      <button class="lang-btn" id="langBtn" type="button" style="padding: 8px 16px; border: none; border-radius: 6px; background: #2563eb; color: white; cursor: pointer; font-weight: 500; margin-right: 10px;">EN</button>
-      <button class="exit-btn" id="exitBtn" type="button">Exit</button>
+      <button type="button" class="profile-icon-btn" id="openProfileBtn" title="Моят профил" aria-label="Моят профил">
+        <span class="profile-icon">👤</span>
+        <span id="barUserName" class="user-name">Loading...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bar Profile Modal (same design as Manager/Kitchen) -->
+  <div id="barProfileModal" class="modal" style="display: none;" aria-hidden="true">
+    <div class="modal-overlay" data-close-bar-profile></div>
+    <div class="modal-card modal-profile-card">
+      <div class="modal-head">
+        <b>Моят профил</b>
+        <button type="button" class="modal-close" data-close-bar-profile aria-label="Затвори">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-info-card">
+          <div class="profile-avatar">👤</div>
+          <div class="profile-details">
+            <div class="profile-row">
+              <span class="profile-label">Име</span>
+              <span id="barProfileName" class="profile-value">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Имейл</span>
+              <span id="barProfileEmail" class="profile-value">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Роля</span>
+              <span id="barProfileRole" class="profile-value">Бар</span>
+            </div>
+          </div>
+        </div>
+        <p class="profile-hint" id="barProfileHint">Бар таблото показва активните поръчки за напитки.</p>
+        <div class="profile-actions">
+          <button type="button" class="btn btn-secondary" id="modalLangBtn">EN</button>
+          <button type="button" class="btn btn-secondary" id="modalExitBtn">Изход</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -111,6 +147,7 @@
   </div>
 
   <script type="module" src="../js/logout.js"></script>
+  <script type="module" src="./bar-name-live.js"></script>
   <script type="module" src="./bar-data.js"></script>
 </body>
 </html>

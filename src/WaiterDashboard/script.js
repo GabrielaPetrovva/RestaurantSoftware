@@ -28,8 +28,9 @@ const auth = getAuth(app);
 const qs = (id) => document.getElementById(id);
 const btnPrintOrders = document.getElementById("btnPrintOrders");
 
-const userNameEl = qs("userName");
-const exitBtn = qs("exitBtn");
+const openProfileBtn = qs("openProfileBtn");
+const modalLangBtn = qs("modalLangBtn");
+const modalExitBtn = qs("modalExitBtn");
 
 const views = Array.from(document.querySelectorAll(".view"));
 const topNavBtns = Array.from(document.querySelectorAll(".top-nav button[data-view]"));
@@ -57,7 +58,6 @@ const statSales = qs("statSales");
 const statAvg = qs("statAvg");
 const statTables = qs("statTables");
 const statTips = qs("statTips");
-const langSelect = qs("langSelect");
 const receiptModal = qs("receiptModal");
 const receiptBody = qs("receiptBody");
 const closeReceipt = qs("closeReceipt");
@@ -198,8 +198,13 @@ function updateTranslations() {
   document.querySelectorAll('.bottom-nav button[data-view="delivery"] span:last-child').forEach(el => el.textContent = t('Delivery'));
   document.querySelectorAll('.bottom-nav button[data-view="stats"] span:last-child').forEach(el => el.textContent = t('Stats'));
   
-  // Update exit button
-  if (exitBtn) exitBtn.textContent = t('Exit');
+  // Update modal exit button
+  if (modalExitBtn) modalExitBtn.textContent = t('Exit');
+  if (modalLangBtn) modalLangBtn.textContent = currentLang === 'bg' ? 'EN' : 'BG';
+  const waiterProfileRole = qs("waiterProfileRole");
+  const waiterProfileHint = qs("waiterProfileHint");
+  if (waiterProfileRole) waiterProfileRole.textContent = currentLang === 'bg' ? 'Сервитьор' : 'Waiter';
+  if (waiterProfileHint) waiterProfileHint.textContent = currentLang === 'bg' ? 'Сервитьорското табло за управление на маси и поръчки.' : 'The waiter dashboard for tables and orders.';
   
   // Update section titles
   const tablesTitle = qs("tablesTitle");
@@ -280,8 +285,6 @@ function requireEl(el, name) {
   if (!el) throw new Error(`Missing DOM element: ${name}`);
 }
 [
-  [userNameEl, "userName"],
-  [exitBtn, "exitBtn"],
   [tablesGrid, "tablesGrid"],
   [tplTableChip, "tplTableChip"],
   [orderItemsEl, "orderItems"],
@@ -360,13 +363,55 @@ function parseEuroInput(s) {
 });
 backToTablesBtn?.addEventListener("click", () => setView("tables"));
 
-/* ======================= LANGUAGE ======================= */
-if (langSelect) {
-  langSelect.value = currentLang;
-  langSelect.addEventListener("change", (e) => {
-    currentLang = e.target.value;
-    localStorage.setItem('waiterDashboardLang', currentLang);
+/* ======================= PROFILE MODAL ======================= */
+function openWaiterProfileModal() {
+  const modal = qs("waiterProfileModal");
+  const nameEl = qs("waiterUserName");
+  const profileName = qs("waiterProfileName");
+  const profileEmail = qs("waiterProfileEmail");
+  if (modal) {
+    if (profileName && nameEl) profileName.textContent = nameEl?.textContent || "—";
+    if (profileEmail) profileEmail.textContent = (typeof window !== "undefined" && window.__waiterEmail) ? window.__waiterEmail : "—";
+    modal.style.display = "block";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeWaiterProfileModal() {
+  const modal = qs("waiterProfileModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+}
+
+if (openProfileBtn) {
+  openProfileBtn.addEventListener("click", openWaiterProfileModal);
+}
+document.querySelectorAll("[data-close-waiter-profile]").forEach((node) => {
+  node.addEventListener("click", closeWaiterProfileModal);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    const modal = qs("waiterProfileModal");
+    if (modal && modal.getAttribute("aria-hidden") === "false") closeWaiterProfileModal();
+  }
+});
+
+if (modalLangBtn) {
+  modalLangBtn.addEventListener("click", () => {
+    currentLang = currentLang === "bg" ? "en" : "bg";
+    localStorage.setItem("waiterDashboardLang", currentLang);
     updateTranslations();
+  });
+}
+
+if (modalExitBtn) {
+  modalExitBtn.addEventListener("click", () => {
+    closeWaiterProfileModal();
+    if (typeof window.logout === "function") window.logout();
   });
 }
 
@@ -394,7 +439,8 @@ onAuthStateChanged(auth, async (user) => {
       return;
     }
 
-    userNameEl.textContent = `${meEmp.name || "User"} (${meEmp.role || "staff"})`;
+    if (typeof window !== "undefined") window.__waiterEmail = user.email || null;
+    /* waiterUserName is updated by waiter-name-live.js */
 
     // Initialize translations
     updateTranslations();
@@ -410,10 +456,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-exitBtn.addEventListener("click", async () => {
-  await signOut(auth);
-  alert("Signed out.");
-});
+/* Exit moved to profile modal */
 
 /* ======================= TABLES ======================= */
 function listenTables() {

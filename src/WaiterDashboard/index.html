@@ -21,15 +21,47 @@
     </div>
 
     <div class="user-area">
-      <select id="langSelect">
-        <option value="en">EN</option>
-        <option value="bg">BG</option>
-      </select>
-
-      <span class="user-name" id="userName">Loading...</span>
-      <button class="exit" id="exitBtn">Exit</button>
+      <button type="button" class="profile-icon-btn" id="openProfileBtn" title="Моят профил" aria-label="Моят профил">
+        <span class="profile-icon">👤</span>
+        <span id="waiterUserName" class="user-name">Loading...</span>
+      </button>
     </div>
   </header>
+
+  <!-- Waiter Profile Modal (same design as Manager/Kitchen/Bar) -->
+  <div id="waiterProfileModal" class="modal" style="display: none;" aria-hidden="true">
+    <div class="modal-overlay" data-close-waiter-profile></div>
+    <div class="modal-card modal-profile-card">
+      <div class="modal-head">
+        <b>Моят профил</b>
+        <button type="button" class="modal-close" data-close-waiter-profile aria-label="Затвори">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="profile-info-card">
+          <div class="profile-avatar">👤</div>
+          <div class="profile-details">
+            <div class="profile-row">
+              <span class="profile-label">Име</span>
+              <span id="waiterProfileName" class="profile-value">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Имейл</span>
+              <span id="waiterProfileEmail" class="profile-value">—</span>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Роля</span>
+              <span id="waiterProfileRole" class="profile-value">Сервитьор</span>
+            </div>
+          </div>
+        </div>
+        <p class="profile-hint" id="waiterProfileHint">Сервитьорското табло за управление на маси и поръчки.</p>
+        <div class="profile-actions">
+          <button type="button" class="btn btn-secondary" id="modalLangBtn">EN</button>
+          <button type="button" class="btn btn-secondary" id="modalExitBtn">Изход</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <main class="main" id="main">
     <section id="view-tables" class="view active">
@@ -153,9 +185,10 @@
 
  <script src="./config.js"></script>
 <script src="../shared/orders.js"></script>
-<script type="module" src="./script.js"></script>
 <script type="module" src="../js/auth-redirect.js"></script>
 <script type="module" src="../js/logout.js"></script>
+<script type="module" src="./waiter-name-live.js"></script>
+<script type="module" src="./script.js"></script>
 
 
 </body>

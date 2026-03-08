@@ -4,13 +4,21 @@
     box-sizing: border-box;
 }
 
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
+    min-height: 100%;
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
+    overflow: hidden;
     transition: background-color 0.3s ease;
 }
 
@@ -25,6 +33,10 @@ body.dark {
 .login-container {
     width: 100%;
     max-width: 440px;
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    display: flex;
+    flex-direction: column;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -43,7 +55,9 @@ body.dark {
 
 .hero-image {
     width: 100%;
-    height: 13rem;
+    height: 40%; /* Заема 40% от контейнера */
+    min-height: 180px;
+    flex-shrink: 0;
     background-image: url('../images/login-background.jpg');
     background-size: cover;
     background-position: center;
@@ -62,6 +76,10 @@ body.dark {
 
 .login-content {
     padding: 40px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .theme-toggle {
@@ -323,8 +341,18 @@ input::placeholder {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    body {
+        padding: 16px;
+        align-items: flex-start;
+        padding-top: max(16px, env(safe-area-inset-top));
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+    }
+
     .login-container {
         max-width: 100%;
+        margin: auto 0;
     }
 
     .login-content {
@@ -334,20 +362,48 @@ input::placeholder {
     .brand-title,
     .brand-subtitle {
         font-size: 32px;
+        padding-right: 0;
+        padding-left: 0;
+        text-align: center;
+    }
+
+    .brand-subtitle {
+        margin-top: 0;
     }
 
     .hero-image {
-        height: 160px;
+        height: 140px;
+    }
+
+    .theme-toggle {
+        top: max(12px, env(safe-area-inset-top));
+        right: max(12px, env(safe-area-inset-right));
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 16px 15px 16px 48px;
+        font-size: 16px; /* prevents zoom on iOS */
+    }
+
+    .submit-button {
+        padding: 16px;
+        min-height: 48px;
     }
 }
 
 @media (max-width: 480px) {
     body {
-        padding: 10px;
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
     }
 
     .login-content {
-        padding: 25px 20px;
+        padding: 24px 20px;
     }
 
     .brand-title,
@@ -356,24 +412,210 @@ input::placeholder {
     }
 
     .hero-image {
-        height: 140px;
+        height: 120px;
     }
 
     .options-row {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         align-items: flex-start;
+        margin-bottom: 24px;
     }
 
     .theme-toggle {
-        width: 45px;
-        height: 45px;
-        top: 15px;
-        right: 15px;
+        width: 44px;
+        height: 44px;
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        font-size: 20px;
     }
 
     .tab-button {
-        padding: 12px 20px;
+        padding: 14px 16px;
         font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .tab-container {
+        margin-bottom: 24px;
+    }
+
+    .input-group {
+        margin-bottom: 16px;
+    }
+
+    .forgot-password span:last-child {
+        word-break: break-word;
+    }
+
+    .terms-text {
+        font-size: 11px;
+        margin-top: 16px;
+        padding: 0 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    .brand-title,
+    .brand-subtitle {
+        font-size: 24px;
+    }
+
+    .login-content {
+        padding: 20px 16px;
+    }
+
+    .hero-image {
+        height: 100px;
+    }
+
+    .tab-button {
+        padding: 12px 10px;
+        font-size: 13px;
+    }
+}
+
+/* Short viewport - reduce heights so everything fits without scroll */
+@media (max-height: 700px) {
+    .hero-image {
+        height: 100px;
+        min-height: 70px;
+    }
+    .login-content {
+        padding: 24px 30px;
+    }
+    .brand-title,
+    .brand-subtitle {
+        font-size: 28px;
+        margin-bottom: 16px;
+    }
+    .brand-subtitle {
+        margin-bottom: 20px;
+    }
+    .tab-container {
+        margin-bottom: 16px;
+    }
+    .input-group {
+        margin-bottom: 12px;
+    }
+    .options-row {
+        margin-bottom: 16px;
+    }
+    .terms-text {
+        margin-top: 12px;
+    }
+}
+
+@media (max-height: 600px) {
+    body {
+        padding: 12px;
+    }
+    .login-container {
+        max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px);
+    }
+    .hero-image {
+        height: 80px;
+        min-height: 60px;
+    }
+    .login-content {
+        padding: 20px 25px;
+    }
+    .brand-title,
+    .brand-subtitle {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+    .brand-subtitle {
+        margin-bottom: 14px;
+    }
+    .tab-container {
+        margin-bottom: 12px;
+    }
+    .tab-button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    .input-group {
+        margin-bottom: 10px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 12px 15px 12px 45px;
+    }
+    .options-row {
+        margin-bottom: 12px;
+    }
+    .submit-button {
+        padding: 12px;
+    }
+    .terms-text {
+        margin-top: 10px;
+        font-size: 11px;
+    }
+}
+
+/* Landscape on small phones - ensure content fits without scroll */
+@media (max-height: 500px) and (orientation: landscape) {
+    body {
+        align-items: center;
+        padding: 10px;
+    }
+
+    .login-container {
+        max-height: calc(100dvh - 20px);
+        max-height: calc(100vh - 20px);
+    }
+
+    .hero-image {
+        height: 60px;
+        min-height: 50px;
+    }
+
+    .login-content {
+        padding: 16px 25px;
+    }
+
+    .brand-title,
+    .brand-subtitle {
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
+    .brand-subtitle {
+        margin-bottom: 12px;
+    }
+
+    .tab-container {
+        margin-bottom: 10px;
+    }
+
+    .tab-button {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .input-group {
+        margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 10px 15px 10px 45px;
+    }
+
+    .options-row {
+        margin-bottom: 10px;
+    }
+
+    .submit-button {
+        padding: 10px;
+    }
+
+    .terms-text {
+        margin-top: 8px;
+        font-size: 10px;
     }
 }

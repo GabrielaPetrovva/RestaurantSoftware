@@ -84,6 +84,11 @@
             transform: translateY(-1px);
         }
 
+        /* Hide waiter name in header on statistics page */
+        .header .waiter-name {
+            display: none;
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -349,16 +354,134 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* ── Add at the very bottom of your CSS ── */
+
+@media (max-width: 640px) {
+
+.container {
+    padding: 1rem;
+}
+
+/* Filters bar — stack vertically */
+.filters {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+}
+
+select {
+    width: 100%;
+}
+
+/* Stats grid — single column */
+.stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+}
+
+/* Charts — single column */
+.charts-section {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+/* ── Top Dishes Table → Card layout ── */
+.table-section {
+    padding: 1rem;
+    overflow: hidden !important;
+}
+
+/* Override the global table/th/td rules */
+.table-section table {
+    display: block !important;
+    width: 100% !important;
+}
+
+.table-section thead {
+    display: none !important;
+}
+
+.table-section tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+}
+
+.table-section tr {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+    background: var(--light) !important;
+    border-radius: 8px !important;
+    padding: 0.875rem !important;
+    border-bottom: none !important;
+}
+
+/* Dish name — full width, styled as card title */
+.table-section td:nth-child(1) {
+    grid-column: 1 / -1 !important;
+    font-weight: 700 !important;
+    font-size: 0.9375rem !important;
+    color: var(--dark) !important;
+    padding: 0 0 0.5rem 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+    background: none !important;
+}
+
+.table-section td:nth-child(1)::before {
+    display: none !important;
+}
+
+/* All other cells */
+.table-section td {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+    background: none !important;
+    font-size: 0.875rem !important;
+}
+
+.table-section td::before {
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    color: #9ca3af !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 0.125rem !important;
+    display: block !important;
+}
+
+.table-section td:nth-child(2)::before { content: "Поръчки" !important; }
+.table-section td:nth-child(3)::before { content: "Приход" !important; }
+.table-section td:nth-child(4)::before { content: "Ср. време" !important; }
+.table-section td:nth-child(5) {
+    grid-column: 1 / -1 !important;
+}
+.table-section td:nth-child(5)::before { content: "Статус" !important; }
+
+/* Empty / loading state */
+.table-section td[colspan="5"] {
+    grid-column: 1 / -1 !important;
+    text-align: center !important;
+}
+
+/* Hover state — disable on mobile */
+.table-section tr:hover {
+    background: var(--light) !important;
+}
+}
     </style>
 </head>
 <body>
     <div class="header">
         <h1 id="headerTitle">Kitchen Statistics</h1>
         <div class="header-actions">
-            <span class="waiter-name" id="waiterName">Kitchen</span>
             <button class="back-btn" onclick="goBack()" id="backBtn">Back to Dashboard</button>
-            <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">EN</button>
-            <button class="exit-btn" onclick="exit()" id="exitBtn">Exit</button>
         </div>
     </div>
 

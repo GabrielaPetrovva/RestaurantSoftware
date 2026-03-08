@@ -1,4 +1,4 @@
-﻿// src/BarDashboard/bar-data.js
+// src/BarDashboard/bar-data.js
 import { auth, db } from "../js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import {
@@ -90,6 +90,8 @@ const DRINK_WORDS = [
 const I18N = {
   bg: {
     headerTitle: "Бар Табло",
+    roleBar: "Бар",
+    profileHint: "Бар таблото показва активните поръчки за напитки.",
     tabOrders: "Поръчки",
     tabMetrics: "Метрики",
     exitBtn: "Изход",
@@ -134,6 +136,8 @@ const I18N = {
   },
   en: {
     headerTitle: "Bar Dashboard",
+    roleBar: "Bar",
+    profileHint: "The bar dashboard shows active drink orders.",
     tabOrders: "Orders",
     tabMetrics: "Metrics",
     exitBtn: "Exit",
@@ -1086,7 +1090,9 @@ function renderMetrics() {
 
 function renderTexts() {
   if (el("headerTitle")) el("headerTitle").textContent = t("headerTitle");
-  if (el("exitBtn")) el("exitBtn").textContent = t("exitBtn");
+  if (el("modalExitBtn")) el("modalExitBtn").textContent = t("exitBtn");
+  if (el("barProfileRole")) el("barProfileRole").textContent = t("roleBar");
+  if (el("barProfileHint")) el("barProfileHint").textContent = t("profileHint");
   if (el("tabOrders")) el("tabOrders").textContent = t("tabOrders");
   if (el("tabMetrics")) {
     const badge = `<span class="notification-badge" id="metricsBadge">${el("metricsBadge")?.textContent || "0"}</span>`;
@@ -1117,7 +1123,7 @@ function renderTexts() {
   if (el("sidePreparingRow")) el("sidePreparingRow").innerHTML = `${escapeHtml(t("sidePreparingRow"))}: <span id="sidePreparingCount">${el("sidePreparingCount")?.textContent || "0"}</span>`;
   if (el("sideReadyRow")) el("sideReadyRow").innerHTML = `${escapeHtml(t("sideReadyRow"))}: <span id="sideReadyCount">${el("sideReadyCount")?.textContent || "0"}</span>`;
 
-  if (el("langBtn")) el("langBtn").textContent = currentLang === "bg" ? "EN" : "BG";
+  if (el("modalLangBtn")) el("modalLangBtn").textContent = currentLang === "bg" ? "EN" : "BG";
 }
 
 function renderAll() {
@@ -1126,17 +1132,57 @@ function renderAll() {
   renderMetrics();
 }
 
+function openBarProfileModal() {
+  const modal = el("barProfileModal");
+  const nameEl = el("barUserName");
+  const profileName = el("barProfileName");
+  const profileEmail = el("barProfileEmail");
+  if (modal) {
+    if (profileName && nameEl) profileName.textContent = nameEl?.textContent || "—";
+    if (profileEmail) profileEmail.textContent = (typeof window !== "undefined" && window.__barEmail) ? window.__barEmail : "—";
+    modal.style.display = "block";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeBarProfileModal() {
+  const modal = el("barProfileModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+}
+
 function bindHeaderActions() {
-  const langBtn = el("langBtn");
-  if (langBtn) {
-    langBtn.addEventListener("click", () => {
+  const openProfileBtn = el("openProfileBtn");
+  if (openProfileBtn) {
+    openProfileBtn.addEventListener("click", openBarProfileModal);
+  }
+
+  document.querySelectorAll("[data-close-bar-profile]").forEach((node) => {
+    node.addEventListener("click", closeBarProfileModal);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      const modal = el("barProfileModal");
+      if (modal && modal.getAttribute("aria-hidden") === "false") closeBarProfileModal();
+    }
+  });
+
+  const modalLangBtn = el("modalLangBtn");
+  if (modalLangBtn) {
+    modalLangBtn.addEventListener("click", () => {
       if (typeof window.toggleLanguage === "function") window.toggleLanguage();
     });
   }
 
-  const exitBtn = el("exitBtn");
-  if (exitBtn) {
-    exitBtn.addEventListener("click", () => {
+  const modalExitBtn = el("modalExitBtn");
+  if (modalExitBtn) {
+    modalExitBtn.addEventListener("click", () => {
+      closeBarProfileModal();
       if (typeof window.logout === "function") window.logout();
     });
   }
@@ -1187,8 +1233,8 @@ onAuthStateChanged(auth, async (user) => {
     me = null;
   }
 
-  const fullName = `${me?.firstName || ""} ${me?.lastName || ""}`.trim();
-  if (el("userName")) el("userName").textContent = fullName || me?.email || user.email || "Bar";
+  if (typeof window !== "undefined") window.__barEmail = user.email || null;
+  /* barUserName is updated by bar-name-live.js (same as Manager/Kitchen) */
 
   if (unsubQueue) unsubQueue();
   if (unsubAllItems) unsubAllItems();
