@@ -119,6 +119,17 @@
             margin-bottom: 0.5rem;
         }
 
+        .header-utilities {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .search-modal-heading {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 768px) {
             .legal-main {
                 padding: 6rem 1rem 3rem;
@@ -159,7 +170,7 @@
             <a href="../index.html#about">За нас</a>
             <a href="contacts.html">Контакти</a>
         </nav>
-        <div style="display: flex; gap: 1.5rem; align-items: center;">
+        <div class="header-utilities">
             <div class="order-icon" onclick="toggleOrderSummary()">
                 <img src="../images/shopping-cart.png" alt="Shopping Cart">
                 <span class="order-badge" id="order-count">0</span>
@@ -383,7 +394,7 @@
     <div id="searchModal" class="search-modal">
         <div class="search-modal-content">
             <span class="search-close">&times;</span>
-            <h2 style="color: white; margin-bottom: 1rem;">Търсене</h2>
+            <h2 class="search-modal-heading">Търсене</h2>
             <input type="text" id="searchInput" class="search-input" placeholder="Търсене на ястия, напитки или услуги...">
             <div id="searchResults" class="search-results"></div>
         </div>

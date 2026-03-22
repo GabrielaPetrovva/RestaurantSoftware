@@ -309,22 +309,6 @@ function stopRecentOrdersListener() {
 
 function startRecentOrdersDebugListener() {
   stopRecentOrdersListener();
-  unsubRecentOrders = onSnapshot(
-    query(
-      collection(db, "orders"),
-      where("station", "==", "bar"),
-      orderBy("createdAt", "desc"),
-      limit(10)
-    ),
-    (snapshot) => {
-      console.log("LOADED LAST 10 ORDERS:", snapshot.size);
-    },
-    (err) => {
-      handleStationError("bar recent orders", err, {
-        query: "orders where station==\"bar\" orderBy(createdAt desc) limit(10)"
-      });
-    }
-  );
 }
 
 function t(key) {
@@ -402,19 +386,9 @@ function looksLikeDrink(category, type, name, menuName, menuCategory) {
 }
 
 function itemStation(item, name) {
-  const direct = normalizeStationValue(
+  return normalizeStationValue(
     item?.station || item?.targetStation || item?.department || item?.prepStation || item?.destination
   );
-  if (direct === "bar" || direct === "kitchen") return direct;
-
-  const menu = menuByName.get(norm(name));
-
-  if (looksLikeDrink(item?.category, item?.type, name, menu?.name, menu?.category)) return "bar";
-
-  const menuStation = normalizeStationValue(menu?.station || menu?.prepStation || menu?.department);
-  if (menuStation === "bar" || menuStation === "kitchen") return menuStation;
-
-  return "kitchen";
 }
 
 function orderItems(order) {
@@ -442,6 +416,7 @@ function splitOrderItems(order) {
     if (!name) return;
 
     const station = itemStation(it, name);
+    if (station !== "bar" && station !== "kitchen") return;
     const menu = menuByName.get(norm(name));
 
     const normalizedItem = {
@@ -743,60 +718,8 @@ async function syncBarQueueFromOrders() {
 }
 
 function startOrderMirrorListeners() {
-  if (!mirrorEnabled) return;
-  stopOrderMirrorListeners();
-
-  unsubMenus = onSnapshot(
-    collection(db, "menus"),
-    (snap) => {
-      if (DEBUG_SPLIT) console.log("SNAPSHOT SIZE:", snap.size, "(menus)");
-      applyMenuSnapshot(menuByIdFromMenus, menuByNameFromMenus, snap);
-    },
-    (err) => {
-      if (firestoreCode(err) === "permission-denied") {
-        disableMirror("permission-denied", err);
-        return;
-      }
-      console.warn("bar menus listener error:", err);
-    }
-  );
-
-  unsubMenuItems = onSnapshot(
-    collection(db, "menu_items"),
-    (snap) => {
-      if (DEBUG_SPLIT) console.log("SNAPSHOT SIZE:", snap.size, "(menu_items)");
-      applyMenuSnapshot(menuByIdFromMenuItems, menuByNameFromMenuItems, snap);
-    },
-    (err) => {
-      if (firestoreCode(err) === "permission-denied") {
-        disableMirror("permission-denied", err);
-        return;
-      }
-      console.warn("bar menu_items listener error:", err);
-    }
-  );
-
-  unsubOrders = onSnapshot(
-    query(
-      collection(db, "orders"),
-      where("station", "==", "bar"),
-      orderBy("createdAt", "desc"),
-      limit(10)
-    ),
-    (snap) => {
-      console.log("LOADED LAST 10 ORDERS:", snap.size);
-      if (DEBUG_SPLIT) console.log("SNAPSHOT SIZE:", snap.size, "(orders)");
-      ordersRaw = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      scheduleOrderSync();
-    },
-    (err) => {
-      if (firestoreCode(err) === "permission-denied") {
-        disableMirror("permission-denied", err);
-        return;
-      }
-      console.warn("bar orders listener error:", err);
-    }
-  );
+  // Mirror mode intentionally disabled: bar queue must rely only on collectionGroup("items").
+  return;
 }
 
 function groupByOrder(items) {

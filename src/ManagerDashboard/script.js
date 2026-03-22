@@ -80,7 +80,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll(".heatmap-cell").forEach(cell => {
     cell.addEventListener("click", () => {
-      alert(`Клиенти в този период: ${cell.textContent}`);
+      const count = cell.dataset.count || cell.textContent.trim();
+      const day = cell.dataset.dayLabel || cell.dataset.day || "";
+      const slot = cell.dataset.slot || "";
+      const label = [day, slot].filter(Boolean).join(" | ");
+      alert(`${label ? `${label}: ` : ""}${count} поръчки`);
     });
   });
 

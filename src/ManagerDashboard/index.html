@@ -58,6 +58,7 @@
             <button type="button" class="tab-btn active" data-view="finance" onclick="switchTab('finance', event)">Финанси</button>
             <button type="button" class="tab-btn" data-view="staff" onclick="switchTab('staff', event)">Персонал</button>
             <button type="button" class="tab-btn" data-view="menu" onclick="switchTab('menu', event)">Меню</button>
+            <button type="button" class="tab-btn" data-view="history" onclick="switchTab('history', event)">История на поръчките</button>
             <button type="button" class="tab-btn" data-view="analytics" onclick="switchTab('analytics', event)">Анализи</button>
             <button type="button" class="tab-btn" data-view="settings" onclick="switchTab('settings', event)">Настройки</button>
         </nav>
@@ -688,6 +689,61 @@
 
 </div>
 
+            <!-- Order History Section -->
+            <div id="history" class="section">
+                <div class="card">
+                    <div class="card-header">История на поръчките</div>
+                    <form id="orderHistoryFilters" class="order-history-filter-grid" autocomplete="off">
+                        <div class="form-group">
+                            <label class="form-label" for="orderHistoryDate">Дата</label>
+                            <input id="orderHistoryDate" type="date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="orderHistoryTable">Маса</label>
+                            <input id="orderHistoryTable" type="text" class="form-control" list="orderHistoryTables" placeholder="Всички маси">
+                            <datalist id="orderHistoryTables"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="orderHistoryWaiter">Сервитьор</label>
+                            <input id="orderHistoryWaiter" type="text" class="form-control" list="orderHistoryWaiters" placeholder="Всички сервитьори">
+                            <datalist id="orderHistoryWaiters"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="orderHistoryOrderNumber">Номер на поръчка</label>
+                            <input id="orderHistoryOrderNumber" type="text" class="form-control" placeholder="Търси по номер">
+                        </div>
+                    </form>
+                    <div class="order-history-toolbar">
+                        <div id="orderHistorySummary" class="order-history-summary">Зареждане на историята...</div>
+                        <button type="button" id="orderHistoryClearBtn" class="btn btn-secondary">Изчисти филтрите</button>
+                    </div>
+                </div>
+
+                <div class="card order-history-results-card">
+                    <div class="card-header">Резултати</div>
+                    <div id="orderHistoryError" class="order-history-error" hidden></div>
+                    <div id="orderHistoryEmpty" class="order-history-empty" hidden>Няма намерени поръчки по зададените критерии.</div>
+                    <table class="data-table order-history-table">
+                        <thead>
+                            <tr>
+                                <th>Номер на поръчка</th>
+                                <th>Дата / час</th>
+                                <th>Маса</th>
+                                <th>Сервитьор</th>
+                                <th>Поръчано</th>
+                                <th>Общо</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderHistoryTableBody">
+                            <tr>
+                                <td colspan="7">Зареждане...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Analytics Section -->
             <div id="analytics" class="section">
                 <div class="stats-grid">
@@ -735,9 +791,9 @@
                     </div>
                 </div>
 
-                <div class="card heatmap-card">
+                <div class="card heatmap-card" id="kitchenHeatmapCard">
                     <div class="card-header">Heatmap - ястия по часове и дни</div>
-                    <div class="heatmap-wrapper" style="margin: 20px 0;">
+                    <div class="heatmap-wrapper" id="kitchenHeatmapGrid" style="margin: 20px 0;">
                         <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 10px;">
                             <div></div>
                             <div style="text-align: center; font-size: 12px; font-weight: 600;">Пон</div>
@@ -750,33 +806,33 @@
                         </div>
                         <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
                             <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">12:00-14:00</div>
-                            <div class="heatmap-cell heat-medium">35</div>
-                            <div class="heatmap-cell heat-medium">38</div>
-                            <div class="heatmap-cell heat-medium">42</div>
-                            <div class="heatmap-cell heat-high">48</div>
-                            <div class="heatmap-cell heat-high">52</div>
-                            <div class="heatmap-cell heat-high">58</div>
-                            <div class="heatmap-cell heat-medium">45</div>
+                            <div class="heatmap-cell heat-low" data-day="РџРѕРЅ" data-slot="12:00-14:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="Р’С‚Рѕ" data-slot="12:00-14:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РЎСЂСЏ" data-slot="12:00-14:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="Р§РµС‚" data-slot="12:00-14:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РџРµС‚" data-slot="12:00-14:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РЎСЉР±" data-slot="12:00-14:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РќРµРґ" data-slot="12:00-14:00" data-count="0">0</div>
                         </div>
                         <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px; margin-bottom: 5px;">
                             <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">18:00-20:00</div>
-                            <div class="heatmap-cell heat-medium">42</div>
-                            <div class="heatmap-cell heat-high">48</div>
-                            <div class="heatmap-cell heat-high">51</div>
-                            <div class="heatmap-cell heat-high">55</div>
-                            <div class="heatmap-cell heat-high">68</div>
-                            <div class="heatmap-cell heat-high">72</div>
-                            <div class="heatmap-cell heat-high">65</div>
+                            <div class="heatmap-cell heat-low" data-day="РџРѕРЅ" data-slot="18:00-20:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="Р’С‚Рѕ" data-slot="18:00-20:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РЎСЂСЏ" data-slot="18:00-20:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="Р§РµС‚" data-slot="18:00-20:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РџРµС‚" data-slot="18:00-20:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РЎСЉР±" data-slot="18:00-20:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РќРµРґ" data-slot="18:00-20:00" data-count="0">0</div>
                         </div>
                         <div class="heatmap-grid" style="display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 5px;">
                             <div style="font-size: 12px; font-weight: 600; display: flex; align-items: center;">20:00-22:00</div>
-                            <div class="heatmap-cell heat-low">25</div>
-                            <div class="heatmap-cell heat-medium">32</div>
-                            <div class="heatmap-cell heat-medium">35</div>
-                            <div class="heatmap-cell heat-medium">38</div>
-                            <div class="heatmap-cell heat-high">52</div>
-                            <div class="heatmap-cell heat-high">58</div>
-                            <div class="heatmap-cell heat-medium">42</div>
+                            <div class="heatmap-cell heat-low" data-day="РџРѕРЅ" data-slot="20:00-22:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="Р’С‚Рѕ" data-slot="20:00-22:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РЎСЂСЏ" data-slot="20:00-22:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="Р§РµС‚" data-slot="20:00-22:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РџРµС‚" data-slot="20:00-22:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РЎСЉР±" data-slot="20:00-22:00" data-count="0">0</div>
+                            <div class="heatmap-cell heat-low" data-day="РќРµРґ" data-slot="20:00-22:00" data-count="0">0</div>
                         </div>
                     </div>
                     <div class="heatmap-legend">
@@ -968,6 +1024,10 @@
                 <span class="icon">📋</span>
                 <span>Меню</span>
             </button>
+            <button type="button" class="tab-btn" data-view="history" onclick="switchTab('history', event)">
+                <span class="icon">🧾</span>
+                <span>История</span>
+            </button>
             <button type="button" class="tab-btn" data-view="analytics" onclick="switchTab('analytics', event)">
                 <span class="icon">📊</span>
                 <span>Анализи</span>
@@ -986,6 +1046,8 @@
 <script type="module" src="./menu-live.js"></script>
 <script type="module" src="./menu-analytics-live.js"></script>
 <script type="module" src="./manager-stats-live.js"></script>
+<script type="module" src="./kitchen-heatmap-live.js"></script>
+<script type="module" src="./order-history-live.js"></script>
 <script type="module" src="./user-name-live.js"></script>
 <script type="module" src="./staff-settings.js"></script>
 <script type="module" src="./approve.js"></script>

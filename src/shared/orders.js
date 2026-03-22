@@ -37,26 +37,36 @@
   }
 
   function isClosedOrder(orderData) {
+    const status = toLower(orderData?.status);
+    const paymentStatus = toLower(orderData?.paymentStatus);
+    const orderStatus = toLower(orderData?.orderStatus);
     return (
-      toLower(orderData?.paymentStatus) === "paid" ||
-      toLower(orderData?.status) === "closed" ||
+      paymentStatus === "paid" ||
+      orderStatus === "closed" ||
+      status === "paid" ||
+      status === "closed" ||
+      status === "cancelled" ||
       hasClosedAtValue(orderData?.closedAt)
     );
   }
 
   function isOpenOrderForTable(orderData, tableId) {
     if (toId(orderData?.tableId) !== tableId) return false;
-    if (toLower(orderData?.status) !== "open") return false;
-    if (toLower(orderData?.paymentStatus) === "paid") return false;
-    if (hasClosedAtValue(orderData?.closedAt)) return false;
+    if (isClosedOrder(orderData)) return false;
+
+    const status = toLower(orderData?.status);
+    const orderStatus = toLower(orderData?.orderStatus);
+    if (orderStatus && orderStatus !== "open") return false;
+    if (status && status !== "open" && status !== "created") return false;
     return true;
   }
 
   function closedReason(orderData) {
     const paymentStatus = toLower(orderData?.paymentStatus) || "-";
     const status = toLower(orderData?.status) || "-";
+    const orderStatus = toLower(orderData?.orderStatus) || "-";
     const closedAt = hasClosedAtValue(orderData?.closedAt) ? "set" : "null";
-    return "paymentStatus=" + paymentStatus + ", status=" + status + ", closedAt=" + closedAt;
+    return "paymentStatus=" + paymentStatus + ", status=" + status + ", orderStatus=" + orderStatus + ", closedAt=" + closedAt;
   }
 
   function timestampToMillis(value) {
@@ -453,6 +463,7 @@
             }), { merge: true });
             tx.set(tableRef, {
               status: "busy",
+              currentOrderId: candidate.id,
               activeOrders: arrUnion(candidate.id),
               updatedAt: nowTs
             }, { merge: true });
@@ -472,6 +483,7 @@
           }), { merge: true });
           tx.set(tableRef, {
             status: "busy",
+            currentOrderId: orderRef.id,
             activeOrders: arrUnion(orderRef.id),
             updatedAt: nowTs
           }, { merge: true });
@@ -582,6 +594,7 @@
 
           tx.set(tableRef, {
             status: "busy",
+            currentOrderId: selected.id,
             activeOrders: arrUnion(selected.id),
             updatedAt: nowTs
           }, { merge: true });
@@ -618,6 +631,7 @@
 
           tx.set(tableRef, {
             activeOrders: arrRemove(orderId),
+            currentOrderId: remaining.length ? remaining[remaining.length - 1] : null,
             status: remaining.length ? "busy" : "free",
             updatedAt: nowTs
           }, { merge: true });
@@ -786,6 +800,7 @@
             }), { merge: true });
             tx.set(tableRef, {
               status: "busy",
+              currentOrderId: candidate.id,
               activeOrders: arrayUnion(candidate.id),
               updatedAt: nowTs
             }, { merge: true });
@@ -805,6 +820,7 @@
           }), { merge: true });
           tx.set(tableRef, {
             status: "busy",
+            currentOrderId: orderRef.id,
             activeOrders: arrayUnion(orderRef.id),
             updatedAt: nowTs
           }, { merge: true });
@@ -916,6 +932,7 @@
 
           tx.set(tableRef, {
             status: "busy",
+            currentOrderId: selected.id,
             activeOrders: arrayUnion(selected.id),
             updatedAt: nowTs
           }, { merge: true });
@@ -952,6 +969,7 @@
 
           tx.set(tableRef, {
             activeOrders: arrayRemove(orderId),
+            currentOrderId: remaining.length ? remaining[remaining.length - 1] : null,
             status: remaining.length ? "busy" : "free",
             updatedAt: nowTs
           }, { merge: true });

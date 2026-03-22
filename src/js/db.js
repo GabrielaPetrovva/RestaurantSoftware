@@ -7,7 +7,8 @@ import {
   addDoc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 const ts = () => serverTimestamp();
@@ -149,15 +150,28 @@ export function watchOrdersToday(cb) {
 }
 
 export async function createOrder({ tableId, createdBy }) {
-  const ref = await addDoc(collection(db, "orders"), {
+  const ref = doc(collection(db, "orders"));
+  await setDoc(ref, {
+    orderId: ref.id,
     tableId,
+    waiterId: createdBy || null,
     createdBy,
     status: "open",
+    orderStatus: "open",
+    paymentStatus: "unpaid",
+    closedAt: null,
+    items: [],
+    activeItemCount: 0,
+    total: 0,
     createdAt: ts(),
     updatedAt: ts()
   });
 
-  await setTable(tableId, { status: "occupied", currentOrderId: ref.id });
+  await setTable(tableId, {
+    status: "occupied",
+    currentOrderId: ref.id,
+    activeOrders: arrayUnion(ref.id)
+  });
   return ref.id;
 }
 

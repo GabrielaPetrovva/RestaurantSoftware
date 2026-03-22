@@ -266,13 +266,19 @@
     return isDrink ? "bar" : "kitchen";
   }
 
-  function resolveStationForWrite(item) {
+  function resolveStationForWrite(item, menuMap = null) {
     const menuId = String(item?.menuId || "").trim();
     if (menuId && menuById.has(menuId)) {
       const menu = menuById.get(menuId) || {};
       const menuStation = normalizeStationValue(menu.station || "");
       if (menuStation === "bar" || menuStation === "kitchen") return menuStation;
     }
+
+    const key = normalizeName(item?.name || "");
+    const mappedMenu = menuMap && key ? menuMap.get(key) : null;
+    const mappedStation = normalizeStationValue(mappedMenu?.station || mappedMenu?.department || "");
+    if (mappedStation === "bar" || mappedStation === "kitchen") return mappedStation;
+
     return resolveStationFromNameCategory(item?.name, item?.category);
   }
 
@@ -281,39 +287,56 @@
 
     const name = String(item?.name || "").trim();
     const qty = Number(item?.qty ?? item?.quantity ?? 1) || 1;
-    const price = Number(item?.price || 0) || 0;
     const key = normalizeName(name);
+    const mappedMenu = menuMap.get(key) || null;
+    const menuId = String(item?.menuId || mappedMenu?.id || "").trim();
+    const category = String(item?.category || mappedMenu?.category || mappedMenu?.type || "").trim();
+    const station = resolveStationForWrite({ ...item, menuId, category }, menuMap);
+    const price = Number(mappedMenu?.price != null ? mappedMenu.price : item?.price || 0) || 0;
 
-    let menuId = "";
-    const m = menuMap.get(key);
-    if (m && m.id) menuId = String(m.id);
+    const basePayload = {
+      orderId: String(orderId || ""),
+      tableId: String(tableId || ""),
+      waiterId: String(waiterId || ""),
+      name,
+      qty,
+      price,
+      menuId: menuId || "",
+      category: category || "",
+      station,
+      status: "new"
+    };
 
     console.log("[scanner] scanned key:", key, "resolved menuId:", menuId);
 
     if (menuId) {
       await itemsCol.doc(menuId).set({
-        name,
-        price: (m?.price != null ? Number(m.price) : price),
+        ...basePayload,
         qty: FieldValue.increment(qty),
+        createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
       console.log("[scanner] merged into doc(menuId) =", menuId);
       return;
     }
 
-    const snap = await itemsCol.where("name", "==", name).limit(1).get();
-    if (!snap.empty) {
-      await snap.docs[0].ref.set({
+    const snap = await itemsCol.where("name", "==", name).limit(10).get();
+    const existingDoc = snap.docs.find((docSnap) => {
+      const docData = docSnap.data() || {};
+      return String(docData.station || "").trim().toLowerCase() === station;
+    });
+    if (existingDoc) {
+      await existingDoc.ref.set({
+        ...basePayload,
         qty: FieldValue.increment(qty),
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
-      console.log("[scanner] merged by name into doc =", snap.docs[0].id);
+      console.log("[scanner] merged by name+station into doc =", existingDoc.id);
       return;
     }
 
     await itemsCol.add({
-      orderId, tableId, waiterId,
-      name, price, qty,
+      ...basePayload,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp()
     });
@@ -542,7 +565,7 @@
     return null;
   }
 
-  async function loadMenuCache() {
+  async function loadMenuCache(dbInstance = db) {
     if (menuCacheLoaded) return;
     menuCacheLoaded = true;
     const rows = [];
@@ -550,7 +573,7 @@
 
     for (const collectionName of collections) {
       try {
-        const snap = await db.collection(collectionName).get();
+        const snap = await dbInstance.collection(collectionName).get();
         snap.forEach((docSnap) => rows.push({ id: docSnap.id, ...(docSnap.data() || {}) }));
       } catch (err) {
         // collection may not exist in every deployment
@@ -563,7 +586,7 @@
   async function normalizeStationsForSend(items) {
     const list = normalizeItems(items);
     const menuCache = new Map();
-    await loadMenuCache();
+    await loadMenuCache(db);
 
     const resolved = [];
     for (const src of list) {
@@ -1304,12 +1327,24 @@
         btnSend.disabled = false;
         return;
       }
-      const menuMap = await buildMenuNameMap(sendDb);
-      console.log("[scanner] menuMap size:", menuMap.size);
-      items.forEach((item) => {
-        item.station = resolveStationForWrite(item);
-      });
       console.table(items.map((i) => ({
+        name: i.name,
+        qty: i.qty,
+        price: i.price,
+        menuId: i.menuId || "",
+        category: i.category || "",
+        station: i.station || ""
+      })));
+
+      const resolvedItems = [];
+      for (const item of items) {
+        const station = await resolveStation(sendDb, item);
+        resolvedItems.push({
+          ...item,
+          station: station === "bar" ? "bar" : "kitchen"
+        });
+      }
+      console.table(resolvedItems.map((i) => ({
         name: i.name,
         qty: i.qty,
         price: i.price,
@@ -1326,8 +1361,8 @@
           tableId,
           source: resolved.source,
           sourceId: resolved.docId,
-          items,
-          total: safeNum(resolved.total, calcTotalFromItems(items)),
+          items: resolvedItems,
+          total: safeNum(resolved.total, calcTotalFromItems(resolvedItems)),
           note: String(resolved?.note || ""),
           rawText: lastRawText == null ? null : String(lastRawText),
           status: "sent_safe",
@@ -1393,13 +1428,25 @@
         }, { merge: true });
       }
 
-      for (const item of items) {
-        await upsertByMenuIdOrName(sendDb, FieldValue, orderId, tableId, waiterId, item, menuMap);
+      for (const item of resolvedItems) {
+        await sendDb.collection("orders").doc(orderId).collection("items").add({
+          orderId,
+          tableId,
+          waiterId,
+          name: String(item.name || "").trim(),
+          qty: Number(item.qty || 1),
+          price: Number(item.price || 0),
+          menuId: String(item.menuId || "").trim(),
+          category: String(item.category || "").trim(),
+          station: item.station === "bar" ? "bar" : "kitchen",
+          status: "new",
+          createdAt: FieldValue.serverTimestamp()
+        });
       }
 
       const orderSnapAfter = await orderRef.get();
       const orderDataAfter = orderSnapAfter.exists ? (orderSnapAfter.data() || {}) : {};
-      const mergedItems = mergeOrderItems(orderDataAfter.items, items);
+      const mergedItems = mergeOrderItems(orderDataAfter.items, resolvedItems);
       const summary = summarizeItems(mergedItems);
 
       await orderRef.set({
@@ -1487,5 +1534,3 @@
   // init
   resetUI();
 })();
-
-

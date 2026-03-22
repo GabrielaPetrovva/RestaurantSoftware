@@ -1,15 +1,24 @@
-import { auth, db } from "../js/firebase.js";
+﻿import { auth, db } from "../js/firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import {
-  collectionGroup,
+  collection,
   doc,
   getDoc,
   limit,
   onSnapshot,
   orderBy,
-  query,
-  where
+  query
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import {
+  KITCHEN_STATS_ORDERS_QUERY_LIMIT,
+  buildKitchenOrdersByHourModel,
+  getStoredKitchenStatsPeriod,
+  normalizeKitchenStatsHistory,
+  normalizeKitchenStatsOrder,
+  normalizeKitchenStatsPeriod,
+  periodStart,
+  setStoredKitchenStatsPeriod
+} from "../shared/kitchen-statistics.js";
 
 const el = (id) => document.getElementById(id);
 const norm = (v) => String(v ?? "").trim().toLowerCase();
@@ -20,18 +29,24 @@ const esc = (v) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+const LATE_THRESHOLD_SEC = 300;
+const DRINK_WORDS = [
+  "бира", "вино", "чай", "кафе", "вода", "сок", "кола", "фанта", "спрайт", "уиски", "водка", "джин", "ром", "коктейл",
+  "cocktail", "beer", "wine", "tea", "coffee", "water", "juice", "cola", "fanta", "sprite", "whiskey", "vodka", "gin", "rum"
+];
 
 const state = {
   lang: localStorage.getItem("kitchenLang") || "bg",
-  period: "today",
+  period: getStoredKitchenStatsPeriod(),
   me: null,
   ordersRaw: [],
+  historyRaw: [],
   unsubscribers: []
 };
 
 const i18n = {
   bg: {
-   headerTitle: "Кухненска статистика",
+    headerTitle: "Кухненска статистика",
     backBtn: "Назад към таблото",
     exitBtn: "Изход",
     filterLabel: "Период:",
@@ -109,15 +124,6 @@ function t(key) {
   return i18n[state.lang]?.[key] || i18n.en[key] || key;
 }
 
-function toDate(value) {
-  if (!value) return null;
-  if (value instanceof Date) return value;
-  if (typeof value.toDate === "function") return value.toDate();
-  if (typeof value.seconds === "number") return new Date(value.seconds * 1000);
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
 function fmtDuration(sec) {
   const safe = Math.max(0, Math.round(Number(sec) || 0));
   const mins = Math.floor(safe / 60);
@@ -129,322 +135,214 @@ function money(v) {
   return `EUR ${(Number(v) || 0).toFixed(2)}`;
 }
 
-function periodStart(period) {
-  const now = new Date();
-  if (period === "today") return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  if (period === "week") {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const day = (d.getDay() + 6) % 7;
-    d.setDate(d.getDate() - day);
-    return d;
-  }
-  if (period === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
-  if (period === "year") return new Date(now.getFullYear(), 0, 1);
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
-function orderStatus(order) {
-  return order?.completed ? "completed" : "open";
+function isTakeawayOrder(order) {
+  const raw = norm(order?.orderType || order?.type || order?.serviceType || order?.mode || "");
+  return raw.includes("delivery") || raw.includes("takeaway") || raw.includes("pickup");
 }
 
 function orderType(order) {
-  const raw = norm(order?.orderType || order?.type || order?.serviceType || order?.mode);
-  if (raw.includes("delivery") || raw.includes("takeaway") || raw.includes("pickup")) return "takeaway";
-  if (order?.tableId == null || order?.tableId === "") return "takeaway";
-  return "dinein";
+  return isTakeawayOrder(order) ? "takeaway" : "dinein";
 }
 
-function orderIdFromItemPath(path) {
-  const parts = String(path || "").split("/");
-  const i = parts.indexOf("orders");
-  if (i >= 0 && parts[i + 1]) return parts[i + 1];
-  return "";
+function isCompletedKitchenOrder(order) {
+  return norm(order?.kitchenStatus) === "done" || Number(order?.kitchenDoneAtMs || 0) > 0;
 }
 
-function itemOrderType(item) {
-  const raw = norm(item?.orderType || item?.type || item?.serviceType || item?.mode);
-  if (raw.includes("delivery") || raw.includes("takeaway") || raw.includes("pickup")) return "takeaway";
-  if (item?.isDelivery === true || item?.delivery === true) return "takeaway";
-  if (item?.isTakeaway === true || item?.takeaway === true || item?.pickup === true) return "takeaway";
-  return "dinein";
+function orderIdOf(row) {
+  return String(row?.orderId || row?.id || "").trim();
 }
 
-function toMs(value) {
-  const dt = toDate(value);
-  return dt ? dt.getTime() : 0;
+function normalizeDishName(item) {
+  return String(
+    item?.name ||
+    item?.title ||
+    item?.itemName ||
+    item?.productName ||
+    item?.itemId ||
+    item?.menuId ||
+    ""
+  ).trim();
 }
 
-function bestOrderDate(order) {
-  // completed date first, then created
-  return (
-    toDate(order?.kitchenServedAt) ||
-    toDate(order?.kitchenReadyAt) ||
-    toDate(order?.kitchenStartedAt) ||
-    toDate(order?.updatedAt) ||
-    toDate(order?.createdAt) ||
-    toDate(order?.completedAtMs) ||
-    toDate(order?.startedAtMs) ||
-    toDate(order?.createdAtMs) ||
-    null
-  );
+function itemQty(item, fallback = 1) {
+  return Number(item?.qty ?? item?.quantity ?? item?.count ?? item?.q ?? fallback) || fallback;
 }
 
-function kitchenItems(order) {
+function itemPrice(item) {
+  return Number(item?.price ?? item?.unitPrice ?? item?.unit_price ?? 0) || 0;
+}
+
+function isDrinkItem(item) {
+  const station = norm(item?.station);
+  if (station === "bar") return true;
+  if (item?.isDrink === true) return true;
+
+  const category = norm(item?.category || item?.cat || item?.type || "");
+  if (
+    category.includes("drink") ||
+    category.includes("napit") ||
+    category.includes("beverage") ||
+    category.includes("напит")
+  ) return true;
+
+  const nameText = norm(normalizeDishName(item));
+  return DRINK_WORDS.some((word) => nameText.includes(norm(word)));
+}
+
+function orderTotal(order) {
+  const totalValue = Number(order?.totalValue || 0);
+  if (totalValue > 0) return totalValue;
+
   const items = Array.isArray(order?.items) ? order.items : [];
-  return items.filter((item) => {
-    const station = norm(item?.station);
-    // Keep strict kitchen filter; allow empty station for backward compatibility.
-    return station === "kitchen" || station === "";
-  });
+  return items.reduce((sum, item) => sum + (itemPrice(item) * itemQty(item)), 0);
 }
 
-function hasKitchenItems(order) {
-  return kitchenItems(order).length > 0;
-}
-
-function normalizeKitchenItem(item, fallbackName = "Item") {
-  const name = String(item?.name || item?.itemId || item?.menuId || fallbackName).trim();
-  return {
-    name,
-    qty: Math.max(1, Number(item?.qty ?? item?.quantity ?? item?.count ?? item?.q) || 1),
-    price: Number(item?.price ?? item?.unitPrice ?? item?.unit_price ?? item?.cost) || 0,
-    station: "kitchen",
-    status: norm(item?.status || "new"),
-    createdAtMs: toMs(item?.createdAt),
-    startedAtMs: toMs(item?.startedAt),
-    readyAtMs: toMs(item?.readyAt),
-    servedAtMs: toMs(item?.servedAt)
-  };
-}
-
-function buildOrderGroupsFromItems(items) {
-  const grouped = new Map();
-
-  items.forEach((row, idx) => {
-    // Strict kitchen-only pipeline: bar items are never aggregated in stats.
-    if (norm(row?.station) !== "kitchen") return;
-
-    const orderId = String(row?.orderId || orderIdFromItemPath(row?.path || "")).trim();
-    if (!orderId) return;
-
-    if (!grouped.has(orderId)) {
-      grouped.set(orderId, {
-        id: orderId,
-        items: [],
-        createdAtMs: Number.POSITIVE_INFINITY,
-        startedAtMs: Number.POSITIVE_INFINITY,
-        completedAtMs: 0,
-        hasOpenItem: false,
-        takeawayVotes: 0,
-        guests: 0,
-        tableId: ""
-      });
-    }
-
-    const group = grouped.get(orderId);
-    const item = normalizeKitchenItem(row, `Item ${idx + 1}`);
-    if (!item.name) return;
-    group.items.push(item);
-
-    if (item.createdAtMs > 0) group.createdAtMs = Math.min(group.createdAtMs, item.createdAtMs);
-    const startedCandidate = item.startedAtMs || item.createdAtMs || 0;
-    if (startedCandidate > 0) group.startedAtMs = Math.min(group.startedAtMs, startedCandidate);
-
-    const itemCompleted = item.status === "served" || item.servedAtMs > 0;
-    if (!itemCompleted) group.hasOpenItem = true;
-    if (itemCompleted) {
-      const completedCandidate = item.servedAtMs || item.readyAtMs || startedCandidate || 0;
-      group.completedAtMs = Math.max(group.completedAtMs, completedCandidate);
-    }
-
-    if (itemOrderType(row) === "takeaway") group.takeawayVotes += 1;
-
-    const guests = Number(row?.guests ?? row?.guestCount ?? row?.peopleCount);
-    if (guests > 0) group.guests = Math.max(group.guests, guests);
-    if (!group.tableId) group.tableId = String(row?.tableId || "").trim();
-  });
-
-  return Array.from(grouped.values())
-    .filter((group) => group.items.length > 0)
-    .map((group) => {
-      const createdAtMs = Number.isFinite(group.createdAtMs) ? group.createdAtMs : 0;
-      const startedAtMs = Number.isFinite(group.startedAtMs) ? group.startedAtMs : (createdAtMs || 0);
-      let completedAtMs = group.completedAtMs;
-
-      if (!group.hasOpenItem && completedAtMs <= 0) {
-        completedAtMs = group.items.reduce((max, item) => {
-          const candidate = item.servedAtMs || item.readyAtMs || item.startedAtMs || item.createdAtMs || 0;
-          return Math.max(max, candidate);
-        }, 0);
-      }
-
-      const completed = !group.hasOpenItem && completedAtMs > 0;
-      const durationSec = completed
-        ? Math.max(0, Math.floor((completedAtMs - (startedAtMs || completedAtMs)) / 1000))
-        : 0;
-      const type = group.takeawayVotes > 0 ? "takeaway" : "dinein";
-      const guests = group.guests > 0 ? group.guests : (type === "dinein" ? 1 : 0);
-
-      return {
-        id: group.id,
-        items: group.items,
-        tableId: group.tableId,
-        type,
-        guests,
-        completed,
-        createdAtMs,
-        startedAtMs,
-        completedAtMs: completed ? completedAtMs : 0,
-        durationSec
-      };
-    })
-    .sort((a, b) =>
-      (b.completedAtMs - a.completedAtMs) ||
-      (b.createdAtMs - a.createdAtMs) ||
-      String(a.id).localeCompare(String(b.id))
-    );
-}
-
-function orderDuration(order) {
-  return Math.max(0, Number(order?.durationSec) || 0);
-}
-
-function orderRevenue(order) {
-  const items = Array.isArray(order?.items) ? order.items : [];
-  return items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 0), 0);
-}
-
-function guestsFromOrder(order) {
-  const raw = Number(order?.guests);
-  if (raw > 0) return raw;
-  return orderType(order) === "dinein" ? 1 : 0;
-}
-
-function bucketKey(date, period = state.period) {
-  if (period === "today") {
-    return `${String(date.getHours()).padStart(2, "0")}:00`;
-  }
-  if (period === "year") {
-    return date.toLocaleString(state.lang === "bg" ? "bg-BG" : "en-US", { month: "short" });
-  }
-  return date.toLocaleDateString(state.lang === "bg" ? "bg-BG" : "en-US", {
-    month: "2-digit",
-    day: "2-digit"
-  });
-}
-
-function filteredOrders() {
-  const start = periodStart(state.period);
-  return state.ordersRaw
-    .map((order) => {
-      const best = bestOrderDate(order);
-      return { ...order, _bestAt: best };
-    })
-    .filter((order) => order._bestAt && order._bestAt >= start && hasKitchenItems(order))
-    .sort((a, b) => (b._bestAt - a._bestAt) || String(a.id).localeCompare(String(b.id)));
+function filterHistoryByPeriod(period = state.period) {
+  const startMs = periodStart(period).getTime();
+  return state.historyRaw
+    .filter((h) => (h?.servedAtMs || 0) >= startMs)
+    .sort((a, b) => (Number(b?.servedAtMs) || 0) - (Number(a?.servedAtMs) || 0));
 }
 
 function computeModel(period = state.period) {
-  const startMs = periodStart(period).getTime();
-  const filtered = filteredOrders();
+  const ordersByHourModel = buildKitchenOrdersByHourModel(state.ordersRaw, period, state.lang);
+  const filteredOrders = ordersByHourModel.filteredOrders;
+  const filteredHistory = filterHistoryByPeriod(period);
+  const filteredCompletedOrders = filteredOrders.filter(isCompletedKitchenOrder);
 
-  const totalOrders = filtered.length;
-  const completedOrdersList = filtered
-    .map((order) => ({
-      ...order,
-      _completedAtMs: Number(order?.completedAtMs) || 0
-    }))
-    .filter((order) => order.completed === true && order._completedAtMs >= startMs);
+  const totalOrders = filteredOrders.length;
+  const completedOrders = filteredCompletedOrders.length;
 
-  const completedOrders = completedOrdersList.length;
-  const durations = completedOrdersList.map((o) => orderDuration(o)).filter((sec) => sec > 0);
-  const avgDuration = durations.length
-    ? durations.reduce((sum, val) => sum + val, 0) / durations.length
+  const historyById = new Map(
+    filteredHistory.map((h) => [String(h?.orderId || h?.id || "").trim(), h])
+  );
+  const durationByCompletedOrderId = new Map();
+  const durations = [];
+  filteredCompletedOrders.forEach((order, idx) => {
+    const orderId = orderIdOf(order) || `__idx_${idx}`;
+    const fromHistory = historyById.get(orderId);
+    let durationSec = 0;
+
+    if (fromHistory) {
+      durationSec = Math.max(0, Number(fromHistory?.durationSec || 0));
+    } else {
+      const doneMs = Number(order?.kitchenDoneAtMs || 0);
+      const startMs = Number(order?.kitchenStartedAtMs || 0) || Number(order?.createdAtMs || 0);
+      if (doneMs > 0 && startMs > 0) {
+        durationSec = Math.max(0, Math.floor((doneMs - startMs) / 1000));
+      }
+    }
+
+    durations.push(durationSec);
+    durationByCompletedOrderId.set(orderId, durationSec);
+  });
+
+  const avgCookingTime = durations.length
+    ? durations.reduce((sum, sec) => sum + sec, 0) / durations.length
     : 0;
-  const lateOrders = durations.filter((sec) => sec > 300).length;
-  const revenue = completedOrdersList.reduce((sum, order) => sum + orderRevenue(order), 0);
-  const avgCheck = completedOrders ? revenue / completedOrders : 0;
-  const servedGuests = completedOrdersList.reduce((sum, order) => sum + guestsFromOrder(order), 0);
+  const lateOrders = durations.filter((sec) => sec > LATE_THRESHOLD_SEC).length;
 
-  const typeCounts = filtered.reduce(
+  const totalRevenue = filteredOrders.reduce((sum, order) => sum + orderTotal(order), 0);
+  const avgCheck = totalOrders ? (totalRevenue / totalOrders) : 0;
+
+  const servedGuests = filteredOrders.reduce((sum, order) => {
+    const guestsValue = Number(order?.guestsValue || 0);
+    if (guestsValue > 0) return sum + guestsValue;
+    return sum + (isTakeawayOrder(order) ? 0 : 1);
+  }, 0);
+
+  const typeCounts = filteredOrders.reduce(
     (acc, order) => {
-      if (orderType(order) === "dinein") acc.dinein += 1;
-      else acc.takeaway += 1;
+      if (orderType(order) === "takeaway") acc.takeaway += 1;
+      else acc.dinein += 1;
       return acc;
     },
     { dinein: 0, takeaway: 0 }
   );
 
-  const bucketMap = new Map();
-  filtered.forEach((order) => {
-    const key = bucketKey(order._bestAt, period);
-    bucketMap.set(key, (bucketMap.get(key) || 0) + 1);
-  });
-
-  const buckets = Array.from(bucketMap.entries())
-    .map(([label, count]) => ({ label, count }))
-    .slice(-8);
+  const buckets = ordersByHourModel.buckets;
 
   const dishMap = new Map();
-  completedOrdersList.forEach((order) => {
-    const sec = Math.max(0, Number(order?.durationSec) || 0);
-    const perOrderDish = new Map();
-    const items = kitchenItems(order);
+  filteredOrders.forEach((order) => {
+    const items = Array.isArray(order?.items) ? order.items : [];
+    const orderDishKeys = new Set();
 
     items.forEach((item) => {
-      const key = norm(item.name);
-      if (!key) return;
-      const cur = perOrderDish.get(key) || {
-        name: item.name,
-        orders: 0,
-        revenue: 0
-      };
-      cur.orders += Number(item.qty) || 0;
-      cur.revenue += (Number(item.price) || 0) * (Number(item.qty) || 0);
-      perOrderDish.set(key, cur);
-    });
+      const name = normalizeDishName(item);
+      if (!name) return;
 
-    perOrderDish.forEach((row, key) => {
+      const station = norm(item?.station);
+      if (station && station !== "kitchen") return;
+      if (isDrinkItem(item)) return;
+
+      const qty = itemQty(item);
+      if (qty <= 0) return;
+
+      const key = norm(name);
       const cur = dishMap.get(key) || {
-        name: row.name,
+        name,
         orders: 0,
         revenue: 0,
         totalSec: 0,
-        samples: 0,
-        lateCount: 0
+        samples: 0
       };
-      cur.orders += row.orders;
-      cur.revenue += row.revenue;
-      cur.totalSec += sec;
-      cur.samples += 1;
-      if (sec > 300) cur.lateCount += 1;
+      cur.orders += qty;
+      cur.revenue += itemPrice(item) * qty;
       dishMap.set(key, cur);
+      orderDishKeys.add(key);
+    });
+
+    const orderId = orderIdOf(order);
+    if (!orderId || !durationByCompletedOrderId.has(orderId)) return;
+
+    const durationSec = durationByCompletedOrderId.get(orderId);
+    orderDishKeys.forEach((key) => {
+      const cur = dishMap.get(key);
+      if (!cur) return;
+      cur.totalSec += durationSec;
+      cur.samples += 1;
     });
   });
 
   const topDishes = Array.from(dishMap.values())
     .sort((a, b) => (b.orders - a.orders) || (b.revenue - a.revenue) || String(a.name).localeCompare(String(b.name)))
     .slice(0, 6)
-    .map((dish) => ({
-      ...dish,
-      avgSec: dish.samples ? dish.totalSec / dish.samples : 0,
-      delayed: (dish.samples ? (dish.totalSec / dish.samples) : 0) > 300
-    }));
+    .map((dish) => {
+      const avgSec = dish.samples ? dish.totalSec / dish.samples : 0;
+      return {
+        ...dish,
+        avgSec,
+        delayed: avgSec > LATE_THRESHOLD_SEC
+      };
+    });
+
+  console.log("[stats/render]", {
+    period: state.period,
+    filteredOrders: filteredOrders.length,
+    filteredCompletedOrders: filteredCompletedOrders.length,
+    filteredHistory: filteredHistory.length,
+    totalOrders,
+    completedOrders,
+    avgCookingTime,
+    lateOrders,
+    avgCheck,
+    servedGuests,
+    topDishNames: topDishes.map((x) => x.name)
+  });
 
   return {
     total: totalOrders,
     totalOrders,
     completed: completedOrders,
     completedOrders,
-    avgDuration,
+    avgDuration: avgCookingTime,
     late: lateOrders,
     lateOrders,
     avgCheck,
     servedGuests,
     typeCounts,
     buckets,
-    topDishes,
-    filteredCount: filtered.length
+    topDishes
   };
 }
 
@@ -538,32 +436,14 @@ function renderCards(model) {
   if (servedGuestsValue) servedGuestsValue.textContent = String(model.servedGuests);
 }
 
-function debugPeriod(model, filteredCount) {
-  console.log(
-    "[stats] period=", state.period,
-    "ordersRaw=", state.ordersRaw.length,
-    "filtered=", filteredCount,
-    "totalOrders=", model.totalOrders,
-    "completed=", model.completedOrders
-  );
-}
-
 function renderModel() {
   const pf = el("periodFilter");
-  if (pf) state.period = pf.value || "today";
-  const start = periodStart(state.period);
-  const filtered = filteredOrders();
+  if (pf) state.period = normalizeKitchenStatsPeriod(pf.value || state.period);
   const model = computeModel(state.period);
-  console.log(
-    "[period]", state.period, "start", start.toISOString(),
-    "raw", state.ordersRaw.length, "filtered", filtered.length,
-    "sampleBest", filtered[0]?._bestAt
-  );
   renderCards(model);
   renderBars(model.buckets);
   renderPie(model.typeCounts);
   renderTopDishes(model.topDishes);
-  debugPeriod(model, model.filteredCount);
 }
 
 function applyLanguage() {
@@ -620,7 +500,7 @@ function bindPeriodFilter() {
   if (!periodFilter || periodFilter.dataset.bound === "1") return;
   periodFilter.dataset.bound = "1";
   periodFilter.addEventListener("change", () => {
-    state.period = periodFilter.value || "today";
+    state.period = setStoredKitchenStatsPeriod(periodFilter.value || state.period);
     console.log("[stats] period changed ->", state.period, "start:", periodStart(state.period).toISOString());
     renderModel();
   });
@@ -643,27 +523,50 @@ function startLiveListeners() {
   state.unsubscribers.push(
     onSnapshot(
       query(
-        collectionGroup(db, "items"),
-        where("station", "==", "kitchen"),
+        collection(db, "orders"),
         orderBy("createdAt", "desc"),
-        limit(1500)
+        limit(KITCHEN_STATS_ORDERS_QUERY_LIMIT)
       ),
       (snap) => {
-        const rows = snap.docs.map((d) => ({ id: d.id, path: d.ref.path, ...d.data() }));
-        state.ordersRaw = buildOrderGroupsFromItems(rows);
+        state.ordersRaw = snap.docs.map((d) => normalizeKitchenStatsOrder(d.id, d.data() || {}));
+        console.log("[stats/orders] loaded", state.ordersRaw.length);
         renderModel();
       },
       (err) => {
         const msg = String(err?.message || err || "");
         const code = String(err?.code || "").replace("firestore/", "");
-        console.error("kitchen statistics items listener error:", {
+        console.error("kitchen statistics orders listener error:", {
           code,
           message: msg,
-          query: "collectionGroup(items) where station==\"kitchen\" orderBy(createdAt desc) limit(1500)"
+          query: `orders orderBy(createdAt desc) limit(${KITCHEN_STATS_ORDERS_QUERY_LIMIT})`
+        });
+      }
+    )
+  );
+
+  state.unsubscribers.push(
+    onSnapshot(
+      query(
+        collection(db, "kitchen_history"),
+        orderBy("servedAt", "desc"),
+        limit(5000)
+      ),
+      (snap) => {
+        state.historyRaw = snap.docs.map((d) => normalizeKitchenStatsHistory(d.id, d.data() || {}));
+        console.log("[stats/history] loaded", state.historyRaw.length);
+        renderModel();
+      },
+      (err) => {
+        const msg = String(err?.message || err || "");
+        const code = String(err?.code || "").replace("firestore/", "");
+        console.error("kitchen statistics history listener error:", {
+          code,
+          message: msg,
+          query: "kitchen_history orderBy(servedAt desc) limit(5000)"
         });
         if (code === "failed-precondition") {
           const link = msg.match(/https?:\/\/\S+/)?.[0] || "";
-          console.warn("Missing index for kitchen statistics query.", link || "Create index in Firestore Console.");
+          console.warn("Missing index for kitchen history statistics query.", link || "Create index in Firestore Console.");
         }
       }
     )
@@ -721,7 +624,11 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     const period = el("periodFilter");
-    if (period) state.period = period.value || "today";
+    if (period) {
+      period.value = state.period;
+      state.period = normalizeKitchenStatsPeriod(period.value || state.period);
+    }
+    setStoredKitchenStatsPeriod(state.period);
 
     bindPeriodFilter();
     applyLanguage();

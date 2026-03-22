@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="bg">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Waiter Dashboard — Mobile</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -13,10 +13,10 @@
     <div class="left-controls">
       <div class="title" id="appTitle">Waiter Dashboard</div>
       <nav class="top-nav">
-        <button data-view="tables" class="active">Tables</button>
-        <button data-view="orders">Orders</button>
-        <button data-view="payments">Payments</button>
-        <button data-view="stats">Statistics</button>
+        <button type="button" data-view="tables" class="active">Tables</button>
+        <button type="button" data-view="orders">Orders</button>
+        <button type="button" data-view="payments">Payments</button>
+        <button type="button" data-view="stats">Statistics</button>
       </nav>
     </div>
 
@@ -28,8 +28,7 @@
     </div>
   </header>
 
-  <!-- Waiter Profile Modal (same design as Manager/Kitchen/Bar) -->
-  <div id="waiterProfileModal" class="modal" style="display: none;" aria-hidden="true">
+  <div id="waiterProfileModal" class="modal" aria-hidden="true">
     <div class="modal-overlay" data-close-waiter-profile></div>
     <div class="modal-card modal-profile-card">
       <div class="modal-head">
@@ -73,7 +72,7 @@
     </section>
 
     <section id="view-orders" class="view">
-      <button id="backToTablesBtn" class="back-btn" style="margin-bottom:12px;">
+      <button type="button" id="backToTablesBtn" class="back-btn back-btn-spacing">
         <span>←</span>
         <span id="backToTablesLabel">Back to Tables</span>
       </button>
@@ -92,11 +91,11 @@
 
         <div class="card payment-card">
           <div class="payments-block">
-            <h3 id="paymentsBlockTitle" style="text-align:center; margin:0 0 8px 0; font-size:16px;">Payments</h3>
+            <h3 id="paymentsBlockTitle" class="payments-block-title">Payments</h3>
 
             <div class="payment-types" id="paymentTypes">
-              <button class="pay-btn active" data-type="cash">Cash</button>
-              <button class="pay-btn" data-type="card">Card</button>
+              <button type="button" class="pay-btn active" data-type="cash">Cash</button>
+              <button type="button" class="pay-btn" data-type="card">Card</button>
             </div>
 
             <div class="amount-row">
@@ -109,7 +108,7 @@
               <input id="customTip" placeholder="€ 0.00" inputmode="decimal" />
             </div>
 
-            <button id="completePayment">Complete Payment</button>
+            <button type="button" id="completePayment">Complete Payment</button>
           </div>
         </div>
       </div>
@@ -125,14 +124,14 @@
       <div class="card">
         <h2 id="paymentsTitle">Payments</h2>
         <p class="muted">Open checks and payment history</p>
-        <div id="checksList" style="margin-top:10px;"></div>
+        <div id="checksList" class="checks-list"></div>
       </div>
     </section>
 
     <section id="view-stats" class="view">
       <div class="card">
         <h2 id="statsTitle">Statistics</h2>
-        <div class="stats-list" style="margin-top:10px;">
+        <div class="stats-list">
           <div><span id="statSalesLabel">Sales this shift</span><strong id="statSales">0.00€</strong></div>
           <div><span id="statAvgLabel">Average check</span><strong id="statAvg">0.00€</strong></div>
           <div><span id="statTablesLabel">Served tables</span><strong id="statTables">0</strong></div>
@@ -143,14 +142,14 @@
   </main>
 
   <nav class="bottom-nav">
-    <button data-view="tables" class="active"><span class="icon">▦</span><span>Tables</span></button>
-    <button data-view="orders"><span class="icon">📄</span><span>Orders</span></button>
-    <button data-view="payments"><span class="icon">💳</span><span>Pay</span></button>
-    <button data-view="stats"><span class="icon">📊</span><span>Stats</span></button>
+    <button type="button" data-view="tables" class="active"><span class="icon">▦</span><span>Tables</span></button>
+    <button type="button" data-view="orders"><span class="icon">📄</span><span>Orders</span></button>
+    <button type="button" data-view="payments"><span class="icon">💳</span><span>Pay</span></button>
+    <button type="button" data-view="stats"><span class="icon">📊</span><span>Stats</span></button>
   </nav>
 
   <template id="tplTableChip">
-    <button class="table-chip">
+    <button type="button" class="table-chip">
       <div class="name">Table</div>
       <div class="status">Free</div>
     </button>
@@ -162,34 +161,29 @@
         <div class="mname">Name</div>
         <div class="mprice muted">1.00€</div>
       </div>
-      <button class="add">+ Add</button>
+      <button type="button" class="add">+ Add</button>
     </div>
   </template>
 
-  <!-- Receipt Modal -->
   <div id="receiptModal" class="receipt-modal">
     <div class="receipt-content">
       <div class="receipt-header">
         <h2 id="receiptTitle">Receipt</h2>
-        <button id="closeReceipt" class="close-receipt-btn">×</button>
+        <button type="button" id="closeReceipt" class="close-receipt-btn" title="Close" aria-label="Close">c</button>
       </div>
-      <div class="receipt-body" id="receiptBody">
-        <!-- Receipt content will be populated here -->
-      </div>
+      <div class="receipt-body" id="receiptBody"></div>
       <div class="receipt-footer">
-        <button id="printReceipt" class="print-receipt-btn">Print</button>
-        <button id="closeReceiptBtn" class="close-receipt-btn-secondary">Close</button>
+        <button type="button" id="printReceipt" class="print-receipt-btn">Print</button>
+        <button type="button" id="closeReceiptBtn" class="close-receipt-btn-secondary">Close</button>
       </div>
     </div>
   </div>
 
- <script src="./config.js"></script>
-<script src="../shared/orders.js"></script>
-<script type="module" src="../js/auth-redirect.js"></script>
-<script type="module" src="../js/logout.js"></script>
-<script type="module" src="./waiter-name-live.js"></script>
-<script type="module" src="./script.js"></script>
-
-
+  <script defer src="./config.js"></script>
+  <script defer src="../shared/orders.js"></script>
+  <script type="module" src="../js/auth-redirect.js"></script>
+  <script type="module" src="../js/logout.js"></script>
+  <script type="module" src="./waiter-name-live.js"></script>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>

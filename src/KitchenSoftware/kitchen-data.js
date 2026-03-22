@@ -92,11 +92,11 @@ const DRINK_WORDS = [
 const state = {
   lang: localStorage.getItem("kitchenLang") || "bg",
   me: null,
-  userEmail: null,
   ordersRaw: [],
   queueItems: [],
   allStationItems: [],
   kitchenOrders: [],
+  takeawayOrders: [],
   employeesById: new Map(),
   tablesById: new Map(),
   menuByIdFromMenus: new Map(),
@@ -123,9 +123,6 @@ let kitchenClickDelegationInitialized = false;
 const i18n = {
   bg: {
     headerTitle: "Кухненско Табло",
-    settingsModalTitle: "Настройки",
-    roleKitchen: "Кухня",
-    profileHint: "Кухненското табло показва активните поръчки.",
     exitBtn: "Изход",
     tabOrders: "Поръчки",
     tabMetrics: "Статистики",
@@ -133,6 +130,7 @@ const i18n = {
     avgTimeLabel: "Средно време",
     lateOrdersLabel: "Забавени поръчки",
     totalOrdersLabel: "Общо поръчки",
+    takeawayTitle: "За вкъщи / Доставка",
     btnStart: "Започни готвене",
     btnReady: "Готово",
     bumpOff: "Премахни",
@@ -140,15 +138,15 @@ const i18n = {
     priority: "Приоритет",
     order: "Поръчка",
     table: "Маса",
+    takeaway: "За вкъщи",
+    delivery: "Доставка",
     emptyQueue: "Няма активни поръчки за кухня.",
+    emptyTakeaway: "Няма поръчки за вкъщи/доставка.",
     confirmExit: "Сигурни ли сте, че искате да излезете?",
     actionError: "Грешка при обновяване на поръчката."
   },
   en: {
     headerTitle: "Kitchen Dashboard",
-    settingsModalTitle: "Settings",
-    roleKitchen: "Kitchen",
-    profileHint: "The kitchen dashboard shows active orders.",
     exitBtn: "Exit",
     tabOrders: "Orders",
     tabMetrics: "Metrics",
@@ -156,6 +154,7 @@ const i18n = {
     avgTimeLabel: "Average time",
     lateOrdersLabel: "Late orders",
     totalOrdersLabel: "Total orders",
+    takeawayTitle: "Takeaway / Delivery",
     btnStart: "Start cooking",
     btnReady: "Ready",
     bumpOff: "Bump off",
@@ -392,8 +391,8 @@ function splitOrderItems(order) {
     const name = String(it?.name || it?.itemId || it?.menuId || `Item ${idx + 1}`).trim();
     if (!name) return;
 
-    const station = itemStation(it, name);
     const menu = state.menuByName.get(norm(name));
+    const station = itemStation(it, name);
 
     const normalizedItem = {
       ...it,
@@ -407,11 +406,29 @@ function splitOrderItems(order) {
       station
     };
 
-    if (station === "bar") barItems.push(normalizedItem);
-    else kitchenItems.push(normalizedItem);
+    if (DEBUG_SPLIT) {
+      console.log("SPLIT ITEM:", {
+        rawName: it?.name,
+        finalName: name,
+        menuId: normalizedItem.menuId,
+        category: normalizedItem.category,
+        station: normalizedItem.station,
+        item: normalizedItem
+      });
+    }
+
+    if (station === "bar") {
+      barItems.push(normalizedItem);
+    } else if (station === "kitchen") {
+      kitchenItems.push(normalizedItem);
+    } else if (DEBUG_SPLIT) {
+      console.warn("UNKNOWN STATION, SKIPPED:", normalizedItem);
+    }
   });
 
   if (DEBUG_SPLIT) {
+    console.log("KITCHEN ITEMS:", kitchenItems);
+    console.log("BAR ITEMS:", barItems);
     console.log("Kitchen Items:", kitchenItems);
     console.log("Bar Items:", barItems);
 
@@ -637,30 +654,27 @@ function rebuildOrdersFromQueueItems() {
 
 function updateLanguageTexts() {
   const headerTitle = el("headerTitle");
+  const exitBtn = el("exitBtn");
   const tabMetrics = el("tabMetrics");
   const metricsTitle = el("metricsTitle");
   const avgTimeLabel = el("avgTimeLabel");
   const lateOrdersLabel = el("lateOrdersLabel");
   const totalOrdersLabel = el("totalOrdersLabel");
   const takeawayTitle = el("takeawayTitle");
+  const langBtn = el("langBtn");
   const modalLangBtn = el("modalLangBtn");
-  const modalExitBtn = el("modalExitBtn");
-  const kitchenModalTitle = el("kitchenModalTitle");
-  const kitchenProfileRole = el("kitchenProfileRole");
   const tabOrders = el("tabOrders");
 
   if (headerTitle) headerTitle.textContent = t("headerTitle");
+  if (exitBtn) exitBtn.textContent = t("exitBtn");
   if (tabMetrics) tabMetrics.textContent = t("tabMetrics");
   if (metricsTitle) metricsTitle.textContent = t("metricsTitle");
   if (avgTimeLabel) avgTimeLabel.textContent = t("avgTimeLabel");
   if (lateOrdersLabel) lateOrdersLabel.textContent = t("lateOrdersLabel");
   if (totalOrdersLabel) totalOrdersLabel.textContent = t("totalOrdersLabel");
   if (takeawayTitle) takeawayTitle.textContent = t("takeawayTitle");
+  if (langBtn) langBtn.textContent = state.lang === "bg" ? "EN" : "BG";
   if (modalLangBtn) modalLangBtn.textContent = state.lang === "bg" ? "EN" : "BG";
-  if (modalExitBtn) modalExitBtn.textContent = t("exitBtn");
-  const kitchenProfileHint = el("kitchenProfileHint");
-  if (kitchenProfileRole) kitchenProfileRole.textContent = t("roleKitchen");
-  if (kitchenProfileHint) kitchenProfileHint.textContent = t("profileHint");
 
   if (tabOrders) {
     tabOrders.innerHTML = `${t("tabOrders")} <span class="badge" id="ordersBadge">${Math.min(state.kitchenOrders.length, 10)}</span>`;
@@ -772,8 +786,6 @@ function renderOrders() {
 function renderTakeaway() {
   const container = el("takeawayOrders");
   if (!container) return;
-  if (!state.takeawayOrders) return; // ← добави този ред
-
 
   const top10 = state.takeawayOrders.slice(0, 10);
   if (DEBUG_SPLIT) {
@@ -806,7 +818,8 @@ function renderTakeaway() {
 }
 
 function renderMetrics() {
-  const all = [...(state.kitchenOrders || []), ...(state.takeawayOrders || [])];  const totalEl = el("totalOrders");
+  const all = [...state.kitchenOrders, ...state.takeawayOrders];
+  const totalEl = el("totalOrders");
   const lateEl = el("lateOrders");
   const avgEl = el("avgTime");
 
@@ -1037,58 +1050,80 @@ function switchTab(tab) {
 
 function openKitchenProfileModal() {
   const modal = el("kitchenProfileModal");
-  const nameEl = el("kitchenUserName");
+  if (!modal) return;
+
+  const me = state.me || {};
   const profileName = el("kitchenProfileName");
   const profileEmail = el("kitchenProfileEmail");
-  if (modal) {
-    if (profileName && nameEl) profileName.textContent = nameEl.textContent || "—";
-    if (profileEmail) profileEmail.textContent = (typeof window !== "undefined" && window.__kitchenEmail) ? window.__kitchenEmail : "—";
-    modal.style.display = "block";
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
+  const nameFromHeader = el("kitchenUserName");
+
+  if (profileName) {
+    const fromHeader = nameFromHeader?.textContent?.trim();
+    profileName.textContent =
+      fromHeader || nameFromEmployee(me, "") || "—";
   }
+  if (profileEmail) {
+    profileEmail.textContent =
+      (typeof window !== "undefined" && window.__kitchenEmail) || me?.email || "—";
+  }
+
+  modal.style.display = "block";
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
 }
 
 function closeKitchenProfileModal() {
   const modal = el("kitchenProfileModal");
-  if (modal) {
-    modal.style.display = "none";
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  }
+  if (!modal) return;
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
 }
 
 function bindUiActions() {
-  const openProfileBtn = el("openProfileBtn");
-  if (openProfileBtn) {
-    openProfileBtn.addEventListener("click", openKitchenProfileModal);
+  const langBtn = el("langBtn");
+  if (langBtn) {
+    langBtn.addEventListener("click", () => {
+      if (typeof window.toggleLanguage === "function") window.toggleLanguage();
+    });
   }
-
-  document.querySelectorAll("[data-close-kitchen-profile]").forEach((node) => {
-    node.addEventListener("click", closeKitchenProfileModal);
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      const modal = el("kitchenProfileModal");
-      if (modal && modal.getAttribute("aria-hidden") === "false") closeKitchenProfileModal();
-    }
-  });
 
   const modalLangBtn = el("modalLangBtn");
   if (modalLangBtn) {
     modalLangBtn.addEventListener("click", () => {
       if (typeof window.toggleLanguage === "function") window.toggleLanguage();
+      modalLangBtn.textContent = state.lang === "bg" ? "EN" : "BG";
+    });
+  }
+
+  const exitBtn = el("exitBtn");
+  if (exitBtn) {
+    exitBtn.addEventListener("click", () => {
+      void exitDashboard();
     });
   }
 
   const modalExitBtn = el("modalExitBtn");
   if (modalExitBtn) {
     modalExitBtn.addEventListener("click", () => {
-      closeKitchenProfileModal();
       void exitDashboard();
     });
   }
+
+  const openProfileBtn = el("openProfileBtn");
+  if (openProfileBtn) {
+    openProfileBtn.addEventListener("click", () => openKitchenProfileModal());
+  }
+
+  document.querySelectorAll("[data-close-kitchen-profile]").forEach((node) => {
+    node.addEventListener("click", () => closeKitchenProfileModal());
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const m = el("kitchenProfileModal");
+    if (m && m.getAttribute("aria-hidden") === "false") closeKitchenProfileModal();
+  });
 
   document.querySelectorAll(".tab[data-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1268,7 +1303,7 @@ bindUiActions();
 initKitchenClickDelegation();
 
 setInterval(() => {
-  if (!state.kitchenOrders?.length && !state.takeawayOrders?.length) return;
+  if (!state.kitchenOrders.length && !state.takeawayOrders.length) return;
   renderOrders();
   renderTakeaway();
   renderMetrics();
@@ -1294,8 +1329,6 @@ onAuthStateChanged(auth, async (user) => {
       const msg = "❌ Нямаш активна роля. В employees/{uid} трябва role='kitchen' и status='active'.";
       console.warn("kitchen access check failed", { uid: user.uid, role, status, me });
       state.me = me || {};
-      state.userEmail = user.email || null;
-      if (typeof window !== "undefined") window.__kitchenEmail = user.email || null;
       state.ordersRaw = [];
       state.queueItems = [];
       state.allStationItems = [];
@@ -1308,9 +1341,9 @@ onAuthStateChanged(auth, async (user) => {
 
     clearListenerError("role");
     state.me = me || {};
-    state.userEmail = user.email || null;
-    if (typeof window !== "undefined") window.__kitchenEmail = user.email || null;
-    /* kitchenUserName is updated by kitchen-name-live.js (same as Manager user-name-live.js) */
+    const waiterNameEl = el("waiterName");
+    if (waiterNameEl) waiterNameEl.textContent = nameFromEmployee(me || {}, user.email || "Kitchen");
+
     listenData();
   } catch (err) {
     console.error("Kitchen init error:", err);

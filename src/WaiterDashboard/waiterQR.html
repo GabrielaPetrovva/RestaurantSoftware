@@ -410,6 +410,7 @@
       font-weight: 800;
       font-size: 14px;
       transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+      -webkit-user-select: none;
       user-select:none;
       -webkit-tap-highlight-color: transparent;
       position:relative;
@@ -602,6 +603,10 @@
       font-family: 'SF Mono', 'Monaco', monospace;
     }
 
+    .meta-top{
+      margin-top: 12px;
+    }
+
     #loginScreen{
       display:block;
       animation-delay: .1s;
@@ -624,6 +629,22 @@
       letter-spacing: 1px;
       position:relative;
       z-index:2;
+    }
+
+    .mt-6{
+      margin-top: 6px;
+    }
+
+    .mt-12{
+      margin-top: 12px;
+    }
+
+    .mt-14{
+      margin-top: 14px;
+    }
+
+    .mb-8{
+      margin-bottom: 8px;
     }
 
     @media(max-width: 900px){
@@ -683,7 +704,7 @@
             <span class="badge">Live</span>
           </div>
 
-          <div class="row" style="margin-top:6px;">
+          <div class="row mt-6">
             <button id="btnStart">Start camera</button>
             <button id="btnStop" class="secondary" disabled>Stop</button>
           </div>
@@ -693,12 +714,12 @@
             <span id="tablesStatus" class="muted"></span>
           </div>
 
-          <div style="margin-top:12px;">
+          <div class="mt-12">
             <div id="reader"></div>
           </div>
 
-          <div style="margin-top:14px;">
-            <div class="muted" style="margin-bottom:8px;">Decoded QR payload</div>
+          <div class="mt-14">
+            <div class="muted mb-8">Decoded QR payload</div>
             <div id="decodedBox">(empty)</div>
           </div>
 
@@ -708,7 +729,7 @@
             </select>
           </div>
 
-          <div id="meta" class="muted" style="margin-top:12px;">Няма заредена поръчка.</div>
+          <div id="meta" class="muted meta-top">Няма заредена поръчка.</div>
           <div id="items"></div>
           <div id="total"></div>
 
@@ -717,7 +738,7 @@
             <button id="btnBack" class="secondary">Назад</button>
           </div>
 
-          <div id="msg" class="muted" style="margin-top:12px;"></div>
+          <div id="msg" class="muted mt-12"></div>
         </div>
 
       </div>

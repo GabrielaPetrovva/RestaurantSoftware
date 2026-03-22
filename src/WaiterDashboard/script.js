@@ -1,5 +1,5 @@
-/* ======================= BOOT CHECK ======================= */
-console.log("✅ WAITER script.js loaded");
+﻿/* ======================= BOOT CHECK ======================= */
+console.log(" WAITER script.js loaded");
 
 /* ======================= FIREBASE IMPORTS (MODULE) ======================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
@@ -9,14 +9,14 @@ import {
   collection, addDoc, updateDoc,
   query, where, orderBy, limit,
   onSnapshot,
-  serverTimestamp,
-  arrayUnion, arrayRemove
+  runTransaction,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
 /* ======================= CONFIG ======================= */
 if (!window.firebaseConfig) {
-  alert("❌ Missing config.js -> window.firebaseConfig");
+  alert("вќЊ Missing config.js -> window.firebaseConfig");
   throw new Error("Missing window.firebaseConfig");
 }
 
@@ -122,60 +122,57 @@ const translations = {
     'Quantity': 'Qty',
     'Price': 'Price'
   },
-  bg: {
-    'Waiter Dashboard': 'Табло на Сервитьор',
-    'Tables': 'Маси',
-    'Orders': 'Поръчки',
-    'Payments': 'Плащания',
-    'Delivery': 'Доставка',
-    'Statistics': 'Статистики',
-    'Exit': 'Изход',
-    'Tap a table to open or create an order': 'Натиснете маса, за да отворите или създадете поръчка',
-    'Back to Tables': 'Назад към Масите',
-    'Order': 'Поръчка',
-    'No order selected. Tap a table to start.': 'Няма избрана поръчка. Натиснете маса, за да започнете.',
-    'Total': 'Общо',
-    'Cash': 'В брой',
-    'Card': 'Карта',
-    'Amount': 'Сума',
-    'Tip': 'Бакшиш',
-    'Comments': 'Коментари',
-    'Notes to kitchen/bar': 'Бележки към кухня/бар',
-    'Complete Payment': 'Завърши Плащане',
-    'Menu': 'Меню',
-    'Open checks and payment history': 'Отворени сметки и история на плащания',
-    'Incoming Orders': 'Входящи Поръчки',
-    'Print Orders': 'Принтирай Поръчки',
-    'Sales this shift': 'Продажби тази смяна',
-    'Average check': 'Среден чек',
-    'Served tables': 'Обслужени маси',
-    'Tips (total)': 'Бакшиши (общо)',
-    'Table': 'Маса',
-    'Free': 'Свободна',
-    'Busy': 'Заета',
-    'Occupied': 'Заета',
-    'No tables.': 'Няма маси.',
-    'Loading...': 'Зареждане...',
-    'Empty order. Add items from menu.': 'Празна поръчка. Добавете артикули от менюто.',
-    'Order not found.': 'Поръчката не е намерена.',
-    'No categories.': 'Няма категории.',
-    'No payments yet.': 'Все още няма плащания.',
-    'Pay': 'Плащане',
-    'Stats': 'Статистики',
-    'Receipt': 'Разписка',
-    'Table': 'Маса',
-    'Date': 'Дата',
-    'Payment Method': 'Метод на плащане',
-    'Subtotal': 'Междинна сума',
-    'Tip': 'Бакшиш',
-    'Total': 'Общо',
-    'Print': 'Принтирай',
-    'Close': 'Затвори',
-    'Quantity': 'Кол.',
-    'Price': 'Цена'
-  }
-};
 
+  bg: {
+  'Waiter Dashboard': 'Табло на сервитьора',
+  'Tables': 'Маси',
+  'Orders': 'Поръчки',
+  'Payments': 'Плащания',
+  'Delivery': 'Доставка',
+  'Statistics': 'Статистики',
+  'Exit': 'Изход',
+  'Tap a table to open or create an order': 'Натиснете маса, за да отворите или създадете поръчка',
+  'Back to Tables': 'Назад към масите',
+  'Order': 'Поръчка',
+  'No order selected. Tap a table to start.': 'Няма избрана поръчка. Натиснете маса, за да започнете.',
+  'Total': 'Общо',
+  'Cash': 'В брой',
+  'Card': 'Карта',
+  'Amount': 'Сума',
+  'Tip': 'Бакшиш',
+  'Comments': 'Коментари',
+  'Notes to kitchen/bar': 'Бележки към кухня/бар',
+  'Complete Payment': 'Завърши плащане',
+  'Menu': 'Меню',
+  'Open checks and payment history': 'Отворени сметки и история на плащанията',
+  'Incoming Orders': 'Входящи поръчки',
+  'Print Orders': 'Принтирай поръчки',
+  'Sales this shift': 'Продажби тази смяна',
+  'Average check': 'Среден чек',
+  'Served tables': 'Обслужени маси',
+  'Tips (total)': 'Бакшиши (общо)',
+  'Table': 'Маса',
+  'Free': 'Свободна',
+  'Busy': 'Заета',
+  'Occupied': 'Заета',
+  'No tables.': 'Няма маси.',
+  'Loading...': 'Зареждане...',
+  'Empty order. Add items from menu.': 'Празна поръчка. Добавете артикули от менюто.',
+  'Order not found.': 'Поръчката не е намерена.',
+  'No categories.': 'Няма категории.',
+  'No payments yet.': 'Все още няма плащания.',
+  'Pay': 'Плащане',
+  'Stats': 'Статистики',
+  'Receipt': 'Разписка',
+  'Date': 'Дата',
+  'Payment Method': 'Метод на плащане',
+  'Subtotal': 'Междинна сума',
+  'Print': 'Принтирай',
+  'Close': 'Затвори',
+  'Quantity': 'Кол.',
+  'Price': 'Цена'
+}
+};
 function t(key) {
   return translations[currentLang][key] || translations['en'][key] || key;
 }
@@ -203,8 +200,15 @@ function updateTranslations() {
   if (modalLangBtn) modalLangBtn.textContent = currentLang === 'bg' ? 'EN' : 'BG';
   const waiterProfileRole = qs("waiterProfileRole");
   const waiterProfileHint = qs("waiterProfileHint");
-  if (waiterProfileRole) waiterProfileRole.textContent = currentLang === 'bg' ? 'Сервитьор' : 'Waiter';
-  if (waiterProfileHint) waiterProfileHint.textContent = currentLang === 'bg' ? 'Сервитьорското табло за управление на маси и поръчки.' : 'The waiter dashboard for tables and orders.';
+  if (waiterProfileRole) {
+  waiterProfileRole.textContent = currentLang === 'bg' ? 'Сервитьор' : 'Waiter';
+}
+
+if (waiterProfileHint) {
+  waiterProfileHint.textContent = currentLang === 'bg'
+    ? 'Табло за управление на маси и поръчки.'
+    : 'The waiter dashboard for tables and orders.';
+}
   
   // Update section titles
   const tablesTitle = qs("tablesTitle");
@@ -329,7 +333,7 @@ let unsubPayments = null;
 let unsubStats = null;
 
 /* ======================= HELPERS ======================= */
-const euro = (n) => `${(Number(n) || 0).toFixed(2)}€`;
+const euro = (n) => `${(Number(n) || 0).toFixed(2)} €`;
 
 function setView(name) {
   views.forEach(v => v.classList.remove("active"));
@@ -357,6 +361,256 @@ function parseEuroInput(s) {
   return Number(cleaned) || 0;
 }
 
+const BG_DRINK_WORDS = [
+  "чай",
+  "кафе",
+  "вода",
+  "минерална",
+  "бира",
+  "вино",
+  "сок",
+  "кола",
+  "фанта",
+  "спрайт",
+  "енергийна",
+  "редбул",
+  "уиски",
+  "водка",
+  "ракия",
+  "ром",
+  "джин",
+  "лимонада",
+  "айрян"
+];
+
+function resolveStationFallbackByName(name) {
+  const n = String(name || "").toLowerCase();
+  return BG_DRINK_WORDS.some((w) => n.includes(w)) ? "bar" : "kitchen";
+}
+
+async function resolveStation(dbInstance, item) {
+  const direct = String(item?.station || "").toLowerCase().trim();
+  if (direct === "bar" || direct === "kitchen") return direct;
+
+  const menuId = String(item?.menuId || "").trim();
+  if (menuId) {
+    try {
+      const snap = await getDoc(doc(dbInstance, "menus", menuId));
+      if (snap.exists()) {
+        const menu = snap.data() || {};
+        const st = String(menu.station || "").toLowerCase().trim();
+        if (st === "bar" || st === "kitchen") return st;
+
+        const cat = String(menu.category || menu.type || "").toLowerCase();
+        if (cat.includes("напитки") || cat.includes("drink")) return "bar";
+        if (menu.isDrink === true) return "bar";
+      }
+    } catch (err) {
+      console.warn("resolveStation menu lookup failed:", { menuId, err });
+    }
+  }
+
+  return resolveStationFallbackByName(item?.name);
+}
+
+function summarizeOrderItems(items) {
+  const list = Array.isArray(items) ? items : [];
+  let total = 0;
+  let count = 0;
+  list.forEach((item) => {
+    const qty = Math.max(0, Number(item?.qty || 0));
+    const price = Number(item?.price || 0);
+    total += qty * (Number.isFinite(price) ? price : 0);
+    count += qty;
+  });
+  return { total, count };
+}
+
+function mergeOrderSummaryItems(existingItems, incomingItem) {
+  const out = Array.isArray(existingItems) ? existingItems.map((it) => ({ ...it })) : [];
+  const next = {
+    itemId: String(incomingItem?.itemId || incomingItem?.menuId || incomingItem?.name || "Item").trim(),
+    menuId: String(incomingItem?.menuId || "").trim(),
+    name: String(incomingItem?.name || incomingItem?.itemId || "Item").trim(),
+    category: String(incomingItem?.category || "").trim(),
+    station: String(incomingItem?.station || "kitchen").toLowerCase() === "bar" ? "bar" : "kitchen",
+    price: Number(incomingItem?.price || 0) || 0,
+    qty: Math.max(1, Number(incomingItem?.qty || 1) || 1)
+  };
+
+  const idx = out.findIndex((it) => {
+    const leftId = String(it?.menuId || it?.itemId || "").trim().toLowerCase();
+    const rightId = String(next.menuId || next.itemId || "").trim().toLowerCase();
+    const leftName = String(it?.name || it?.itemId || "").trim().toLowerCase();
+    const rightName = String(next.name || next.itemId || "").trim().toLowerCase();
+    const leftStation = String(it?.station || "").trim().toLowerCase();
+    const rightStation = String(next.station || "").trim().toLowerCase();
+    return (leftId && rightId ? leftId === rightId : leftName === rightName) && leftStation === rightStation;
+  });
+
+  if (idx < 0) {
+    out.push(next);
+    return out;
+  }
+
+  out[idx].qty = (Number(out[idx].qty) || 0) + next.qty;
+  if (!out[idx].menuId && next.menuId) out[idx].menuId = next.menuId;
+  if (!out[idx].category && next.category) out[idx].category = next.category;
+  if (!out[idx].name && next.name) out[idx].name = next.name;
+  if (!Number.isFinite(Number(out[idx].price))) out[idx].price = next.price;
+  out[idx].station = out[idx].station === "bar" ? "bar" : next.station;
+  return out;
+}
+
+function normalizeOrderId(value) {
+  return String(value || "").trim();
+}
+
+function normalizeOrderState(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function isClosedOrderRecord(orderData) {
+  const status = normalizeOrderState(orderData?.status);
+  const paymentStatus = normalizeOrderState(orderData?.paymentStatus);
+  const orderStatus = normalizeOrderState(orderData?.orderStatus);
+  return (
+    paymentStatus === "paid" ||
+    orderStatus === "closed" ||
+    status === "paid" ||
+    status === "closed" ||
+    status === "cancelled" ||
+    orderData?.closedAt != null
+  );
+}
+
+function isReusableOpenOrder(orderData, tableId) {
+  if (normalizeOrderId(orderData?.tableId) !== tableId) return false;
+  if (isClosedOrderRecord(orderData)) return false;
+
+  const status = normalizeOrderState(orderData?.status);
+  const orderStatus = normalizeOrderState(orderData?.orderStatus);
+
+  if (orderStatus && orderStatus !== "open") return false;
+  if (status && !["open", "created"].includes(status)) return false;
+  return true;
+}
+
+function getTableOrderCandidateIds(tableData) {
+  const ids = [];
+  const pushId = (value) => {
+    const id = normalizeOrderId(value);
+    if (!id || ids.includes(id)) return;
+    ids.push(id);
+  };
+
+  pushId(tableData?.currentOrderId);
+  const activeOrders = Array.isArray(tableData?.activeOrders) ? tableData.activeOrders : [];
+  for (let i = activeOrders.length - 1; i >= 0; i -= 1) {
+    pushId(activeOrders[i]);
+  }
+  return ids;
+}
+
+async function ensureOpenOrderForTable(tableId) {
+  return runTransaction(db, async (tx) => {
+    const resolvedTableId = normalizeOrderId(tableId);
+    if (!resolvedTableId) throw new Error("Missing tableId");
+
+    const nowTs = serverTimestamp();
+    const tableRef = doc(db, "tables", resolvedTableId);
+    const tableSnap = await tx.get(tableRef);
+    const tableData = tableSnap.exists() ? (tableSnap.data() || {}) : {};
+    const candidateIds = getTableOrderCandidateIds(tableData);
+
+    let selected = null;
+
+    for (const candidateId of candidateIds) {
+      const orderRef = doc(db, "orders", candidateId);
+      const orderSnap = await tx.get(orderRef);
+      if (!orderSnap.exists()) continue;
+
+      const orderData = orderSnap.data() || {};
+      if (!isReusableOpenOrder(orderData, resolvedTableId)) continue;
+
+      selected = {
+        id: candidateId,
+        ref: orderRef,
+        data: orderData
+      };
+      break;
+    }
+
+    if (!selected) {
+      const orderRef = doc(collection(db, "orders"));
+      tx.set(orderRef, {
+        orderId: orderRef.id,
+        tableId: resolvedTableId,
+        waiterId: meUid || null,
+        createdBy: meUid || null,
+        source: "waiter_dashboard",
+        type: "dine-in",
+        status: "open",
+        orderStatus: "open",
+        paymentStatus: "unpaid",
+        closedAt: null,
+        items: [],
+        activeItemCount: 0,
+        total: 0,
+        createdAt: nowTs,
+        updatedAt: nowTs
+      });
+      selected = {
+        id: orderRef.id,
+        ref: orderRef,
+        data: null
+      };
+    } else {
+      tx.set(selected.ref, {
+        orderId: selected.id,
+        tableId: resolvedTableId,
+        waiterId: normalizeOrderId(selected.data?.waiterId) || meUid || null,
+        createdBy: selected.data?.createdBy || meUid || null,
+        source: selected.data?.source || "waiter_dashboard",
+        type: selected.data?.type || "dine-in",
+        status: "open",
+        orderStatus: "open",
+        paymentStatus: "unpaid",
+        closedAt: null,
+        updatedAt: nowTs
+      }, { merge: true });
+    }
+
+    tx.set(tableRef, {
+      status: "busy",
+      currentOrderId: selected.id,
+      activeOrders: [selected.id],
+      updatedAt: nowTs
+    }, { merge: true });
+
+    return selected.id;
+  });
+}
+
+async function getRemainingActiveOrdersForTableTx(tx, tableId, tableData, excludedOrderId) {
+  const remaining = [];
+  const candidateIds = getTableOrderCandidateIds(tableData);
+
+  for (const candidateId of candidateIds) {
+    if (!candidateId || candidateId === excludedOrderId || remaining.includes(candidateId)) continue;
+
+    const orderRef = doc(db, "orders", candidateId);
+    const orderSnap = await tx.get(orderRef);
+    if (!orderSnap.exists()) continue;
+
+    const orderData = orderSnap.data() || {};
+    if (!isReusableOpenOrder(orderData, tableId)) continue;
+    remaining.push(candidateId);
+  }
+
+  return remaining;
+}
+
 /* ======================= NAV ======================= */
 [...topNavBtns, ...bottomNavBtns].forEach(btn => {
   btn.addEventListener("click", () => setView(btn.dataset.view));
@@ -370,8 +624,8 @@ function openWaiterProfileModal() {
   const profileName = qs("waiterProfileName");
   const profileEmail = qs("waiterProfileEmail");
   if (modal) {
-    if (profileName && nameEl) profileName.textContent = nameEl?.textContent || "—";
-    if (profileEmail) profileEmail.textContent = (typeof window !== "undefined" && window.__waiterEmail) ? window.__waiterEmail : "—";
+    if (profileName && nameEl) profileName.textContent = nameEl?.textContent || "eur”";
+    if (profileEmail) profileEmail.textContent = (typeof window !== "undefined" && window.__waiterEmail) ? window.__waiterEmail : "eur”";
     modal.style.display = "block";
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -427,14 +681,14 @@ onAuthStateChanged(auth, async (user) => {
 
     const empSnap = await getDoc(doc(db, "employees", meUid));
     if (!empSnap.exists()) {
-      alert("❌ Missing employees/{uid} document");
+      alert("вќЊ Missing employees/{uid} document");
       await signOut(auth);
       return;
     }
 
     meEmp = empSnap.data();
     if (meEmp.status !== "active") {
-      alert("❌ Your employee status is not active.");
+      alert("вќЊ Your employee status is not active.");
       await signOut(auth);
       return;
     }
@@ -511,37 +765,16 @@ function listenTables() {
 }
 
 async function openTable(t) {
-  selectedTableId = t.id;
-
-  const activeOrders = Array.isArray(t.activeOrders) ? t.activeOrders : [];
-  const existing = activeOrders.length ? activeOrders[activeOrders.length - 1] : null;
-
-  if (existing) {
-    selectedOrderId = existing;
+  try {
+    selectedTableId = normalizeOrderId(t?.id);
+    selectedOrderId = await ensureOpenOrderForTable(selectedTableId);
+    currentOrder = null;
     setView("orders");
     listenOrder(selectedOrderId);
-    return;
+  } catch (err) {
+    console.error(err);
+    alert("Open table failed: " + err.message);
   }
-
-  const orderRef = await addDoc(collection(db, "orders"), {
-    tableId: t.id,
-    waiterId: meUid,
-    status: "created",
-    items: [],
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-
-  selectedOrderId = orderRef.id;
-
-  await updateDoc(doc(db, "tables", t.id), {
-    status: "busy",
-    activeOrders: arrayUnion(selectedOrderId),
-    updatedAt: serverTimestamp(),
-  });
-
-  setView("orders");
-  listenOrder(selectedOrderId);
 }
 
 /* ======================= ORDER ======================= */
@@ -597,7 +830,7 @@ function listenOrder(orderId) {
           <button data-inc style="width:34px; height:34px; border-radius:10px;">+</button>
         </div>
         <div style="min-width:70px; text-align:right; font-weight:700;">${euro(line)}</div>
-        <button data-del style="width:34px; height:34px; border-radius:10px;">✕</button>
+    <button data-del style="width:34px; height:34px; border-radius:10px;">✕</button>
       `;
 
       row.querySelector("[data-inc]").addEventListener("click", () => changeQty(idx, +1));
@@ -625,9 +858,12 @@ async function changeQty(index, delta) {
   const q = (Number(items[index].qty) || 0) + delta;
   if (q <= 0) items.splice(index, 1);
   else items[index].qty = q;
+  const summary = summarizeOrderItems(items);
 
   await updateDoc(doc(db, "orders", selectedOrderId), {
     items,
+    total: summary.total,
+    activeItemCount: summary.count,
     updatedAt: serverTimestamp()
   });
 }
@@ -637,9 +873,12 @@ async function removeItem(index) {
 
   const items = Array.isArray(currentOrder.items) ? [...currentOrder.items] : [];
   items.splice(index, 1);
+  const summary = summarizeOrderItems(items);
 
   await updateDoc(doc(db, "orders", selectedOrderId), {
     items,
+    total: summary.total,
+    activeItemCount: summary.count,
     updatedAt: serverTimestamp()
   });
 }
@@ -737,7 +976,7 @@ function renderMenusForCategory() {
 
   if (!filtered.length) {
     menuItemsEl.innerHTML = `<div class="muted" style="padding:10px 0;">
-      Няма items за "${selectedCategory.name}" (menus.category == "${catKey}")
+      РќСЏРјР° items Р·Р° "${selectedCategory.name}" (menus.category == "${catKey}")
     </div>`;
     return;
   }
@@ -765,15 +1004,64 @@ async function addMenuToOrder(m) {
 
   const name = m.name || m.id;
   const price = (m.price != null) ? Number(m.price) : (Number(m.cost) || 0);
+  const plainItem = {
+    itemId: String(m.id || name).trim(),
+    menuId: String(m.id || "").trim(),
+    name: String(name || "").trim(),
+    qty: 1,
+    price: Number(price || 0) || 0,
+    category: String(m.category || "").trim(),
+    station: String(m.station || "").trim().toLowerCase()
+  };
 
-  const items = Array.isArray(currentOrder.items) ? [...currentOrder.items] : [];
-  const idx = items.findIndex(x => x.itemId === name);
+  console.table([
+    {
+      name: plainItem.name,
+      menuId: plainItem.menuId || "",
+      category: plainItem.category || "",
+      station: plainItem.station || ""
+    }
+  ]);
 
-  if (idx === -1) items.push({ itemId: name, price, qty: 1 });
-  else items[idx].qty = (Number(items[idx].qty) || 0) + 1;
+  const resolvedItem = {
+    ...plainItem,
+    station: await resolveStation(db, plainItem)
+  };
+  const resolvedItems = [
+    {
+      name: resolvedItem.name,
+      qty: Number(resolvedItem.qty || 1),
+      price: Number(resolvedItem.price || 0),
+      menuId: resolvedItem.menuId || "",
+      category: resolvedItem.category || "",
+      station: resolvedItem.station
+    }
+  ];
+  console.table(resolvedItems);
 
+  await addDoc(collection(db, "orders", selectedOrderId, "items"), {
+    orderId: selectedOrderId,
+    tableId: selectedTableId || currentOrder?.tableId || "",
+    name: resolvedItem.name,
+    qty: Number(resolvedItem.qty || 1),
+    price: Number(resolvedItem.price || 0),
+    menuId: resolvedItem.menuId || "",
+    category: resolvedItem.category || "",
+    station: resolvedItem.station,
+    status: "new",
+    createdAt: serverTimestamp()
+  });
+
+  const items = mergeOrderSummaryItems(currentOrder?.items, resolvedItem);
+  const summary = summarizeOrderItems(items);
   await updateDoc(doc(db, "orders", selectedOrderId), {
     items,
+    total: summary.total,
+    activeItemCount: summary.count,
+    status: "open",
+    orderStatus: "open",
+    paymentStatus: "unpaid",
+    closedAt: null,
     updatedAt: serverTimestamp()
   });
 }
@@ -820,7 +1108,7 @@ function showReceipt(orderData, items, baseAmount, tipAmount, payMethod, tableNu
         <div class="receipt-item">
           <div>
             <div class="receipt-item-name">${name}</div>
-            <div class="receipt-item-details">${t('Quantity')}: ${qty} × ${euro(price)}</div>
+            <div class="receipt-item-details">${t('Quantity')}: ${qty} Г— ${euro(price)}</div>
           </div>
           <div class="receipt-item-price">${euro(lineTotal)}</div>
         </div>
@@ -901,6 +1189,8 @@ if (printReceipt) {
 
 /* ======================= COMPLETE PAYMENT ======================= */
 completePaymentBtn.addEventListener("click", async () => {
+  if (completePaymentBtn.disabled) return;
+  completePaymentBtn.disabled = true;
   try {
     if (!selectedOrderId || !selectedTableId || !currentOrder) return alert("Няма избрана маса/поръчка.");
     const items = Array.isArray(currentOrder.items) ? currentOrder.items : [];
@@ -908,40 +1198,58 @@ completePaymentBtn.addEventListener("click", async () => {
 
     const baseAmount = currentTotal;
     const tipAmount = tipPercent > 0 ? baseAmount * tipPercent : (Number(tipCustom) || 0);
+    const paymentRef = doc(collection(db, "payments"));
 
-    // Get table data for receipt
-    const tableRef = doc(db, "tables", selectedTableId);
-    const tableSnap = await getDoc(tableRef);
-    const tableData = tableSnap.exists() ? tableSnap.data() : {};
-    const tableNumber = tableData.number != null ? tableData.number : selectedTableId;
+    await runTransaction(db, async (tx) => {
+      const orderRef = doc(db, "orders", selectedOrderId);
+      const orderSnap = await tx.get(orderRef);
+      if (!orderSnap.exists()) {
+        throw new Error("Order not found.");
+      }
 
-    await addDoc(collection(db, "payments"), {
-      orderId: selectedOrderId,
-      tableId: selectedTableId,
-      waiterId: meUid,
-      method: payMethod,
-      amount: baseAmount,
-      tipAmount,
-      createdAt: serverTimestamp()
-    });
+      const orderData = orderSnap.data() || {};
+      if (isClosedOrderRecord(orderData)) {
+        throw new Error("Order is already closed.");
+      }
 
-    await updateDoc(doc(db, "orders", selectedOrderId), {
-      status: "paid",
-      updatedAt: serverTimestamp()
-    });
+      const resolvedTableId = normalizeOrderId(orderData.tableId) || normalizeOrderId(selectedTableId);
+      const resolvedTableRef = doc(db, "tables", resolvedTableId);
+      const resolvedTableSnap = await tx.get(resolvedTableRef);
+      const resolvedTableData = resolvedTableSnap.exists() ? (resolvedTableSnap.data() || {}) : {};
+      const nowTs = serverTimestamp();
+      const remainingActiveOrders = await getRemainingActiveOrdersForTableTx(
+        tx,
+        resolvedTableId,
+        resolvedTableData,
+        selectedOrderId
+      );
 
-    await updateDoc(tableRef, {
-      activeOrders: arrayRemove(selectedOrderId),
-      updatedAt: serverTimestamp()
-    });
+      tx.set(paymentRef, {
+        orderId: selectedOrderId,
+        tableId: resolvedTableId,
+        waiterId: meUid,
+        method: payMethod,
+        amount: baseAmount,
+        tipAmount,
+        createdAt: nowTs
+      });
 
-    const tSnap = await getDoc(tableRef);
-    const tableDataAfter = tSnap.exists() ? tSnap.data() : {};
-    const stillActive = Array.isArray(tableDataAfter.activeOrders) && tableDataAfter.activeOrders.length > 0;
+      tx.set(orderRef, {
+        orderId: normalizeOrderId(orderData.orderId) || selectedOrderId,
+        tableId: resolvedTableId,
+        status: "paid",
+        paymentStatus: "paid",
+        orderStatus: "closed",
+        closedAt: nowTs,
+        updatedAt: nowTs
+      }, { merge: true });
 
-    await updateDoc(tableRef, {
-      status: stillActive ? "busy" : "free",
-      updatedAt: serverTimestamp()
+      tx.set(resolvedTableRef, {
+        activeOrders: remainingActiveOrders,
+        currentOrderId: remainingActiveOrders.length ? remainingActiveOrders[0] : null,
+        status: remainingActiveOrders.length ? "busy" : "free",
+        updatedAt: nowTs
+      }, { merge: true });
     });
 
     // Receipt must be deleted after waiter completes payment (do not show; hide and clear)
@@ -965,6 +1273,8 @@ completePaymentBtn.addEventListener("click", async () => {
   } catch (err) {
     console.error(err);
     alert("Payment failed: " + err.message);
+  } finally {
+    completePaymentBtn.disabled = false;
   }
 });
 
@@ -1003,7 +1313,7 @@ function listenPaymentsHistory() {
           <span class="muted">${String(p.method || "").toUpperCase()}</span>
         </div>
         <div class="muted" style="font-size:12px; margin-top:4px;">
-          Table: ${p.tableId || "-"} • Order: ${(p.orderId || "").slice(0, 6)}
+          Table: ${p.tableId || "-"} Order: ${(p.orderId || "").slice(0, 6)}
         </div>
       `;
 
@@ -1045,10 +1355,10 @@ function listenStats() {
     statTables.textContent = String(count);
   }, (err) => {
     console.error(err);
-    statSales.textContent = "—";
-    statAvg.textContent = "—";
-    statTips.textContent = "—";
-    statTables.textContent = "—";
+    statSales.textContent = "”";
+    statAvg.textContent = "”";
+    statTips.textContent = "”";
+    statTables.textContent = "”";
   });
 }
 /* ======================= PRINT ORDERS ======================= */
@@ -1062,9 +1372,9 @@ function listenStats() {
 if (btnPrintOrders) {
   btnPrintOrders.addEventListener("click", async () => {
     const w = window.open("", "_blank", "width=900,height=700");
-    if (!w) return alert("Разреши popups за Print.");
+    if (!w) return alert(" Print.");
 
-    // Пишем template
+    // РџРёС€РµРј template
     w.document.open();
     w.document.write(`
       <!doctype html>
@@ -1096,7 +1406,7 @@ if (btnPrintOrders) {
     w.document.close();
 
     try {
-      // ❗ Без index: само orderBy createdAt
+      // вќ— Р‘РµР· index: СЃР°РјРѕ orderBy createdAt
       const q = query(collection(db, "orders"), orderBy("createdAt", "desc"), limit(100));
       const snap = await getDocs(q);
 
@@ -1107,7 +1417,7 @@ if (btnPrintOrders) {
 
       snap.forEach((d) => {
         const o = d.data() || {};
-        if (o.status === "paid") return; // филтър в JS
+        if (o.status === "paid") return;
 
         const items = Array.isArray(o.items) ? o.items : [];
         let total = 0;
@@ -1122,9 +1432,9 @@ if (btnPrintOrders) {
             <div>
               <div><strong>Order:</strong> ${d.id}</div>
               <div><strong>Table:</strong> ${o.tableId || "Delivery"}</div>
-              <div style="margin-top:4px;" class="badge">${String(o.status || "—").toUpperCase()}</div>
+              <div style="margin-top:4px;" class="badge">${String(o.status || "eur").toUpperCase()}</div>
             </div>
-            <div class="total">${(typeof euro === "function") ? euro(total) : (total.toFixed(2)+"€")}</div>
+            <div class="total">${(typeof euro === "function") ? euro(total) : (total.toFixed(2)+" €")}</div>
           </div>
 
           <table>
@@ -1133,14 +1443,14 @@ if (btnPrintOrders) {
                 ? items.map(it => `
                   <tr>
                     <td>${it.itemId || it.name || "Item"} x ${Number(it.qty)||0}</td>
-                    <td class="r">${(typeof euro === "function") ? euro((Number(it.price)||0) * (Number(it.qty)||0)) : (((Number(it.price)||0)*(Number(it.qty)||0)).toFixed(2)+"€")}</td>
+                    <td class="r">${(typeof euro === "function") ? euro((Number(it.price)||0) * (Number(it.qty)||0)) : (((Number(it.price)||0)*(Number(it.qty)||0)).toFixed(2)+" €")}</td>
                   </tr>
                 `).join("")
                 : `<tr><td colspan="2" class="muted">Empty</td></tr>`
             }
             <tr>
               <td class="total">TOTAL</td>
-              <td class="total r">${(typeof euro === "function") ? euro(total) : (total.toFixed(2)+"€")}</td>
+              <td class="total r">${(typeof euro === "function") ? euro(total) : (total.toFixed(2)+" €")}</td>
             </tr>
           </table>
         `;
@@ -1152,11 +1462,10 @@ if (btnPrintOrders) {
         root.innerHTML = `<div class="muted">Няма активни поръчки.</div>`;
       }
 
-      // ✅ Това отваря Windows print диалога
+      // вњ… РўРѕРІР° РѕС‚РІР°СЂСЏ Windows print РґРёР°Р»РѕРіР°
       setTimeout(() => {
         w.focus();
-        w.print();      // <-- ТОВА е “windows print”
-        // ако искаш да се затвори след print:
+        w.print();      // <--  print:
         // setTimeout(() => w.close(), 300);
       }, 400);
 

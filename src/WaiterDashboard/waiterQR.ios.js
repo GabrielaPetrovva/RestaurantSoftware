@@ -314,7 +314,7 @@
       return "kitchen";
     }
 
-    async function loadMenuCache() {
+    async function loadMenuCache(dbInstance = db) {
       if (menuCacheLoaded) return;
       menuCacheLoaded = true;
       const rows = [];
@@ -322,7 +322,7 @@
       const collections = ["menus", "menu_items"];
       for (const collectionName of collections) {
         try {
-          const snap = await db.collection(collectionName).get();
+          const snap = await dbInstance.collection(collectionName).get();
           snap.forEach((docSnap) => rows.push({ id: docSnap.id, ...(docSnap.data() || {}) }));
         } catch (err) {
           // best-effort: collection may not exist in this setup
@@ -335,7 +335,7 @@
     async function resolveStationsForSend(items) {
       const list = normalizeItems(items);
       const menuCache = new Map();
-      await loadMenuCache();
+      await loadMenuCache(db);
 
       const resolved = [];
       for (const src of list) {
@@ -960,13 +960,19 @@
       return isDrink ? "bar" : "kitchen";
     }
 
-    function resolveStationForWrite(item) {
+    function resolveStationForWrite(item, menuMap = null) {
       const menuId = String(item?.menuId || "").trim();
       if (menuId && menuById.has(menuId)) {
         const menu = menuById.get(menuId) || {};
         const menuStation = normalizeStationForSend(menu.station || "");
         if (menuStation === "bar" || menuStation === "kitchen") return menuStation;
       }
+
+      const key = normalizeName(item?.name || "");
+      const mappedMenu = menuMap && key ? menuMap.get(key) : null;
+      const mappedStation = normalizeStationForSend(mappedMenu?.station || mappedMenu?.department || "");
+      if (mappedStation === "bar" || mappedStation === "kitchen") return mappedStation;
+
       return resolveStationFromNameCategory(item?.name, item?.category);
     }
 
@@ -975,39 +981,56 @@
 
       const name = String(item?.name || "").trim();
       const qty = Number(item?.qty ?? item?.quantity ?? 1) || 1;
-      const price = Number(item?.price || 0) || 0;
       const key = normalizeName(name);
+      const mappedMenu = menuMap.get(key) || null;
+      const menuId = String(item?.menuId || mappedMenu?.id || "").trim();
+      const category = String(item?.category || mappedMenu?.category || mappedMenu?.type || "").trim();
+      const station = resolveStationForWrite({ ...item, menuId, category }, menuMap);
+      const price = Number(mappedMenu?.price != null ? mappedMenu.price : item?.price || 0) || 0;
 
-      let menuId = "";
-      const m = menuMap.get(key);
-      if (m && m.id) menuId = String(m.id);
+      const basePayload = {
+        orderId: String(orderId || ""),
+        tableId: String(tableId || ""),
+        waiterId: String(waiterId || ""),
+        name,
+        qty,
+        price,
+        menuId: menuId || "",
+        category: category || "",
+        station,
+        status: "new"
+      };
 
       console.log("[scanner] scanned key:", key, "resolved menuId:", menuId);
 
       if (menuId) {
         await itemsCol.doc(menuId).set({
-          name,
-          price: (m?.price != null ? Number(m.price) : price),
+          ...basePayload,
           qty: FieldValue.increment(qty),
+          createdAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp()
         }, { merge: true });
         console.log("[scanner] merged into doc(menuId) =", menuId);
         return;
       }
 
-      const snap = await itemsCol.where("name", "==", name).limit(1).get();
-      if (!snap.empty) {
-        await snap.docs[0].ref.set({
+      const snap = await itemsCol.where("name", "==", name).limit(10).get();
+      const existingDoc = snap.docs.find((docSnap) => {
+        const docData = docSnap.data() || {};
+        return String(docData.station || "").trim().toLowerCase() === station;
+      });
+      if (existingDoc) {
+        await existingDoc.ref.set({
+          ...basePayload,
           qty: FieldValue.increment(qty),
           updatedAt: FieldValue.serverTimestamp()
         }, { merge: true });
-        console.log("[scanner] merged by name into doc =", snap.docs[0].id);
+        console.log("[scanner] merged by name+station into doc =", existingDoc.id);
         return;
       }
 
       await itemsCol.add({
-        orderId, tableId, waiterId,
-        name, price, qty,
+        ...basePayload,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp()
       });
@@ -1101,7 +1124,7 @@
       return { total, count };
     }
 
-    async function getActiveOrderForTable(tableData) {
+    async function getActiveOrderForTable(dbInstance, tableData) {
       const candidates = [];
       const currentOrderId = String(tableData?.currentOrderId || "").trim();
       if (currentOrderId) candidates.push(currentOrderId);
@@ -1112,7 +1135,7 @@
         candidates.push(id);
       }
       for (const orderId of candidates) {
-        const snap = await db.collection("orders").doc(orderId).get();
+        const snap = await dbInstance.collection("orders").doc(orderId).get();
         if (!snap.exists) continue;
         const orderData = snap.data() || {};
         if (isOrderClosed(orderData)) continue;
@@ -1121,13 +1144,13 @@
       return null;
     }
 
-    async function ensureOrderForTable({ tableId, tableData, waiterId, tableLabel, note }) {
-      const active = await getActiveOrderForTable(tableData);
+    async function ensureOrderForTable(dbInstance, FieldValue, { tableId, tableData, waiterId, tableLabel, note }) {
+      const active = await getActiveOrderForTable(dbInstance, tableData);
       if (active?.orderId) {
         return active.orderId;
       }
-      const orderRef = db.collection("orders").doc();
-      const nowTs = firebase.firestore.FieldValue.serverTimestamp();
+      const orderRef = dbInstance.collection("orders").doc();
+      const nowTs = FieldValue.serverTimestamp();
       await orderRef.set({
         orderId: orderRef.id,
         tableId,
@@ -1150,9 +1173,9 @@
       return orderRef.id;
     }
 
-    async function appendItemsToDashboardOrder({ orderId, tableId, waiterId, tableLabel, note, items }) {
-      const orderRef = db.collection("orders").doc(orderId);
-      await db.runTransaction(async (tx) => {
+    async function appendItemsToDashboardOrder(dbInstance, FieldValue, { orderId, tableId, waiterId, tableLabel, note, items }) {
+      const orderRef = dbInstance.collection("orders").doc(orderId);
+      await dbInstance.runTransaction(async (tx) => {
         const snap = await tx.get(orderRef);
         const orderData = snap.exists ? (snap.data() || {}) : {};
         if (isOrderClosed(orderData)) {
@@ -1161,7 +1184,7 @@
 
         const mergedItems = mergeOrderItems(orderData.items, items);
         const summary = summarizeItems(mergedItems);
-        const nowTs = firebase.firestore.FieldValue.serverTimestamp();
+        const nowTs = FieldValue.serverTimestamp();
         const existingStatus = String(orderData.status || "").trim();
 
         tx.set(orderRef, {
@@ -1187,23 +1210,30 @@
       return orderRef;
     }
 
-    async function fallbackSaveScan({ tableId, items, note, meUid, error }) {
+    async function fallbackSaveScan(dbInstance, FieldValue, { tableId, items, note, meUid, error }) {
+      const safeItems = (Array.isArray(items) ? items : [])
+        .map((raw) => toPlainItem(raw))
+        .filter((item) => item.name)
+        .map((item) => ({ ...item, station: resolveStationForWrite(item) }));
       const payload = {
         tableId: String(tableId || ""),
-        items: normalizeItems(items),
+        items: safeItems,
         note: String(note || ""),
         source: "waiter_qr_fallback",
         waiterId: meUid || null,
         createdBy: meUid || null,
         errorCode: String(error?.code || ""),
         errorMessage: String(error?.message || ""),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
       };
-      await db.collection("waiter_scans").add(payload);
+      await dbInstance.collection("waiter_scans").add(payload);
     }
   
     async function sendOrder() {
       btnSend.disabled = true;
+      const db = firebase.firestore();
+      const FieldValue = firebase.firestore.FieldValue;
+      let fallbackItems = [];
       try {
         if (!scannedOrder) {
           msgEl.textContent = "❌ Няма сканирана поръчка.";
@@ -1229,24 +1259,38 @@
         }
 
         const meUid = String(user.uid || "");
-        const sendDb = firebase.firestore();
-        const FieldValue = firebase.firestore.FieldValue;
   
         const tableId = tableSelect.value;
         const rawItems = scannedOrder?.items || scannedOrder?.order?.items || [];
         const scannedItems = rawItems.map(toPlainItem).filter((i) => i.name);
+        fallbackItems = scannedItems;
         if (!scannedItems.length) {
           msgEl.textContent = "❌ Няма items в сканираната поръчка.";
           return;
         }
-        const menuMap = await buildMenuNameMap(sendDb);
-        console.log("[scanner] menuMap size:", menuMap.size);
-        for (const item of scannedItems) {
-          item.station = resolveStationForWrite(item);
-        }
-
         console.table(
           scannedItems.map((it) => ({
+            name: it.name,
+            qty: it.qty,
+            price: it.price,
+            menuId: it.menuId || "",
+            category: it.category || "",
+            station: it.station || ""
+          }))
+        );
+
+        const resolvedItems = [];
+        for (const item of scannedItems) {
+          const station = await resolveStation(db, item);
+          resolvedItems.push({
+            ...item,
+            station: station === "bar" ? "bar" : "kitchen"
+          });
+        }
+        fallbackItems = resolvedItems;
+
+        console.table(
+          resolvedItems.map((it) => ({
             name: it.name,
             qty: it.qty,
             price: it.price,
@@ -1257,7 +1301,7 @@
         );
         const scannedNote = String(scannedOrder?.note || "");
 
-        const tableRef = sendDb.collection("tables").doc(tableId);
+        const tableRef = db.collection("tables").doc(tableId);
         const tableSnap = await tableRef.get();
         if (!tableSnap.exists) {
           msgEl.textContent = "❌ Тази маса не съществува в базата.";
@@ -1270,7 +1314,7 @@
             ? `Table ${tableData.number}`
             : String(tableData?.name || tableData?.title || tableId);
 
-        const orderId = await ensureOrderForTable({
+        const orderId = await ensureOrderForTable(db, FieldValue, {
           tableId,
           tableData,
           waiterId: meUid,
@@ -1278,18 +1322,30 @@
           note: scannedNote
         });
 
-        const orderRef = sendDb.collection("orders").doc(orderId);
-        for (const item of scannedItems) {
-          await upsertByMenuIdOrName(sendDb, FieldValue, orderId, tableId, meUid, item, menuMap);
+        const orderRef = db.collection("orders").doc(orderId);
+        for (const item of resolvedItems) {
+          await db.collection("orders").doc(orderId).collection("items").add({
+            orderId,
+            tableId,
+            waiterId: meUid,
+            name: String(item.name || "").trim(),
+            qty: Number(item.qty || 1),
+            price: Number(item.price || 0),
+            menuId: String(item.menuId || "").trim(),
+            category: String(item.category || "").trim(),
+            station: item.station === "bar" ? "bar" : "kitchen",
+            status: "new",
+            createdAt: FieldValue.serverTimestamp()
+          });
         }
 
-        await appendItemsToDashboardOrder({
+        await appendItemsToDashboardOrder(db, FieldValue, {
           orderId,
           tableId,
           waiterId: meUid,
           tableLabel,
           note: scannedNote,
-          items: scannedItems
+          items: resolvedItems
         });
 
         await orderRef.set({
@@ -1303,7 +1359,7 @@
           activeOrders: FieldValue.arrayUnion(orderId)
         }, { merge: true });
 
-        console.log("[waiter] sent order", orderId, { items: scannedItems.length });
+        console.log("[waiter] sent order", orderId, { items: resolvedItems.length });
 
         scannedOrder = null;
         decodedBox.textContent = "(empty)";
@@ -1319,9 +1375,9 @@
 
         if (denied) {
           try {
-            await fallbackSaveScan({
+            await fallbackSaveScan(db, FieldValue, {
               tableId: tableSelect?.value || "",
-              items: scannedOrder?.items || [],
+              items: fallbackItems,
               note: scannedOrder?.note || "",
               meUid: auth.currentUser?.uid || null,
               error: e,
