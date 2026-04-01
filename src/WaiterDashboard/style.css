@@ -263,6 +263,86 @@
     grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
     gap:10px;
     padding:8px 0 20px 0;
+    flex:1 1 auto;
+    min-height:180px;
+  }
+  .waiter-live-panel{
+    border-top:1px solid var(--border);
+    padding-top:12px;
+  }
+  .waiter-live-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:10px;
+  }
+  .waiter-live-header h3{
+    margin:0 0 4px 0;
+    font-size:15px;
+    font-weight:800;
+  }
+  .waiter-live-clear{
+    border:1px solid var(--border);
+    background:#fff;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    color:#333;
+  }
+  .waiter-live-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    max-height:220px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  .waiter-live-item{
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#fff;
+    padding:10px 12px;
+  }
+  .waiter-live-top{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:6px;
+    flex-wrap:wrap;
+  }
+  .waiter-live-station,
+  .waiter-live-status{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:4px 8px;
+    font-size:11px;
+    font-weight:800;
+  }
+  .waiter-live-station.kitchen{
+    background:#eef5ff;
+    color:#1f5fbf;
+  }
+  .waiter-live-station.bar{
+    background:#fff2e3;
+    color:#b15f00;
+  }
+  .waiter-live-status.is-started{
+    background:#eef8f1;
+    color:#256b49;
+  }
+  .waiter-live-status.is-ready{
+    background:#fff4e8;
+    color:#c56f18;
+  }
+  .waiter-live-text{
+    font-size:13px;
+    font-weight:700;
+    color:#111;
+    line-height:1.4;
   }
   .table-chip{
     padding:16px;
@@ -568,6 +648,25 @@
   }
   
   .visually-hidden{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  .mobile-only{ display:none; }
+  
+  @media (max-width: 767px) {
+    .mobile-only{
+      display:flex;
+    }
+
+    #scanBtnMobile{
+      order: 3;
+    }
+  
+    .bottom-nav button[data-view="stats"]{
+      order: 4;
+    }
+  
+    #scanBtn{
+      display:none !important;
+    }
+  }
   
   /* Landscape mode adjustments */
   @media (orientation: landscape) and (max-height: 500px) {

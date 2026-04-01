@@ -20,6 +20,9 @@ import { getEmployee } from "../js/db.js";
 import {
   buildMenuIndexByIdAndName
 } from "../js/station-utils.js";
+import {
+  sendWaiterNotification
+} from "../shared/waiter-notifications.js";
 
 const el = (id) => document.getElementById(id);
 const norm = (v) => String(v ?? "").trim().toLowerCase();
@@ -341,13 +344,47 @@ function waiterName(order) {
   );
 }
 
+function firstText(...values) {
+  for (const value of values) {
+    if (value == null) continue;
+    const text = String(value).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function unknownTableLabel() {
+  return state.lang === "bg" ? "Неизвестна маса" : "Unknown table";
+}
+
+function tableDocLabel(tableDoc, fallbackId = "") {
+  return firstText(
+    tableDoc?.number,
+    tableDoc?.tableNumber,
+    tableDoc?.name,
+    tableDoc?.title,
+    fallbackId
+  );
+}
+
+function resolveTableLabel(item, order = null) {
+  const direct = firstText(
+    item?.table,
+    item?.tableNumber,
+    item?.tableName,
+    order?.table,
+    order?.tableNumber,
+    order?.tableName
+  );
+  if (direct) return direct;
+
+  const tableId = firstText(item?.tableId, order?.tableId);
+  if (!tableId) return "";
+  return tableDocLabel(state.tablesById.get(String(tableId)), String(tableId));
+}
+
 function tableLabel(order) {
-  if (order.tableNumber != null) return order.tableNumber;
-  if (order.table != null) return order.table;
-  if (order.tableId == null || order.tableId === "") return "Delivery";
-  const table = state.tablesById.get(String(order.tableId));
-  if (table?.number != null) return table.number;
-  return order.tableId;
+  return resolveTableLabel(order) || "Delivery";
 }
 
 function orderType(order) {
@@ -547,6 +584,32 @@ function normalizeQueueItem(item, fallbackName) {
   };
 }
 
+function flattenOrderItems(orders) {
+  return orders.flatMap((order) => {
+    const items = Array.isArray(order?.items) ? order.items : [];
+    return items.map((item, index) => ({
+      entryKey: `${order.id}:${item.id || item.path || index}`,
+      order,
+      item,
+      table: resolveTableLabel(item, order?.raw) || order.table || ""
+    }));
+  });
+}
+
+function findKitchenEntryByPath(itemPath) {
+  const targetPath = String(itemPath || "").trim();
+  if (!targetPath) return { order: null, item: null };
+
+  const allOrders = [...state.kitchenOrders, ...state.takeawayOrders];
+  for (const order of allOrders) {
+    const items = Array.isArray(order?.items) ? order.items : [];
+    const item = items.find((row) => String(row?.path || "").trim() === targetPath);
+    if (item) return { order, item };
+  }
+
+  return { order: null, item: null };
+}
+
 function rebuildOrdersFromQueueItems() {
   const byOrder = new Map();
   const nowMs = Date.now();
@@ -579,7 +642,13 @@ function rebuildOrdersFromQueueItems() {
     }
 
     const group = byOrder.get(orderId);
-    const normalizedItem = normalizeQueueItem(row, `Item ${group.items.length + 1}`);
+    const normalizedItem = {
+      ...normalizeQueueItem(row, `Item ${group.items.length + 1}`),
+      tableId: firstText(row?.tableId),
+      tableNumber: firstText(row?.tableNumber),
+      tableName: firstText(row?.tableName),
+      table: resolveTableLabel(row)
+    };
     if (normalizedItem.status === "done") continue;
     const created = toDate(row?.createdAt);
     const createdMs = created ? created.getTime() : nowMs;
@@ -593,8 +662,8 @@ function rebuildOrdersFromQueueItems() {
     if (type === "delivery") group.hasDelivery = true;
     if (type === "takeaway") group.hasTakeaway = true;
 
-    if (!group.tableId) group.tableId = String(row?.tableId || "").trim();
-    if (!group.table) group.table = String(row?.tableNumber ?? row?.table ?? "").trim();
+    if (!group.tableId && normalizedItem.tableId) group.tableId = normalizedItem.tableId;
+    if (!group.table && normalizedItem.table) group.table = normalizedItem.table;
     if (!group.waiter) {
       group.waiter = String(
         row?.waiterName ||
@@ -634,6 +703,7 @@ function rebuildOrdersFromQueueItems() {
       raw: {
         id: group.id,
         tableId: group.tableId || "",
+        table: group.table || "",
         status
       }
     };
@@ -662,7 +732,6 @@ function updateLanguageTexts() {
   const totalOrdersLabel = el("totalOrdersLabel");
   const takeawayTitle = el("takeawayTitle");
   const langBtn = el("langBtn");
-  const modalLangBtn = el("modalLangBtn");
   const tabOrders = el("tabOrders");
 
   if (headerTitle) headerTitle.textContent = t("headerTitle");
@@ -674,7 +743,6 @@ function updateLanguageTexts() {
   if (totalOrdersLabel) totalOrdersLabel.textContent = t("totalOrdersLabel");
   if (takeawayTitle) takeawayTitle.textContent = t("takeawayTitle");
   if (langBtn) langBtn.textContent = state.lang === "bg" ? "EN" : "BG";
-  if (modalLangBtn) modalLangBtn.textContent = state.lang === "bg" ? "EN" : "BG";
 
   if (tabOrders) {
     tabOrders.innerHTML = `${t("tabOrders")} <span class="badge" id="ordersBadge">${Math.min(state.kitchenOrders.length, 10)}</span>`;
@@ -689,12 +757,13 @@ function initKitchenClickDelegation() {
 
   const onClick = async (e) => {
     const container = e.currentTarget;
-    const btn = e.target.closest("[data-action][data-order-id]");
+    const btn = e.target.closest("[data-action][data-order-id][data-item-path]");
     if (!btn || !container.contains(btn)) return;
 
     const action = String(btn.dataset.action || "");
     const orderId = String(btn.dataset.orderId || "").trim();
-    if (!orderId) return;
+    const itemPath = String(btn.dataset.itemPath || "").trim();
+    if (!orderId || !itemPath) return;
 
     let nextStatus = "";
     if (action === "start-cooking") nextStatus = "in_progress";
@@ -705,14 +774,15 @@ function initKitchenClickDelegation() {
     if (btn.disabled) return;
     btn.disabled = true;
 
-    console.log("KITCHEN ACTION", { orderId, action, nextStatus });
+    const entry = findKitchenEntryByPath(itemPath);
+    console.log("KITCHEN ACTION", { orderId, itemPath, action, nextStatus });
     try {
-      const updatedCount = await setKitchenItemsStatus(orderId, nextStatus);
-      console.log("KITCHEN ACTION COMMIT", { orderId, nextStatus, updatedCount });
+      const updatedCount = await setKitchenItemStatus(orderId, itemPath, nextStatus, entry);
+      console.log("KITCHEN ACTION COMMIT", { orderId, itemPath, nextStatus, updatedCount });
       setDebugBoxMessage("");
     } catch (err) {
       const message = String(err?.message || err || "Unknown kitchen action error");
-      console.error("kitchen click action failed:", { orderId, action, nextStatus, err });
+      console.error("kitchen click action failed:", { orderId, itemPath, action, nextStatus, err });
       setDebugBoxMessage(`Kitchen action error: ${message}`);
     } finally {
       btn.disabled = false;
@@ -733,35 +803,31 @@ function renderOrders() {
     return;
   }
 
-  const top10 = state.kitchenOrders.slice(0, 10);
+  const top10Orders = state.kitchenOrders.slice(0, 10);
+  const entries = flattenOrderItems(top10Orders);
   if (DEBUG_SPLIT) {
-    console.log("KITCHEN GROUPS:", { total: state.kitchenOrders.length, rendered: top10.length });
+    console.log("KITCHEN GROUPS:", { total: state.kitchenOrders.length, renderedOrders: top10Orders.length, renderedItems: entries.length });
   }
 
-  if (!top10.length) {
+  if (!entries.length) {
     container.innerHTML = `<div class="empty-state">${esc(t("emptyQueue"))}</div>`;
     return;
   }
 
-  container.innerHTML = top10
-    .map((order) => {
-      const kitchenItems = Array.isArray(order.items) ? order.items : [];
+  container.innerHTML = entries
+    .map(({ order, item, table }) => {
       if (DEBUG_SPLIT) {
-        console.log("Rendering KITCHEN order:", order.id);
-        console.log("Kitchen item count:", kitchenItems.length);
+        console.log("Rendering KITCHEN item:", order.id, item?.name);
       }
 
       const actionHtml =
-        order.status === "pending"
-          ? `<button class="btn btn-start" data-action="start-cooking" data-order-id="${esc(order.id)}">${esc(t("btnStart"))}</button>`
-          : `<button class="btn btn-ready" data-action="mark-done" data-order-id="${esc(order.id)}">${esc(t("btnReady"))}</button>`;
+        norm(item?.status) === "in_progress"
+          ? `<button class="btn btn-ready" data-action="mark-done" data-order-id="${esc(order.id)}" data-item-path="${esc(item.path || "")}">${esc(t("btnReady"))}</button>`
+          : `<button class="btn btn-start" data-action="start-cooking" data-order-id="${esc(order.id)}" data-item-path="${esc(item.path || "")}">${esc(t("btnStart"))}</button>`;
 
-      const itemsHtml = kitchenItems
-        .map((item) => {
-          const notes = item.notes ? `<div class="item-notes">${esc(item.notes)}</div>` : "";
-          return `<div class="order-item"><div class="item-name">${esc(item.name)} x${item.qty}</div>${notes}</div>`;
-        })
-        .join("");
+      const notes = item.notes ? `<div class="item-notes">${esc(item.notes)}</div>` : "";
+      const itemsHtml = `<div class="order-item"><div class="item-name">${esc(item.name)} x${item.qty}</div>${notes}</div>`;
+      const tableText = table || unknownTableLabel();
 
       return `
         <div class="order-card ${order.priority ? "priority" : ""} ${order.late ? "late" : ""}">
@@ -769,7 +835,7 @@ function renderOrders() {
             <div class="order-info">
               <div class="order-number">${esc(t("order"))} #${esc(order.number)}</div>
               <div class="order-waiter">${esc(order.waiter)}</div>
-              <div class="order-table">${esc(t("table"))} ${esc(order.table)}</div>
+              <div class="order-table">${esc(t("table"))} ${esc(tableText)}</div>
               ${order.priority ? `<span class="priority-badge">${esc(t("priority"))}</span>` : ""}
             </div>
             <div class="order-timer ${timerClass(order.ageSeconds)}">${formatTime(order.ageSeconds)}</div>
@@ -787,29 +853,34 @@ function renderTakeaway() {
   const container = el("takeawayOrders");
   if (!container) return;
 
-  const top10 = state.takeawayOrders.slice(0, 10);
+  const top10Orders = state.takeawayOrders.slice(0, 10);
+  const entries = flattenOrderItems(top10Orders);
   if (DEBUG_SPLIT) {
-    console.log("KITCHEN TAKEAWAY:", { total: state.takeawayOrders.length, rendered: top10.length });
+    console.log("KITCHEN TAKEAWAY:", { total: state.takeawayOrders.length, renderedOrders: top10Orders.length, renderedItems: entries.length });
   }
 
-  if (!top10.length) {
+  if (!entries.length) {
     container.innerHTML = `<div class="empty-state">${esc(t("emptyTakeaway"))}</div>`;
     return;
   }
 
-  container.innerHTML = top10
-    .map((order) => {
+  container.innerHTML = entries
+    .map(({ order, item, table }) => {
       const typeLabel = order.type === "delivery" ? t("delivery") : t("takeaway");
-      const items = order.items.map((i) => `${esc(i.name)} x${i.qty}`).join(", ");
+      const tableText = table || unknownTableLabel();
       return `
         <div class="takeaway-order">
           <div class="takeaway-header">
             <span class="takeaway-number">${esc(t("order"))} #${esc(order.number)}</span>
             <span class="takeaway-type">${esc(typeLabel)}</span>
           </div>
-          <div class="takeaway-items">${items}</div>
+          <div class="takeaway-items">${esc(item.name)} x${item.qty} • ${esc(t("table"))} ${esc(tableText)}</div>
           <div class="takeaway-actions">
-            <button class="btn btn-served btn-small" data-action="mark-done" data-order-id="${esc(order.id)}">${esc(t("btnReady"))}</button>
+            ${
+              norm(item?.status) === "in_progress"
+                ? `<button class="btn btn-served btn-small" data-action="mark-done" data-order-id="${esc(order.id)}" data-item-path="${esc(item.path || "")}">${esc(t("btnReady"))}</button>`
+                : `<button class="btn btn-start btn-small" data-action="start-cooking" data-order-id="${esc(order.id)}" data-item-path="${esc(item.path || "")}">${esc(t("btnStart"))}</button>`
+            }
           </div>
         </div>
       `;
@@ -965,6 +1036,172 @@ async function archiveKitchenOrder(orderId) {
   return validItems.length;
 }
 
+function minDate(values) {
+  let out = null;
+  values.forEach((value) => {
+    const date = toDate(value);
+    if (!date) return;
+    if (!out || date.getTime() < out.getTime()) out = date;
+  });
+  return out;
+}
+
+function maxDate(values) {
+  let out = null;
+  values.forEach((value) => {
+    const date = toDate(value);
+    if (!date) return;
+    if (!out || date.getTime() > out.getTime()) out = date;
+  });
+  return out;
+}
+
+function summarizeKitchenStationItems(items) {
+  const stationItems = Array.isArray(items) ? items : [];
+  if (!stationItems.length) return null;
+
+  const statuses = stationItems.map((item) => norm(item?.status || "new"));
+  const allDone = statuses.every((status) => status === "done");
+  const anyInProgress = statuses.some((status) => status === "in_progress");
+  const anyStarted = statuses.some((status) => status === "in_progress" || status === "done");
+
+  return {
+    allDone,
+    kitchenStatus: allDone ? "done" : (anyInProgress ? "in_progress" : "new"),
+    kitchenStartedAt: anyStarted
+      ? minDate(stationItems.map((item) => item?.startedAt || item?.createdAt))
+      : null,
+    kitchenDoneAt: allDone
+      ? maxDate(stationItems.map((item) => item?.doneAt || item?.readyAt))
+      : null
+  };
+}
+
+async function syncKitchenOrderSummary(orderId) {
+  const orderIdValue = String(orderId || "").trim();
+  if (!orderIdValue) return null;
+
+  const snap = await getDocs(
+    query(
+      collection(db, "orders", orderIdValue, "items"),
+      where("station", "==", "kitchen")
+    )
+  );
+
+  const stationItems = snap.docs.map((itemSnap) => ({
+    id: itemSnap.id,
+    path: itemSnap.ref.path,
+    ...itemSnap.data()
+  }));
+  const summary = summarizeKitchenStationItems(stationItems);
+  if (!summary) return null;
+
+  await updateDoc(doc(db, "orders", orderIdValue), {
+    kitchenStatus: summary.kitchenStatus,
+    kitchenStartedAt: summary.kitchenStartedAt || null,
+    kitchenDoneAt: summary.allDone ? (summary.kitchenDoneAt || new Date()) : null,
+    kitchenUpdatedAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+
+  return summary;
+}
+
+async function notifyWaiterFromKitchen(type, order, item) {
+  try {
+    const orderPayload = {
+      ...(order?.raw || {}),
+      id: order?.id || "",
+      tableLabel: resolveTableLabel(item, order?.raw) || order?.table || ""
+    };
+    const result = await sendWaiterNotification(db, {
+      type,
+      station: "kitchen",
+      item,
+      order: orderPayload,
+      orderId: order?.id || ""
+    });
+    const payload = result.payload || {};
+    const actionLabel = type === "item_ready" ? "READY" : "START";
+    const tableLabel = payload.tableLabel || resolveTableLabel(item, order?.raw) || unknownTableLabel();
+    const itemName = payload.itemName || String(item?.name || "").trim() || "Неизвестен артикул";
+
+    if (result.sent) {
+      console.log(`[WaiterNotify] ${actionLabel} sent -> kitchen | ${tableLabel} | ${itemName}`);
+      return;
+    }
+
+    if (result.duplicate) {
+      console.info(`[WaiterNotify] ${actionLabel} duplicate skipped -> kitchen | ${tableLabel} | ${itemName}`);
+    }
+  } catch (err) {
+    console.warn("kitchen waiter notification failed:", {
+      orderId: order?.id || "",
+      itemPath: item?.path || "",
+      err
+    });
+  }
+}
+
+async function setKitchenItemStatus(orderId, itemPath, nextStatus, context = {}) {
+  const orderIdValue = String(orderId || "").trim();
+  const itemPathValue = String(itemPath || "").trim();
+  const status = norm(nextStatus);
+
+  if (!orderIdValue) throw new Error("Missing orderId");
+  if (!itemPathValue) throw new Error("Missing itemPath");
+  if (!["in_progress", "done"].includes(status)) {
+    throw new Error(`Invalid kitchen item status: ${nextStatus}`);
+  }
+
+  const currentItem = context.item || findKitchenEntryByPath(itemPathValue).item;
+  const currentOrder = context.order || findKitchenEntryByPath(itemPathValue).order || null;
+  if (!currentItem) {
+    throw new Error("Missing kitchen item context");
+  }
+
+  const payload = {
+    status,
+    updatedAt: serverTimestamp()
+  };
+  if (status === "in_progress") payload.startedAt = serverTimestamp();
+  if (status === "done") {
+    payload.doneAt = serverTimestamp();
+    payload.readyAt = serverTimestamp();
+  }
+
+  await updateDoc(doc(db, itemPathValue), payload);
+  console.log("KITCHEN ITEM UPDATED", { orderId: orderIdValue, itemPath: itemPathValue, nextStatus: status });
+
+  let summary = null;
+  try {
+    summary = await syncKitchenOrderSummary(orderIdValue);
+  } catch (summaryErr) {
+    console.warn("kitchen summary update failed:", summaryErr);
+  }
+
+  if (summary?.allDone) {
+    try {
+      const archivedItems = await archiveKitchenOrder(orderIdValue);
+      console.log("KITCHEN HISTORY UPSERT", { orderId: orderIdValue, archivedItems });
+    } catch (archiveErr) {
+      console.warn("archiveKitchenOrder failed", { orderId: orderIdValue, archiveErr });
+    }
+  }
+
+  if (currentOrder?.raw && summary) {
+    await updateTableStatus(currentOrder.raw, summary.allDone ? "ready" : "cooking");
+  }
+
+  await notifyWaiterFromKitchen(
+    status === "done" ? "item_ready" : "item_started",
+    currentOrder || { id: orderIdValue, raw: {} },
+    currentItem
+  );
+
+  return 1;
+}
+
 async function setKitchenItemsStatus(orderId, nextStatus) {
   const orderIdValue = String(orderId || "").trim();
   if (!orderIdValue) throw new Error("Missing orderId");
@@ -990,7 +1227,10 @@ async function setKitchenItemsStatus(orderId, nextStatus) {
       updatedAt: serverTimestamp()
     };
     if (status === "in_progress") payload.startedAt = serverTimestamp();
-    if (status === "done") payload.doneAt = serverTimestamp();
+    if (status === "done") {
+      payload.doneAt = serverTimestamp();
+      payload.readyAt = serverTimestamp();
+    }
 
     batch.update(itemSnap.ref, payload);
     updatedCount += 1;
@@ -1048,51 +1288,11 @@ function switchTab(tab) {
   if (activeTab) activeTab.classList.add("active");
 }
 
-function openKitchenProfileModal() {
-  const modal = el("kitchenProfileModal");
-  if (!modal) return;
-
-  const me = state.me || {};
-  const profileName = el("kitchenProfileName");
-  const profileEmail = el("kitchenProfileEmail");
-  const nameFromHeader = el("kitchenUserName");
-
-  if (profileName) {
-    const fromHeader = nameFromHeader?.textContent?.trim();
-    profileName.textContent =
-      fromHeader || nameFromEmployee(me, "") || "—";
-  }
-  if (profileEmail) {
-    profileEmail.textContent =
-      (typeof window !== "undefined" && window.__kitchenEmail) || me?.email || "—";
-  }
-
-  modal.style.display = "block";
-  modal.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
-}
-
-function closeKitchenProfileModal() {
-  const modal = el("kitchenProfileModal");
-  if (!modal) return;
-  modal.style.display = "none";
-  modal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
-}
-
 function bindUiActions() {
   const langBtn = el("langBtn");
   if (langBtn) {
     langBtn.addEventListener("click", () => {
       if (typeof window.toggleLanguage === "function") window.toggleLanguage();
-    });
-  }
-
-  const modalLangBtn = el("modalLangBtn");
-  if (modalLangBtn) {
-    modalLangBtn.addEventListener("click", () => {
-      if (typeof window.toggleLanguage === "function") window.toggleLanguage();
-      modalLangBtn.textContent = state.lang === "bg" ? "EN" : "BG";
     });
   }
 
@@ -1102,28 +1302,6 @@ function bindUiActions() {
       void exitDashboard();
     });
   }
-
-  const modalExitBtn = el("modalExitBtn");
-  if (modalExitBtn) {
-    modalExitBtn.addEventListener("click", () => {
-      void exitDashboard();
-    });
-  }
-
-  const openProfileBtn = el("openProfileBtn");
-  if (openProfileBtn) {
-    openProfileBtn.addEventListener("click", () => openKitchenProfileModal());
-  }
-
-  document.querySelectorAll("[data-close-kitchen-profile]").forEach((node) => {
-    node.addEventListener("click", () => closeKitchenProfileModal());
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    const m = el("kitchenProfileModal");
-    if (m && m.getAttribute("aria-hidden") === "false") closeKitchenProfileModal();
-  });
 
   document.querySelectorAll(".tab[data-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1222,6 +1400,7 @@ function listenData() {
         if (DEBUG_SPLIT) console.log("SNAPSHOT SIZE:", snap.size, "(tables)");
         state.tablesById.clear();
         snap.forEach((d) => state.tablesById.set(String(d.id), d.data() || {}));
+        rebuildOrdersFromQueueItems();
         scheduleRender();
       },
       (err) => {

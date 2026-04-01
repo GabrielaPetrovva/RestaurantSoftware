@@ -26,6 +26,7 @@
     const btnStop = document.getElementById("btnStop");
     const btnSend = document.getElementById("btnSend");
     const btnBack = document.getElementById("btnBack");
+    const dashboardBackBtn = document.getElementById("dashboardBackBtn");
   
     const appBox = document.getElementById("appBox");
     const loginEmail = document.getElementById("loginEmail");
@@ -1400,6 +1401,9 @@
     bindTap(btnSend, sendOrder);
   
     btnBack?.addEventListener("click", () => history.back());
+    dashboardBackBtn?.addEventListener("click", () => {
+      window.location.href = "./index.html";
+    });
     tableSelect?.addEventListener("change", updateSendButton);
   
     // auth

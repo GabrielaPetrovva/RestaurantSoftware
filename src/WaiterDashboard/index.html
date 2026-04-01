@@ -21,6 +21,7 @@
     </div>
 
     <div class="user-area">
+      <button type="button" class="profile-icon-btn" id="scanBtn">Scan</button>
       <button type="button" class="profile-icon-btn" id="openProfileBtn" title="Моят профил" aria-label="Моят профил">
         <span class="profile-icon">👤</span>
         <span id="waiterUserName" class="user-name">Loading...</span>
@@ -68,6 +69,18 @@
         <h2 id="tablesTitle">Tables</h2>
         <p class="muted" id="tablesSubtitle">Tap a table to open or create an order</p>
         <div class="tables-grid" id="tablesGrid"></div>
+        <div class="waiter-live-panel" id="waiterNotificationsPanel">
+          <div class="waiter-live-header">
+            <div>
+              <h3 id="waiterNotificationsTitle">Live Updates</h3>
+              <p class="muted" id="waiterNotificationsSubtitle">Latest kitchen and bar item statuses</p>
+            </div>
+            <button type="button" id="clearWaiterNotifications" class="waiter-live-clear">Clear</button>
+          </div>
+          <div id="waiterNotificationsList" class="waiter-live-list" aria-live="polite">
+            <div class="muted" id="waiterNotificationsEmpty">No live notifications yet.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -146,6 +159,7 @@
     <button type="button" data-view="orders"><span class="icon">📄</span><span>Orders</span></button>
     <button type="button" data-view="payments"><span class="icon">💳</span><span>Pay</span></button>
     <button type="button" data-view="stats"><span class="icon">📊</span><span>Stats</span></button>
+    <button type="button" class="mobile-only" id="scanBtnMobile"><span class="icon">QR</span><span>Scan</span></button>
   </nav>
 
   <template id="tplTableChip">

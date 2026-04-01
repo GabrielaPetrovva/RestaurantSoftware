@@ -13,6 +13,16 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+import {
+  formatWaiterNotification,
+  getNotificationStatusText,
+  getStationLabel,
+  getWaiterNotificationStatusClass,
+  getWaiterNotificationsQuery,
+  mapWaiterNotificationsSnapshot,
+  WAITER_NOTIFICATIONS_COLLECTION,
+  WAITER_NOTIFICATIONS_LIMIT
+} from "../shared/waiter-notifications.js";
 
 /* ======================= CONFIG ======================= */
 if (!window.firebaseConfig) {
@@ -31,6 +41,8 @@ const btnPrintOrders = document.getElementById("btnPrintOrders");
 const openProfileBtn = qs("openProfileBtn");
 const modalLangBtn = qs("modalLangBtn");
 const modalExitBtn = qs("modalExitBtn");
+const scanBtn = qs("scanBtn");
+const scanBtnMobile = qs("scanBtnMobile");
 
 const views = Array.from(document.querySelectorAll(".view"));
 const topNavBtns = Array.from(document.querySelectorAll(".top-nav button[data-view]"));
@@ -39,6 +51,10 @@ const backToTablesBtn = qs("backToTablesBtn");
 
 const tablesGrid = qs("tablesGrid");
 const tplTableChip = qs("tplTableChip");
+const waiterNotificationsList = qs("waiterNotificationsList");
+const waiterNotificationsTitle = qs("waiterNotificationsTitle");
+const waiterNotificationsSubtitle = qs("waiterNotificationsSubtitle");
+const clearWaiterNotificationsBtn = qs("clearWaiterNotifications");
 
 const orderItemsEl = qs("orderItems");
 const totalValueEl = qs("totalValue");
@@ -67,6 +83,8 @@ const receiptTitle = qs("receiptTitle");
 
 /* ======================= TRANSLATIONS ======================= */
 let currentLang = localStorage.getItem('waiterDashboardLang') || 'en';
+const normalizeWaiterNotifyValue = (value) => String(value ?? "").trim().toLowerCase();
+const WAITER_NOTIFICATION_ALLOWED_ROLES = new Set(["waiter", "manager"]);
 
 const translations = {
   en: {
@@ -119,8 +137,16 @@ const translations = {
     'Total': 'Total',
     'Print': 'Print',
     'Close': 'Close',
-    'Quantity': 'Qty',
-    'Price': 'Price'
+      'Quantity': 'Qty',
+      'Price': 'Price',
+      'Live Updates': 'Live Updates',
+      'Latest kitchen and bar item statuses': 'Latest kitchen and bar item statuses',
+      'No live notifications yet.': 'No live notifications yet.',
+      'Clear': 'Clear',
+      'Started': 'Started',
+      'Ready': 'Ready',
+      'Kitchen': 'Kitchen',
+      'Bar': 'Bar'
   },
 
   bg: {
@@ -170,8 +196,16 @@ const translations = {
   'Print': 'Принтирай',
   'Close': 'Затвори',
   'Quantity': 'Кол.',
-  'Price': 'Цена'
-}
+  'Price': 'Цена',
+  'Live Updates': 'Live известия',
+  'Latest kitchen and bar item statuses': 'Последни статуса от кухня и бар',
+  'No live notifications yet.': 'Все още няма live известия.',
+  'Clear': 'Изчисти',
+  'Started': 'Започнато',
+  'Ready': 'Готово',
+  'Kitchen': 'Кухня',
+  'Bar': 'Бар'
+ }
 };
 function t(key) {
   return translations[currentLang][key] || translations['en'][key] || key;
@@ -272,6 +306,10 @@ if (waiterProfileHint) {
   if (receiptTitle) receiptTitle.textContent = t('Receipt');
   if (printReceipt) printReceipt.textContent = t('Print');
   if (closeReceiptBtn) closeReceiptBtn.textContent = t('Close');
+
+  if (waiterNotificationsTitle) waiterNotificationsTitle.textContent = t('Live Updates');
+  if (waiterNotificationsSubtitle) waiterNotificationsSubtitle.textContent = t('Latest kitchen and bar item statuses');
+  if (clearWaiterNotificationsBtn) clearWaiterNotificationsBtn.textContent = t('Clear');
   
   // Update initial order items message if it exists
   if (orderItemsEl && orderItemsEl.textContent.includes('No order selected')) {
@@ -282,6 +320,8 @@ if (waiterProfileHint) {
   if (unsubTables) {
     listenTables();
   }
+
+  renderWaiterNotifications();
 }
 
 /* ======================= GUARDS ======================= */
@@ -331,9 +371,126 @@ let unsubCats = null;
 let unsubMenus = null;
 let unsubPayments = null;
 let unsubStats = null;
+let unsubWaiterNotifications = null;
+let waiterNotifications = [];
+let clearedWaiterNotificationIds = new Set();
 
 /* ======================= HELPERS ======================= */
 const euro = (n) => `${(Number(n) || 0).toFixed(2)} €`;
+
+function buildWaiterNotificationItem(notification) {
+  const row = document.createElement("div");
+  row.className = "waiter-live-item";
+
+  const top = document.createElement("div");
+  top.className = "waiter-live-top";
+
+  const stationBadge = document.createElement("span");
+  stationBadge.className = `waiter-live-station ${String(notification?.station || "").trim().toLowerCase() === "bar" ? "bar" : "kitchen"}`;
+  stationBadge.textContent = getStationLabel(notification?.station, currentLang);
+
+  const statusBadge = document.createElement("span");
+  statusBadge.className = `waiter-live-status ${getWaiterNotificationStatusClass(notification)}`;
+  statusBadge.textContent = getNotificationStatusText(notification?.type, currentLang);
+
+  const text = document.createElement("div");
+  text.className = "waiter-live-text";
+  text.textContent = formatWaiterNotification(notification, { lang: currentLang });
+
+  top.appendChild(stationBadge);
+  top.appendChild(statusBadge);
+  row.appendChild(top);
+  row.appendChild(text);
+  return row;
+}
+
+function renderWaiterNotifications() {
+  if (!waiterNotificationsList) return;
+
+  waiterNotificationsList.innerHTML = "";
+  const visibleNotifications = waiterNotifications.filter(
+    (notification) => !clearedWaiterNotificationIds.has(notification.id)
+  );
+
+  if (!visibleNotifications.length) {
+    const empty = document.createElement("div");
+    empty.className = "muted";
+    empty.id = "waiterNotificationsEmpty";
+    empty.textContent = t("No live notifications yet.");
+    waiterNotificationsList.appendChild(empty);
+    return;
+  }
+
+  visibleNotifications.forEach((notification) => {
+    waiterNotificationsList.appendChild(buildWaiterNotificationItem(notification));
+  });
+}
+
+function clearWaiterNotificationsState({ preserveCleared = false } = {}) {
+  waiterNotifications = [];
+  if (!preserveCleared) clearedWaiterNotificationIds = new Set();
+  renderWaiterNotifications();
+}
+
+function stopWaiterNotificationsListener() {
+  if (unsubWaiterNotifications) {
+    unsubWaiterNotifications();
+    unsubWaiterNotifications = null;
+  }
+}
+
+function listenWaiterNotifications(user, employee) {
+  stopWaiterNotificationsListener();
+
+  const uid = String(user?.uid || auth.currentUser?.uid || "").trim();
+  const email = String(user?.email || auth.currentUser?.email || "").trim();
+  const role = normalizeWaiterNotifyValue(employee?.role);
+  const status = normalizeWaiterNotifyValue(employee?.status);
+
+  if (!uid) {
+    console.warn("[WaiterNotify] listener skipped: missing auth user");
+    clearWaiterNotificationsState();
+    return;
+  }
+  if (!employee) {
+    console.warn("[WaiterNotify] listener skipped: missing employee doc");
+    clearWaiterNotificationsState();
+    return;
+  }
+  if (status !== "active") {
+    console.warn(`[WaiterNotify] listener skipped: inactive employee status (${status || "-"})`);
+    clearWaiterNotificationsState();
+    return;
+  }
+  if (!WAITER_NOTIFICATION_ALLOWED_ROLES.has(role)) {
+    console.warn(`[WaiterNotify] listener skipped: unsupported role (${role || "-"})`);
+    clearWaiterNotificationsState();
+    return;
+  }
+
+  console.log(`[WaiterNotify] listening collection: ${WAITER_NOTIFICATIONS_COLLECTION}`);
+  console.log(`[WaiterNotify] query: orderBy(createdAt desc) limit(${WAITER_NOTIFICATIONS_LIMIT})`);
+
+  unsubWaiterNotifications = onSnapshot(
+    getWaiterNotificationsQuery(db),
+    (snap) => {
+      waiterNotifications = mapWaiterNotificationsSnapshot(snap);
+      console.log(`[WaiterNotify] received notifications: ${waiterNotifications.length}`);
+      renderWaiterNotifications();
+    },
+    (err) => {
+      console.error("[WaiterNotify] listener failed:", err);
+      console.error("[WaiterNotify] current uid:", uid || "-");
+      console.error("[WaiterNotify] current email:", email || "-");
+      console.error("[WaiterNotify] current role:", role || "-");
+      console.error("[WaiterNotify] current status:", status || "-");
+      waiterNotifications = [];
+      renderWaiterNotifications();
+    }
+  );
+
+  console.log("[WaiterNotify] listener started successfully");
+}
 
 function setView(name) {
   views.forEach(v => v.classList.remove("active"));
@@ -616,6 +773,15 @@ async function getRemainingActiveOrdersForTableTx(tx, tableId, tableData, exclud
   btn.addEventListener("click", () => setView(btn.dataset.view));
 });
 backToTablesBtn?.addEventListener("click", () => setView("tables"));
+function goToQR() {
+  window.location.href = "./waiterQR.html";
+}
+scanBtn?.addEventListener("click", goToQR);
+scanBtnMobile?.addEventListener("click", goToQR);
+clearWaiterNotificationsBtn?.addEventListener("click", () => {
+  clearedWaiterNotificationIds = new Set(waiterNotifications.map((notification) => notification.id));
+  renderWaiterNotifications();
+});
 
 /* ======================= PROFILE MODAL ======================= */
 function openWaiterProfileModal() {
@@ -673,21 +839,36 @@ if (modalExitBtn) {
 onAuthStateChanged(auth, async (user) => {
   try {
     if (!user) {
+      stopWaiterNotificationsListener();
+      clearWaiterNotificationsState();
+      console.warn("[WaiterNotify] auth user: - -");
       alert("Not signed in. Go to login.");
       return;
     }
 
+    console.log(`[WaiterNotify] auth user: ${user.uid} ${user.email || "-"}`);
     meUid = user.uid;
+    clearedWaiterNotificationIds = new Set();
 
     const empSnap = await getDoc(doc(db, "employees", meUid));
+    console.log(`[WaiterNotify] employee doc exists: ${empSnap.exists()}`);
     if (!empSnap.exists()) {
+      stopWaiterNotificationsListener();
+      clearWaiterNotificationsState();
       alert("вќЊ Missing employees/{uid} document");
       await signOut(auth);
       return;
     }
 
     meEmp = empSnap.data();
-    if (meEmp.status !== "active") {
+    const employeeRole = normalizeWaiterNotifyValue(meEmp?.role);
+    const employeeStatus = normalizeWaiterNotifyValue(meEmp?.status);
+    console.log(`[WaiterNotify] employee role: ${employeeRole || "-"}`);
+    console.log(`[WaiterNotify] employee status: ${employeeStatus || "-"}`);
+
+    if (employeeStatus !== "active") {
+      stopWaiterNotificationsListener();
+      clearWaiterNotificationsState();
       alert("вќЊ Your employee status is not active.");
       await signOut(auth);
       return;
@@ -704,6 +885,7 @@ onAuthStateChanged(auth, async (user) => {
     listenMenus();
     listenPaymentsHistory();
     listenStats();
+    listenWaiterNotifications(user, meEmp);
   } catch (e) {
     console.error(e);
     alert("Init error: " + e.message);

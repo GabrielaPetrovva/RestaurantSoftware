@@ -23,6 +23,9 @@ import {
 import {
   buildMenuIndexByIdAndName
 } from "../js/station-utils.js";
+import {
+  sendWaiterNotification
+} from "../shared/waiter-notifications.js";
 
 const el = (id) => document.getElementById(id);
 const norm = (x) => String(x ?? "").trim().toLowerCase();
@@ -186,6 +189,7 @@ let currentLang = localStorage.getItem("barDashboardLang") || "bg";
 let activeItems = [];
 let allStationItems = [];
 let ordersRaw = [];
+let tablesById = new Map();
 let menuById = new Map();
 let menuByName = new Map();
 const menuByIdFromMenus = new Map();
@@ -200,6 +204,7 @@ let mirrorEnabled = ENABLE_MIRROR;
 let unsubQueue = null;
 let unsubAllItems = null;
 let unsubOrders = null;
+let unsubTables = null;
 let unsubMenus = null;
 let unsubMenuItems = null;
 let unsubRecentOrders = null;
@@ -300,6 +305,13 @@ function stopOrderMirrorListeners() {
   }
 }
 
+function stopTablesListener() {
+  if (unsubTables) {
+    unsubTables();
+    unsubTables = null;
+  }
+}
+
 function stopRecentOrdersListener() {
   if (unsubRecentOrders) {
     unsubRecentOrders();
@@ -353,6 +365,45 @@ function formatEUR(amount) {
 function orderIdFromPath(path) {
   const m = String(path || "").match(/^orders\/([^/]+)\/items\//);
   return m ? m[1] : "unknown";
+}
+
+function firstText(...values) {
+  for (const value of values) {
+    if (value == null) continue;
+    const text = String(value).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function unknownTableLabel() {
+  return currentLang === "bg" ? "Неизвестна маса" : "Unknown table";
+}
+
+function tableDocLabel(tableDoc, fallbackId = "") {
+  return firstText(
+    tableDoc?.number,
+    tableDoc?.tableNumber,
+    tableDoc?.name,
+    tableDoc?.title,
+    fallbackId
+  );
+}
+
+function resolveTableLabel(item, order = null) {
+  const direct = firstText(
+    item?.table,
+    item?.tableNumber,
+    item?.tableName,
+    order?.table,
+    order?.tableNumber,
+    order?.tableName
+  );
+  if (direct) return direct;
+
+  const tableId = firstText(item?.tableId, order?.tableId);
+  if (!tableId) return "";
+  return tableDocLabel(tablesById.get(String(tableId)), String(tableId));
 }
 
 function statusLabel(st) {
@@ -514,14 +565,10 @@ function queueKeyFromStationItem(item) {
 function drinkItemsFromOrder(order) {
   const orderId = String(order?.id || "").trim();
   const strictBarItems = barItems(order);
-
-  const grouped = new Map();
-  for (const item of strictBarItems) {
-    const key = queueKeyFor(orderId, item);
-    if (!grouped.has(key)) grouped.set(key, { ...item, queueKey: key });
-    else grouped.get(key).qty += item.qty;
-  }
-  return Array.from(grouped.values());
+  return strictBarItems.map((item, index) => ({
+    ...item,
+    queueKey: `${queueKeyFor(orderId, item)}|${index}`
+  }));
 }
 
 function virtualBarItemsFromOrders({ activeOnly = false } = {}) {
@@ -746,6 +793,10 @@ function groupByOrder(items) {
         shortId: orderId.slice(0, 6),
         newestCreatedMs: createdMs,
         hasInProgress: false,
+        table: "",
+        tableId: "",
+        tableName: "",
+        tableNumber: "",
         items: []
       });
     }
@@ -755,11 +806,26 @@ function groupByOrder(items) {
     if (status === "done") continue;
     if (status === "in_progress") g.hasInProgress = true;
     g.newestCreatedMs = Math.max(g.newestCreatedMs, createdMs);
+
+    const resolvedTable = resolveTableLabel(item);
+    const tableId = firstText(item?.tableId);
+    const tableName = firstText(item?.tableName);
+    const tableNumber = firstText(item?.tableNumber);
+
+    if (!g.table && resolvedTable) g.table = resolvedTable;
+    if (!g.tableId && tableId) g.tableId = tableId;
+    if (!g.tableName && tableName) g.tableName = tableName;
+    if (!g.tableNumber && tableNumber) g.tableNumber = tableNumber;
+
     g.items.push({
       ...item,
       qty,
       createdMs,
-      ageSec: Math.floor((now - createdMs) / 1000)
+      ageSec: Math.floor((now - createdMs) / 1000),
+      table: resolvedTable,
+      tableId,
+      tableName,
+      tableNumber
     });
   }
 
@@ -770,6 +836,177 @@ function groupByOrder(items) {
       status: g.hasInProgress ? "in_progress" : "new",
       ageSec: Math.floor((now - g.newestCreatedMs) / 1000)
     }));
+}
+
+function flattenBarQueueEntries(groups) {
+  return groups.flatMap((group) =>
+    group.items.map((item, index) => ({
+      entryKey: `${group.orderId}:${item.id || item.path || item.queueKey || index}`,
+      orderId: group.orderId,
+      shortId: group.shortId,
+      status: group.hasInProgress ? "in_progress" : "new",
+      ageSec: group.ageSec,
+      table: resolveTableLabel(item, group),
+      item
+    }))
+  );
+}
+
+function findBarItemByPath(itemPath) {
+  const targetPath = String(itemPath || "").trim();
+  if (!targetPath) return null;
+  return activeItems.find((item) => String(item?.path || "").trim() === targetPath) || null;
+}
+
+function minBarDate(values) {
+  let out = null;
+  values.forEach((value) => {
+    const ms = tsToMs(value);
+    if (ms <= 0) return;
+    if (!out || ms < out.getTime()) out = new Date(ms);
+  });
+  return out;
+}
+
+function maxBarDate(values) {
+  let out = null;
+  values.forEach((value) => {
+    const ms = tsToMs(value);
+    if (ms <= 0) return;
+    if (!out || ms > out.getTime()) out = new Date(ms);
+  });
+  return out;
+}
+
+function summarizeBarStationItems(items) {
+  const stationItems = Array.isArray(items) ? items : [];
+  if (!stationItems.length) return null;
+
+  const statuses = stationItems.map((item) => norm(item?.status || "new"));
+  const allDone = statuses.every((status) => status === "done");
+  const anyInProgress = statuses.some((status) => status === "in_progress");
+  const anyStarted = statuses.some((status) => status === "in_progress" || status === "done");
+
+  return {
+    allDone,
+    barStatus: allDone ? "done" : (anyInProgress ? "in_progress" : "new"),
+    barStartedAt: anyStarted
+      ? minBarDate(stationItems.map((item) => item?.startedAt || item?.createdAt))
+      : null,
+    barReadyAt: allDone
+      ? maxBarDate(stationItems.map((item) => item?.doneAt || item?.readyAt))
+      : null
+  };
+}
+
+async function syncBarOrderSummary(orderId) {
+  const orderIdValue = String(orderId || "").trim();
+  if (!orderIdValue) return null;
+
+  const snap = await getDocs(
+    query(
+      collection(db, "orders", orderIdValue, "items"),
+      where("station", "==", "bar")
+    )
+  );
+
+  const stationItems = snap.docs.map((itemSnap) => ({
+    id: itemSnap.id,
+    path: itemSnap.ref.path,
+    ...itemSnap.data()
+  }));
+  const summary = summarizeBarStationItems(stationItems);
+  if (!summary) return null;
+
+  await updateDoc(doc(db, "orders", orderIdValue), {
+    barStatus: summary.barStatus,
+    barStartedAt: summary.barStartedAt || null,
+    barReadyAt: summary.allDone ? (summary.barReadyAt || new Date()) : null,
+    barUpdatedAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+
+  return summary;
+}
+
+async function notifyWaiterFromBar(type, orderId, item) {
+  try {
+    const tableLabel = resolveTableLabel(item) || unknownTableLabel();
+    const result = await sendWaiterNotification(db, {
+      type,
+      station: "bar",
+      item,
+      order: {
+        id: orderId,
+        tableLabel
+      },
+      orderId
+    });
+    const payload = result.payload || {};
+    const actionLabel = type === "item_ready" ? "READY" : "START";
+    const itemName = payload.itemName || String(item?.name || "").trim() || "Неизвестен артикул";
+
+    if (result.sent) {
+      console.log(`[WaiterNotify] ${actionLabel} sent -> bar | ${payload.tableLabel || tableLabel} | ${itemName}`);
+      return;
+    }
+
+    if (result.duplicate) {
+      console.info(`[WaiterNotify] ${actionLabel} duplicate skipped -> bar | ${payload.tableLabel || tableLabel} | ${itemName}`);
+    }
+  } catch (err) {
+    console.warn("bar waiter notification failed:", {
+      orderId,
+      itemPath: item?.path || "",
+      err
+    });
+  }
+}
+
+async function updateBarItemStatus(orderId, itemPath, nextStatus, contextItem = null) {
+  const orderIdValue = String(orderId || "").trim();
+  const itemPathValue = String(itemPath || "").trim();
+  const status = norm(nextStatus);
+
+  if (!orderIdValue || !itemPathValue) return 0;
+  if (!["in_progress", "done"].includes(status)) return 0;
+
+  const item = contextItem || findBarItemByPath(itemPathValue);
+  if (!item) throw new Error("Missing bar item context");
+
+  const payload = {
+    status,
+    updatedAt: serverTimestamp()
+  };
+  if (status === "in_progress") payload.startedAt = serverTimestamp();
+  if (status === "done") {
+    payload.doneAt = serverTimestamp();
+    payload.readyAt = serverTimestamp();
+  }
+
+  await updateDoc(doc(db, itemPathValue), payload);
+
+  try {
+    await syncBarOrderSummary(orderIdValue);
+  } catch (summaryErr) {
+    console.warn("bar summary update failed:", summaryErr);
+  }
+
+  await notifyWaiterFromBar(
+    status === "done" ? "item_ready" : "item_started",
+    orderIdValue,
+    item
+  );
+
+  await logAction({
+    actorUid: auth.currentUser?.uid || null,
+    actorEmail: auth.currentUser?.email || null,
+    type: "ORDER",
+    message: `Bar item status -> ${status}`,
+    meta: { orderId: orderIdValue, itemPath: itemPathValue, status }
+  });
+
+  return 1;
 }
 
 async function updateBarOrderItemsStatus(orderId, nextStatus) {
@@ -792,7 +1029,10 @@ async function updateBarOrderItemsStatus(orderId, nextStatus) {
   snap.forEach((d) => {
     const payload = { status, updatedAt: serverTimestamp() };
     if (status === "in_progress") payload.startedAt = serverTimestamp();
-    if (status === "done") payload.doneAt = serverTimestamp();
+    if (status === "done") {
+      payload.doneAt = serverTimestamp();
+      payload.readyAt = serverTimestamp();
+    }
     batch.update(d.ref, payload);
     updatedCount += 1;
   });
@@ -814,9 +1054,15 @@ function bindActionButtons() {
     btn.addEventListener("click", async () => {
       btn.disabled = true;
       try {
-        await updateBarOrderItemsStatus(btn.dataset.orderId, btn.dataset.nextStatus);
+        await updateBarItemStatus(
+          btn.dataset.orderId,
+          btn.dataset.itemPath,
+          btn.dataset.nextStatus,
+          findBarItemByPath(btn.dataset.itemPath)
+        );
       } catch (e) {
         console.error("bar status update error:", e);
+      } finally {
         btn.disabled = false;
       }
     });
@@ -834,47 +1080,48 @@ function renderQueue() {
   }
 
   const groups = groupByOrder(activeItems);
-  const top10 = groups.slice(0, 10);
+  const top10Groups = groups.slice(0, 10);
+  const entries = flattenBarQueueEntries(top10Groups);
 
   if (DEBUG_SPLIT) {
-    console.log("BAR GROUPS:", { total: groups.length, rendered: top10.length });
+    console.log("BAR GROUPS:", { total: groups.length, renderedOrders: top10Groups.length, renderedItems: entries.length });
   }
 
-  if (!top10.length) {
+  if (!entries.length) {
     box.innerHTML = `<div class="order-card"><div class="drink-item">${escapeHtml(t("emptyQueue"))}</div></div>`;
     return;
   }
 
-  box.innerHTML = top10.map((group) => {
+  box.innerHTML = entries.map((entry) => {
+    const item = entry.item;
+    const st = norm(item.status);
+    const tableText = entry.table || unknownTableLabel();
+
     if (DEBUG_SPLIT) {
-      console.log("Rendering BAR order:", group.orderId);
-      console.log("Bar item count:", group.items.length);
+      console.log("Rendering BAR item:", entry.orderId, item?.name);
     }
 
     return `
       <div class="order-card">
         <div class="order-header">
           <div class="order-info">
-            <div class="order-number">${escapeHtml(t("order"))} #${escapeHtml(group.shortId)}</div>
-            <div class="table-info">${escapeHtml(t("items"))}: ${group.items.length}</div>
+            <div class="order-number">${escapeHtml(t("order"))} #${escapeHtml(entry.shortId)}</div>
+            <div class="table-info">${escapeHtml(t("table"))}: ${escapeHtml(tableText)}</div>
           </div>
-          <div class="order-time ${timerClass(group.ageSec)}">${formatMMSS(group.ageSec)}</div>
+          <div class="order-time ${timerClass(entry.ageSec)}">${formatMMSS(entry.ageSec)}</div>
         </div>
 
-        ${group.items.map((item) => {
-          const st = norm(item.status);
-          return `
-            <div class="drink-item">
+        <div class="drink-item">
+          <div>${escapeHtml(item.name)} x${Number(item.qty || 1)}</div>
+          <div class="drink-note">${escapeHtml(t("status"))}: ${escapeHtml(statusLabel(st))} • ${escapeHtml(t("age"))}: ${formatMMSS(item.ageSec)}</div>
+        </div><!--
               <div>${escapeHtml(item.name)} × ${Number(item.qty || 1)}</div>
               <div class="drink-note">${escapeHtml(t("status"))}: ${escapeHtml(statusLabel(st))} • ${escapeHtml(t("age"))}: ${formatMMSS(item.ageSec)}</div>
-            </div>
-          `;
-        }).join("")}
-        <div style="display:flex; gap:8px; margin-top:10px;">
+        --><div style="display:flex; gap:8px; margin-top:10px;">
           ${
-            group.status === "new"
-              ? `<button class="btn btn-start barOrderActionBtn" data-order-id="${escapeHtml(group.orderId)}" data-next-status="in_progress">${escapeHtml(t("start"))}</button>`
-              : `<button class="btn btn-ready barOrderActionBtn" data-order-id="${escapeHtml(group.orderId)}" data-next-status="done">${escapeHtml(t("ready"))}</button>`
+            st === "in_progress"
+              ? `<button class="btn btn-ready barOrderActionBtn" data-order-id="${escapeHtml(entry.orderId)}" data-item-path="${escapeHtml(item.path || "")}" data-next-status="done">${escapeHtml(t("ready"))}</button>`
+              : `<button class="btn btn-start barOrderActionBtn" data-order-id="${escapeHtml(entry.orderId)}" data-item-path="${escapeHtml(item.path || "")}" data-next-status="in_progress">${escapeHtml(t("start"))}</button>`
           }
         </div>
       </div>
@@ -1161,11 +1408,13 @@ onAuthStateChanged(auth, async (user) => {
 
   if (unsubQueue) unsubQueue();
   if (unsubAllItems) unsubAllItems();
+  stopTablesListener();
   stopOrderMirrorListeners();
   stopRecentOrdersListener();
 
   mirrorEnabled = ENABLE_MIRROR;
   ordersRaw = [];
+  tablesById.clear();
   clearStationListenerError();
 
   const role = norm(me?.role);
@@ -1176,6 +1425,7 @@ onAuthStateChanged(auth, async (user) => {
     console.warn("bar access check failed", { uid: user.uid, role, status, me });
     activeItems = [];
     allStationItems = [];
+    tablesById.clear();
     setDebug(accessMsg);
     renderAll();
     return;
@@ -1230,6 +1480,21 @@ onAuthStateChanged(auth, async (user) => {
     }
   );
 
+  unsubTables = onSnapshot(
+    query(collection(db, "tables"), orderBy("number", "asc")),
+    (snap) => {
+      const next = new Map();
+      snap.forEach((d) => next.set(String(d.id), d.data() || {}));
+      tablesById = next;
+      renderQueue();
+    },
+    (err) => {
+      console.warn("bar tables listener failed:", err);
+      tablesById.clear();
+      renderQueue();
+    }
+  );
+
   if (mirrorEnabled) {
     startOrderMirrorListeners();
   } else {
@@ -1248,6 +1513,7 @@ window.addEventListener("beforeunload", () => {
   if (syncTimer) clearTimeout(syncTimer);
   if (unsubQueue) unsubQueue();
   if (unsubAllItems) unsubAllItems();
+  stopTablesListener();
   stopOrderMirrorListeners();
   stopRecentOrdersListener();
 });
