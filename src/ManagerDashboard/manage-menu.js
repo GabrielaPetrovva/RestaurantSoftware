@@ -1,7 +1,7 @@
-// manage-menu.js — SAVE IMAGE AS PATH (FIXED)
-// ✅ Saves in Firestore ONLY: image
-// ✅ Saves as: ..\\images\\<category>_category\\<filename>
-// ✅ Preview works (converts DB path to /images/... for browser)
+﻿// manage-menu.js — SAVE IMAGE AS PATH
+// ✅ Newly selected images save as normalized project paths
+// ✅ Existing path/base64 images still preview correctly
+// ✅ No Firebase Storage
 
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
@@ -33,16 +33,52 @@ const CATEGORY_BG_TO_EN = {
 const CATEGORY_EN_TO_BG = Object.fromEntries(
   Object.entries(CATEGORY_BG_TO_EN).map(([bg, en]) => [en, bg])
 );
+const CATEGORY_IMAGE_FOLDER_ALIASES = {
+  drink: "drinks",
+  drinks: "drinks",
+  pizza: "pizza",
+  dessert: "dessert",
+  desserts: "dessert",
+  salad: "salad",
+  salads: "salad",
+  starter: "starters",
+  starters: "starters",
+};
+const CATEGORY_KEY_ALIASES = {
+  drink: "drinks",
+  drinks: "drinks",
+  dessert: "desserts",
+  desserts: "desserts",
+  salad: "salads",
+  salads: "salads",
+  starter: "starters",
+  starters: "starters",
+};
+
+function normalizeCategoryKeyToken(v) {
+  return String(v ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[+\s-]+/g, "_")
+    .replace(/_category$/, "");
+}
 
 function normalizeCategoryToEN(v) {
   const s = String(v ?? "").trim();
   if (!s) return "";
-  return CATEGORY_BG_TO_EN[s] || s.toLowerCase();
+  if (CATEGORY_BG_TO_EN[s]) return CATEGORY_BG_TO_EN[s];
+  const normalized = normalizeCategoryKeyToken(s);
+  return CATEGORY_KEY_ALIASES[normalized] || normalized;
 }
 function categoryForInputDisplay(v) {
   const s = String(v ?? "").trim();
   if (!s) return "";
   return CATEGORY_EN_TO_BG[s] || s;
+}
+function categoryKeyToImageFolder(v) {
+  const key = normalizeCategoryToEN(v);
+  if (!key) return "";
+  return CATEGORY_IMAGE_FOLDER_ALIASES[key] || key;
 }
 
 /* ================= DOM HELPERS ================= */
@@ -97,7 +133,7 @@ function normalizeWeight(v) {
   return `${n} г.`;
 }
 
-/* ================= IMAGE PATH HELPERS (FIXED) ================= */
+/* ================= IMAGE HELPERS ================= */
 
 // DB PATH: "..\\images\\pizza_category\\pizza.jpg"
 // UI SRC:  "/images/pizza_category/pizza.jpg"
@@ -110,34 +146,81 @@ function dbImageToPublicSrc(dbPath) {
   if (/^data:image\//i.test(p)) return p;
 
   p = p.replace(/\\/g, "/");
+  const normalizedLower = p.toLowerCase();
 
   // contains /images/ somewhere
-  const idx = p.toLowerCase().indexOf("/images/");
-  if (idx >= 0) return p.slice(idx);
+  const idx = normalizedLower.indexOf("/images/");
+  if (idx >= 0) return `..${p.slice(idx)}`;
+  const imageIdx = normalizedLower.indexOf("/image/");
+  if (imageIdx >= 0) return `../images/${p.slice(imageIdx + "/image/".length)}`;
 
   // ../images/... -> /images/...
-  if (p.toLowerCase().startsWith("../images/")) return p.replace(/^\.\./, "");
+  if (normalizedLower.startsWith("../images/")) return p;
+  if (normalizedLower.startsWith("../image/")) return `../images/${p.slice("../image/".length)}`;
 
   // ./images/... -> /images/...
-  if (p.toLowerCase().startsWith("./images/")) return p.replace(/^\./, "");
+  if (normalizedLower.startsWith("./images/")) return `..${p.slice(1)}`;
+  if (normalizedLower.startsWith("./image/")) return `../images/${p.slice("./image/".length)}`;
 
   // images/... -> /images/...
-  if (p.toLowerCase().startsWith("images/")) return "/" + p;
+  if (normalizedLower.startsWith("images/")) return `../${p}`;
+  if (normalizedLower.startsWith("image/")) return `../images/${p.slice("image/".length)}`;
 
   return p;
 }
 
-// ALWAYS SAVE THIS FORMAT:
+// Main helper for new path-based image values.
 function buildDbImagePath(categoryEN, fileName) {
-  const cat = String(categoryEN || "").trim().toLowerCase();
+  const cat = categoryKeyToImageFolder(categoryEN);
   if (!cat) return "";
 
   const folder = `${cat}_category`;
   const file = String(fileName || "").replace(/\\/g, "/").split("/").pop();
   if (!file) return "";
 
-  // ✅ what you asked:
-  return `..\\images\\${folder}\\${file}`;
+  return normalizeDbImagePath(`../images/${folder}/${file}`);
+}
+
+function normalizeImageFolderPath(value) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  if (/^(https?:)?\/\//i.test(raw)) return raw;
+  if (/^data:image\//i.test(raw)) return raw;
+
+  let normalized = raw.replace(/\\/g, "/");
+  const lower = normalized.toLowerCase();
+  const imagesMarker = "/images/";
+  const idx = lower.indexOf(imagesMarker);
+  const imageMarker = "/image/";
+  const imageIdx = lower.indexOf(imageMarker);
+
+  if (idx >= 0) {
+    normalized = `../images/${normalized.slice(idx + imagesMarker.length)}`;
+  } else if (imageIdx >= 0) {
+    normalized = `../images/${normalized.slice(imageIdx + imageMarker.length)}`;
+  } else if (/^\.\.\/images\//i.test(normalized)) {
+    normalized = `../images/${normalized.slice("../images/".length)}`;
+  } else if (/^\.\.\/image\//i.test(normalized)) {
+    normalized = `../images/${normalized.slice("../image/".length)}`;
+  } else if (/^\.\/images\//i.test(normalized)) {
+    normalized = `../images/${normalized.slice("./images/".length)}`;
+  } else if (/^\.\/image\//i.test(normalized)) {
+    normalized = `../images/${normalized.slice("./image/".length)}`;
+  } else if (/^images\//i.test(normalized)) {
+    normalized = `../images/${normalized.slice("images/".length)}`;
+  } else if (/^image\//i.test(normalized)) {
+    normalized = `../images/${normalized.slice("image/".length)}`;
+  }
+
+  return normalized.replace(/\/{2,}/g, "/");
+}
+
+function normalizeDbImagePath(value) {
+  const normalized = normalizeImageFolderPath(value);
+  if (!normalized) return "";
+  if (/^(https?:)?\/\//i.test(normalized)) return normalized;
+  if (/^data:image\//i.test(normalized)) return normalized;
+  return normalized;
 }
 
 // expose (optional)
@@ -219,10 +302,10 @@ function wireModalClose() {
   });
 }
 
-/* ================= IMAGE PATH STATE ================= */
+/* ================= IMAGE STATE ================= */
 let selectedImageFile = null;
 let selectedImagePath = "";
-let currentImage = undefined; // undefined=don’t touch, null=remove, string=existing path
+let currentImage = undefined; // undefined=don’t touch, null=remove, string=existing image value
 
 function showPreview(src) {
   if (!imagePrevEl) return;
@@ -237,43 +320,42 @@ function showPreview(src) {
   if (imageRemoveBtn) imageRemoveBtn.style.display = "inline-flex";
 }
 
-/* ===================== ✅ FIXED PART ONLY ===================== */
+
 function wireImage() {
   if (!imageFileEl) return;
 
   imageFileEl.addEventListener("change", () => {
-    selectedImageFile = imageFileEl.files?.[0] || null;
+    const nextFile = imageFileEl.files?.[0] || null;
 
-    if (selectedImageFile) {
-      // ✅ взимаме категорията (трябва да е избрана)
-      const category = normalizeCategoryToEN(categoryEl?.value);
-
-      if (!category) {
-        alert("Първо избери категория, после избери снимка.");
-        imageFileEl.value = "";
-        selectedImageFile = null;
-        selectedImagePath = "";
-        showPreview("");
-        return;
-      }
-
-      // ✅ folder: drinks -> drinks_category
-      const folder = `${category}_category`;
-
-      // ✅ filename (само име на файла)
-      const fileName = selectedImageFile.name;
-
-      // ✅ записваме точно както искаш в Firestore:
-      // "..\\images\\drinks_category\\gin.jpg"
-      selectedImagePath = `..\\images\\${folder}\\${fileName}`;
-
-      // preview работи веднага
-      showPreview(URL.createObjectURL(selectedImageFile));
-    } else {
+    if (!nextFile) {
+      selectedImageFile = null;
       selectedImagePath = "";
-      showPreview("");
+      showPreview(currentImage ? dbImageToPublicSrc(currentImage) : "");
+      return;
     }
 
+    const category = normalizeCategoryToEN(categoryEl?.value);
+    if (!category) {
+      alert("Първо избери категория, после избери снимка.");
+      imageFileEl.value = "";
+      selectedImageFile = null;
+      selectedImagePath = "";
+      showPreview("");
+      return;
+    }
+
+    selectedImageFile = nextFile;
+    selectedImagePath = buildDbImagePath(category, nextFile.name);
+    if (!selectedImagePath) {
+      alert("Неуспешно генериране на пътя до снимката.");
+      imageFileEl.value = "";
+      selectedImageFile = null;
+      selectedImagePath = "";
+      showPreview("");
+      return;
+    }
+
+    showPreview(URL.createObjectURL(nextFile));
     currentImage = undefined;
   });
 
@@ -282,10 +364,9 @@ function wireImage() {
     selectedImagePath = "";
     if (imageFileEl) imageFileEl.value = "";
     showPreview("");
-    currentImage = null; // махаме от базата при save
+    currentImage = null;
   });
 }
-/* ===================== ✅ END FIXED PART ONLY ===================== */
 
 /* ================= STATE ================= */
 let editingId = null;
@@ -446,6 +527,12 @@ function wireForm() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const restoreSaveButton = () => {
+      if (!saveBtn) return;
+      saveBtn.disabled = false;
+      saveBtn.textContent = editingId ? "Запази" : "Добави артикул";
+    };
+
     const manualId = cleanId(idEl?.value);
 
     const name = norm(nameEl?.value);
@@ -470,6 +557,10 @@ function wireForm() {
 
     try {
       clearErr();
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Запазване...";
+      }
 
       const payload = {
         name,
@@ -490,14 +581,16 @@ function wireForm() {
         updatedAt: serverTimestamp()
       };
 
-      // ✅ IMAGE PATH SAVE (NOTE: not touching your other logic)
       if (selectedImagePath) {
-        payload.image = selectedImagePath;
+        payload.image = normalizeDbImagePath(selectedImagePath);
+      } else if (typeof currentImage === "string" && currentImage.trim()) {
+        payload.image = normalizeDbImagePath(currentImage);
       } else if (currentImage === null) {
-        // remove image
         payload.image = deleteField();
       }
       // else undefined = don’t touch
+
+      console.log("Saving menu image path:", payload.image);
 
       if (editingId) {
         // EDIT
@@ -508,6 +601,7 @@ function wireForm() {
           const ref = doc(db, "menus", manualId);
           const snap = await getDoc(ref);
           if (snap.exists()) {
+            restoreSaveButton();
             return alert("Вече съществува артикул с това ID. Избери друго.");
           }
           payload.createdAt = serverTimestamp();
@@ -521,8 +615,11 @@ function wireForm() {
       resetForm();
       closeMenuModal();
     } catch (err) {
-      setErr("Запис грешка: " + err.message);
-      alert(err.message);
+      console.error("Menu save error:", err);
+      const message = String(err?.message || err || "Неизвестна грешка.");
+      setErr("Запис грешка: " + message);
+      alert(message);
+      restoreSaveButton();
     }
   });
 }
@@ -553,7 +650,6 @@ function openEdit(item) {
 
   selectedImageFile = null;
   selectedImagePath = "";
-
   currentImage = item.image || undefined;
 
   // preview for existing image
@@ -561,7 +657,10 @@ function openEdit(item) {
 
   if (imageFileEl) imageFileEl.value = "";
 
-  if (saveBtn) saveBtn.textContent = "Запази";
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Запази";
+  }
   if (cancelBtn) cancelBtn.style.display = "inline-flex";
 }
 
@@ -594,7 +693,10 @@ function resetForm() {
   if (imageFileEl) imageFileEl.value = "";
   showPreview("");
 
-  if (saveBtn) saveBtn.textContent = "Добави артикул";
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Добави артикул";
+  }
   if (cancelBtn) cancelBtn.style.display = "none";
 
   clearErr();
@@ -666,3 +768,7 @@ function wireMenuLiveEvents() {
 }
 
 /* ================= END ================= */
+
+
+
+

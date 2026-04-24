@@ -20,6 +20,29 @@ let items = [];
 let selectedCat = "all";
 let search = "";
 
+function resolveImageSrc(path) {
+  let p = String(path || "").trim();
+  if (!p) return "";
+  if (/^(https?:)?\/\//i.test(p)) return p;
+  if (/^data:image\//i.test(p)) return p;
+
+  p = p.replace(/\\/g, "/");
+  const lower = p.toLowerCase();
+
+  const idx = lower.indexOf("/images/");
+  if (idx >= 0) return `..${p.slice(idx)}`;
+  const imageIdx = lower.indexOf("/image/");
+  if (imageIdx >= 0) return `../images/${p.slice(imageIdx + "/image/".length)}`;
+  if (lower.startsWith("../images/")) return p;
+  if (lower.startsWith("../image/")) return `../images/${p.slice("../image/".length)}`;
+  if (lower.startsWith("./images/")) return `..${p.slice(1)}`;
+  if (lower.startsWith("./image/")) return `../images/${p.slice("./image/".length)}`;
+  if (lower.startsWith("images/")) return `../${p}`;
+  if (lower.startsWith("image/")) return `../images/${p.slice("image/".length)}`;
+
+  return p;
+}
+
 /* ================= CATEGORY MATCH (FIXED) ================= */
 // ✅ accepts dessert and desserts as same category
 function catMatches(itemCat, selected) {
@@ -162,7 +185,7 @@ function renderList() {
     ? visible
         .map((i) => {
           const img = i.image
-            ? `<img class="ml-img" src="${esc(i.image)}" alt="">`
+            ? `<img class="ml-img" src="${esc(resolveImageSrc(i.image))}" alt="">`
             : `<div class="ml-img ml-img-empty"></div>`;
 
           const status = i.active !== false ? "Active" : "Inactive";

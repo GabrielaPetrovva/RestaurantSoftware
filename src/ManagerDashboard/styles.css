@@ -1018,8 +1018,18 @@
         }
 
         .order-history-summary {
+            order: 1;
             font-size: 13px;
             color: #666;
+        }
+
+        .order-history-toggle-btn {
+            order: 2;
+            margin-left: auto;
+        }
+
+        #orderHistoryClearBtn {
+            order: 3;
         }
 
         .order-history-results-card {

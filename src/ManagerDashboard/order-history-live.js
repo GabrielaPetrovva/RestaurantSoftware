@@ -6,6 +6,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 const MAX_VISIBLE_RESULTS = 100;
+const DEFAULT_COLLAPSED_RESULTS = Math.min(5, MAX_VISIBLE_RESULTS);
 const FINAL_STATUSES = new Set(["paid", "closed", "cancelled", "completed", "served"]);
 const LIVE_STATUSES = new Set(["new", "created", "open", "pending", "preparing", "cooking", "ready", "in_progress", "busy"]);
 const DISPLAYABLE_STATUSES = new Set([...FINAL_STATUSES, ...LIVE_STATUSES]);
@@ -17,6 +18,7 @@ const els = {
   table: document.getElementById("orderHistoryTable"),
   waiter: document.getElementById("orderHistoryWaiter"),
   orderNumber: document.getElementById("orderHistoryOrderNumber"),
+  toggleBtn: document.getElementById("orderHistoryToggleBtn"),
   clearBtn: document.getElementById("orderHistoryClearBtn"),
   summary: document.getElementById("orderHistorySummary"),
   error: document.getElementById("orderHistoryError"),
@@ -35,6 +37,7 @@ const state = {
   itemsByOrderId: new Map(),
   loadingItems: new Set(),
   orderError: "",
+  showAllOrdersHistory: false,
 };
 
 if (els.section && els.body) {
@@ -50,6 +53,11 @@ function bindUi() {
     if (!node) return;
     const eventName = node.type === "date" ? "change" : "input";
     node.addEventListener(eventName, () => render());
+  });
+
+  els.toggleBtn?.addEventListener("click", () => {
+    state.showAllOrdersHistory = !state.showAllOrdersHistory;
+    render();
   });
 
   els.clearBtn?.addEventListener("click", () => {
@@ -102,6 +110,7 @@ function render() {
   renderSuggestions(historyOrders);
 
   if (!state.ready) {
+    updateToggleButton();
     setSummary("Зареждане на историята...");
     setError("");
     setEmpty(false);
@@ -110,7 +119,10 @@ function render() {
   }
 
   const filtered = historyOrders.filter(matchesFilters);
-  const visible = filtered.slice(0, MAX_VISIBLE_RESULTS);
+  const visible = state.showAllOrdersHistory
+    ? filtered
+    : filtered.slice(0, DEFAULT_COLLAPSED_RESULTS);
+  updateToggleButton();
 
   if (state.active) {
     loadMissingItems(visible);
@@ -147,13 +159,27 @@ function renderSuggestions(orders) {
   }
 }
 
-function buildSummaryText(filteredCount, visibleCount, totalHistoryCount) {
+function buildSummaryTextLegacy(filteredCount, visibleCount, totalHistoryCount) {
   const parts = [`Намерени ${filteredCount} поръчки`];
   if (visibleCount < filteredCount) {
     parts.push(`показани ${visibleCount}`);
   }
   parts.push(`от общо ${totalHistoryCount} в списъка`);
   return parts.join(" • ");
+}
+
+function buildSummaryText(filteredCount, visibleCount, totalHistoryCount) {
+  const parts = [
+    `Намерени ${filteredCount} поръчки`,
+    `показани ${visibleCount}`,
+    `от общо ${totalHistoryCount} в списъка`,
+  ];
+  return parts.join(" • ");
+}
+
+function updateToggleButton() {
+  if (!els.toggleBtn) return;
+  els.toggleBtn.textContent = state.showAllOrdersHistory ? "Покажи по-малко" : "Виж всички";
 }
 
 function renderOrderRow(order) {

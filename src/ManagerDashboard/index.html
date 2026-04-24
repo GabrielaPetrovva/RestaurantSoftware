@@ -597,7 +597,7 @@
               Махни снимка
             </button>
           </div>
-          <small class="hint">Снимката се пази в документа (base64).</small>
+          <small class="hint">Снимката не се пази в базата като base64. Записва се само пътят до файла в images папката, затова файлът трябва вече да съществува там.</small>
         </div>
 
         <div class="btn-row" style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -714,6 +714,7 @@
                         </div>
                     </form>
                     <div class="order-history-toolbar">
+                        <button type="button" id="orderHistoryToggleBtn" class="btn btn-secondary order-history-toggle-btn">Виж всички</button>
                         <div id="orderHistorySummary" class="order-history-summary">Зареждане на историята...</div>
                         <button type="button" id="orderHistoryClearBtn" class="btn btn-secondary">Изчисти филтрите</button>
                     </div>

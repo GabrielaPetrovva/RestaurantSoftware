@@ -19,11 +19,50 @@ const MENUS_COLLECTION = "menus";
 // Нормализиране на пътя към снимка:
 // - ако е "../images/..." -> оставяме
 // - ако е "categories/..." -> правим "../images/categories/..."
-function resolveImg(path) {
-  if (!path) return "../images/default.jpg";
-  if (path.startsWith("http")) return path;
-  if (path.startsWith("../") || path.startsWith("/")) return path;
-  return `../images/${path}`;
+const CATEGORY_IMAGE_FILE_ALIASES = {
+  dessert: "dessert",
+  desserts: "dessert",
+  salad: "salad",
+  salads: "salad",
+  starter: "starter",
+  starters: "starter"
+};
+
+function categoryImageFallback(categoryKey) {
+  const key = String(categoryKey || "").trim().toLowerCase();
+  if (!key) return "../images/background.jpg";
+  const fileKey = CATEGORY_IMAGE_FILE_ALIASES[key] || key;
+  return `../images/categories/${fileKey}.jpg`;
+}
+
+function resolveImg(path, opts = {}) {
+  const kind = opts.kind || "";
+  const categoryKey = opts.categoryKey || "";
+  const fallback = kind === "category"
+    ? categoryImageFallback(categoryKey)
+    : "../images/background.jpg";
+
+  let p = String(path || "").trim();
+  if (!p) return fallback;
+  if (/^data:image\//i.test(p)) return p;
+  if (/^(https?:)?\/\//i.test(p)) return p;
+
+  p = p.replace(/\\/g, "/");
+  const lower = p.toLowerCase();
+
+  const idx = lower.indexOf("/images/");
+  if (idx >= 0) return `..${p.slice(idx)}`;
+  const imageIdx = lower.indexOf("/image/");
+  if (imageIdx >= 0) return `../images/${p.slice(imageIdx + "/image/".length)}`;
+  if (lower.startsWith("../images/")) return p;
+  if (lower.startsWith("../image/")) return `../images/${p.slice("../image/".length)}`;
+  if (lower.startsWith("./images/")) return `..${p.slice(1)}`;
+  if (lower.startsWith("./image/")) return `../images/${p.slice("./image/".length)}`;
+  if (lower.startsWith("images/")) return `../${p}`;
+  if (lower.startsWith("image/")) return `../images/${p.slice("image/".length)}`;
+  if (lower.startsWith("categories/")) return `../images/${p}`;
+
+  return `../images/${p}`;
 }
 
 const isCategoryPage = window.location.pathname.includes("category.html");
@@ -119,7 +158,7 @@ async function renderCategoriesPage() {
 
     card.innerHTML = `
       <div class="card-image">
-        <img src="${resolveImg(cat.image)}" alt="${translatedName}">
+        <img src="${resolveImg(cat.image, { kind: "category", categoryKey: cat.key })}" alt="${translatedName}">
       </div>
       <div class="card-label">${translatedName}</div>
     `;
