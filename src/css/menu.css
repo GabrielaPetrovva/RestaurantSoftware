@@ -1,13 +1,13 @@
 /* Digital Menu Board Styles - Matching the Image Exactly */
 
 .menu-main {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
+    background: linear-gradient(rgba(8, 4, 2, 0.72), rgba(12, 7, 4, 0.84)), 
                 url('../images/background.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     min-height: 100vh;
-    padding-top: 2rem;
+    padding-top: 120px;
     padding-bottom: 4.5rem; /* space between last card and footer */
     position: relative;
     width: 100%;
@@ -331,7 +331,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.8);
+    background-color: rgba(8, 4, 2, 0.86);
     align-items: center;
     justify-content: center;
     overflow-y: auto;
@@ -356,19 +356,30 @@
 }
 
 .order-summary-content {
-    background-color: #2c1810;
+    background: linear-gradient(180deg, rgba(25, 13, 8, 0.97) 0%, rgba(15, 8, 5, 0.97) 100%);
     margin: auto;
     padding: 2rem;
-    border-radius: 10px;
+    border-radius: 14px;
     width: 90%;
     max-width: 600px;
     position: relative;
-    border: 2px solid #ff8c00;
+    border: 1px solid rgba(216, 178, 124, 0.35);
     animation: slideUpModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     max-height: 90vh;
     overflow-y: auto;
     box-sizing: border-box;
+}
+
+.order-summary-content::before,
+.category-details-content::before,
+.receipt-modal-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at top right, rgba(216, 178, 124, 0.14), transparent 45%);
+    pointer-events: none;
 }
 
 @keyframes slideUpModal {
@@ -383,14 +394,14 @@
 }
 
 .order-close {
-    color: #ff8c00;
+    color: #d8b27c;
     float: right;
     font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
     position: absolute;
     right: 1rem;
-    top: 1rem;
+    top: 0.35rem;
     transition: all 0.3s ease;
     width: 35px;
     height: 35px;
@@ -402,7 +413,7 @@
 }
 
 .order-close:hover {
-    color: #ff6b00;
+    color: #f0c878;
     background: rgba(255, 140, 0, 0.2);
     transform: rotate(90deg) scale(1.1);
 }
@@ -488,18 +499,20 @@
 
 .generate-qr-btn {
     width: 100%;
-    background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 100%);
-    color: #2c1810;
-    padding: 1rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    font-weight: bold;
+    background: transparent;
+    color: #f5f5f5;
+    padding: 0.95rem;
+    border: 1px solid rgba(216, 178, 124, 0.58);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.23em;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
+    box-shadow: none;
 }
 
 .generate-qr-btn::before {
@@ -518,9 +531,10 @@
 }
 
 .generate-qr-btn:hover {
-    background: linear-gradient(135deg, #ff6b00 0%, #ff8c00 100%);
+    background: #d8b27c;
+    color: #1a0f0a;
     transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(255, 140, 0, 0.5);
+    box-shadow: 0 10px 26px rgba(216, 178, 124, 0.32);
 }
 
 .generate-qr-btn:active {
@@ -550,14 +564,14 @@
 }
 
 .category-details-content {
-    background-color: #2c1810;
+    background: linear-gradient(180deg, rgba(25, 13, 8, 0.97) 0%, rgba(15, 8, 5, 0.97) 100%);
     margin: auto;
     padding: 2rem;
-    border-radius: 15px;
+    border-radius: 14px;
     width: 95%;
     max-width: 1000px;
     position: relative;
-    border: 2px solid #ff8c00;
+    border: 1px solid rgba(216, 178, 124, 0.35);
     max-height: calc(100vh - 40px);
     overflow-y: auto;
     overflow-x: hidden;
@@ -567,14 +581,14 @@
 }
 
 .category-close {
-    color: #ff8c00;
+    color: #d8b27c;
     float: right;
     font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
     position: absolute;
     right: 1rem;
-    top: 1rem;
+    top: 0.35rem;
     transition: all 0.3s ease;
     width: 35px;
     height: 35px;
@@ -586,7 +600,7 @@
 }
 
 .category-close:hover {
-    color: #ff6b00;
+    color: #f0c878;
     background: rgba(255, 140, 0, 0.2);
     transform: rotate(90deg) scale(1.1);
 }
@@ -837,6 +851,78 @@
     border-radius: 8px;
 }
 
+/* QR Code Full Screen Modal (same behavior as category page) */
+.qr-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.95);
+    animation: fadeInModal 0.3s ease;
+}
+
+.qr-modal.show {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-modal-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.qr-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: #ff8c00;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 3001;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.qr-close:hover {
+    background: rgba(255, 140, 0, 0.2);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.qr-code-display {
+    max-width: 90%;
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-code-display #qr-code {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .digital-menu-board {
@@ -882,7 +968,7 @@
 
 @media (max-width: 768px) {
     .menu-main {
-        padding-top: 100px;
+        padding-top: 120px;
         background-attachment: scroll;
         /* Use a solid/gradient color on mobile (remove heavy image) */
         background: linear-gradient(180deg, rgba(44,24,16,1) 0%, rgba(82,44,29,1) 100%);
@@ -1137,7 +1223,7 @@
 
 @media (max-width: 480px) {
     .menu-main {
-        padding-top: 80px;
+        padding-top: 105px;
     }
 
     .digital-menu-board {
@@ -1456,26 +1542,26 @@
 }
 
 .receipt-modal-content {
-    background-color: #2c1810;
+    background: linear-gradient(180deg, rgba(25, 13, 8, 0.97) 0%, rgba(15, 8, 5, 0.97) 100%);
     margin: 5% auto;
     padding: 2rem;
-    border-radius: 10px;
+    border-radius: 14px;
     width: 90%;
     max-width: 600px;
     position: relative;
-    border: 2px solid #ff8c00;
+    border: 1px solid rgba(216, 178, 124, 0.35);
     animation: slideUpModal 0.4s ease;
 }
 
 .receipt-close {
-    color: #ff8c00;
+    color: #d8b27c;
     float: right;
     font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
     position: absolute;
     right: 1rem;
-    top: 1rem;
+    top: 0.35rem;
     transition: all 0.3s ease;
     width: 35px;
     height: 35px;
@@ -1487,7 +1573,7 @@
 }
 
 .receipt-close:hover {
-    color: #ff6b00;
+    color: #f0c878;
     background: rgba(255, 140, 0, 0.2);
     transform: rotate(90deg) scale(1.1);
 }

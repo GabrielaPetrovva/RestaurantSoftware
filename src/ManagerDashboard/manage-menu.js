@@ -7,9 +7,16 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import {
   collection, doc, getDoc, onSnapshot,
-  addDoc, setDoc, updateDoc, deleteDoc,
+  setDoc, updateDoc, deleteDoc,
   serverTimestamp, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+const CLOUDINARY_CLOUD_NAME = "dxo6w1a7p";
+const CLOUDINARY_UPLOAD_PRESET = "restaurant_menu_upload";
+const CLOUDINARY_FOLDER = "restaurant-menu";
+
+// New image files are uploaded directly from the browser to Cloudinary.
+// Legacy path/base64/https image values remain supported for existing records.
 
 /* ================= CATEGORY MAPS ================= */
 const CATEGORY_BG_TO_EN = {
@@ -133,6 +140,87 @@ function normalizeWeight(v) {
   return `${n} г.`;
 }
 
+function safeFileName(name) {
+  const raw = String(name || "image").trim();
+  const dotIndex = raw.lastIndexOf(".");
+  const base = dotIndex >= 0 ? raw.slice(0, dotIndex) : raw;
+  const ext = dotIndex >= 0 ? raw.slice(dotIndex + 1).toLowerCase() : "jpg";
+
+  const cleanBase = base
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9а-яА-Я_-]/gi, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const cleanExt = ext.replace(/[^a-z0-9]/gi, "") || "jpg";
+  return `${cleanBase || "image"}.${cleanExt}`;
+}
+
+async function uploadImageToCloudinary(file, category, menuId) {
+  if (!file) return null;
+
+  if (!String(file.type || "").startsWith("image/")) {
+    throw new Error("Избраният файл не е снимка.");
+  }
+
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    throw new Error("Снимката е твърде голяма. Максимумът е 10 MB.");
+  }
+
+  if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME.includes("ТУК_СЛОЖИ")) {
+    throw new Error("Липсва CLOUDINARY_CLOUD_NAME в manage-menu.js.");
+  }
+
+  if (!CLOUDINARY_UPLOAD_PRESET || CLOUDINARY_UPLOAD_PRESET.includes("ТУК_СЛОЖИ")) {
+    throw new Error("Липсва CLOUDINARY_UPLOAD_PRESET в manage-menu.js.");
+  }
+
+  const safeCategory = normalizeCategoryToEN(category) || "uncategorized";
+  const safeId = cleanId(menuId) || crypto.randomUUID();
+  const fileName = safeFileName(file.name);
+  const publicIdBase = fileName.replace(/\.[^.]+$/, "");
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", `${CLOUDINARY_FOLDER}/${safeCategory}`);
+  formData.append("public_id", `${safeId}_${Date.now()}_${publicIdBase}`);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (_err) {
+    data = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(data?.error?.message || "Cloudinary upload failed.");
+  }
+
+  if (!data?.secure_url) {
+    throw new Error("Cloudinary не върна secure_url.");
+  }
+
+  return {
+    url: data.secure_url,
+    publicId: data.public_id || "",
+    width: data.width || null,
+    height: data.height || null,
+    format: data.format || null,
+    bytes: data.bytes || null
+  };
+}
+
 /* ================= IMAGE HELPERS ================= */
 
 // DB PATH: "..\\images\\pizza_category\\pizza.jpg"
@@ -169,7 +257,7 @@ function dbImageToPublicSrc(dbPath) {
   return p;
 }
 
-// Main helper for new path-based image values.
+// Legacy helper kept for compatibility with old path-based image values.
 function buildDbImagePath(categoryEN, fileName) {
   const cat = categoryKeyToImageFolder(categoryEN);
   if (!cat) return "";
@@ -334,29 +422,30 @@ function wireImage() {
       return;
     }
 
-    const category = normalizeCategoryToEN(categoryEl?.value);
-    if (!category) {
-      alert("Първо избери категория, после избери снимка.");
+    if (!String(nextFile.type || "").startsWith("image/")) {
+      alert("Моля, избери валиден image файл.");
       imageFileEl.value = "";
       selectedImageFile = null;
       selectedImagePath = "";
-      showPreview("");
+      showPreview(currentImage ? dbImageToPublicSrc(currentImage) : "");
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (nextFile.size > maxSize) {
+      alert("Снимката е твърде голяма. Максимумът е 10 MB.");
+      imageFileEl.value = "";
+      selectedImageFile = null;
+      selectedImagePath = "";
+      showPreview(currentImage ? dbImageToPublicSrc(currentImage) : "");
       return;
     }
 
     selectedImageFile = nextFile;
-    selectedImagePath = buildDbImagePath(category, nextFile.name);
-    if (!selectedImagePath) {
-      alert("Неуспешно генериране на пътя до снимката.");
-      imageFileEl.value = "";
-      selectedImageFile = null;
-      selectedImagePath = "";
-      showPreview("");
-      return;
-    }
+    selectedImagePath = "";
+    currentImage = undefined;
 
     showPreview(URL.createObjectURL(nextFile));
-    currentImage = undefined;
   });
 
   imageRemoveBtn?.addEventListener("click", () => {
@@ -581,35 +670,61 @@ function wireForm() {
         updatedAt: serverTimestamp()
       };
 
-      if (selectedImagePath) {
-        payload.image = normalizeDbImagePath(selectedImagePath);
-      } else if (typeof currentImage === "string" && currentImage.trim()) {
-        payload.image = normalizeDbImagePath(currentImage);
-      } else if (currentImage === null) {
-        payload.image = deleteField();
-      }
-      // else undefined = don’t touch
-
-      console.log("Saving menu image path:", payload.image);
+      let targetRef;
+      let targetId;
 
       if (editingId) {
-        // EDIT
-        await updateDoc(doc(db, "menus", editingId), payload);
-      } else {
-        // ADD
-        if (manualId) {
-          const ref = doc(db, "menus", manualId);
-          const snap = await getDoc(ref);
-          if (snap.exists()) {
-            restoreSaveButton();
-            return alert("Вече съществува артикул с това ID. Избери друго.");
-          }
-          payload.createdAt = serverTimestamp();
-          await setDoc(ref, payload);
-        } else {
-          payload.createdAt = serverTimestamp();
-          await addDoc(collection(db, "menus"), payload);
+        targetId = editingId;
+        targetRef = doc(db, "menus", editingId);
+      } else if (manualId) {
+        targetId = manualId;
+        targetRef = doc(db, "menus", manualId);
+
+        const snap = await getDoc(targetRef);
+        if (snap.exists()) {
+          restoreSaveButton();
+          return alert("Вече съществува артикул с това ID. Избери друго.");
         }
+      } else {
+        targetRef = doc(collection(db, "menus"));
+        targetId = targetRef.id;
+      }
+
+      if (selectedImageFile) {
+        if (saveBtn) saveBtn.textContent = "Качване на снимка...";
+
+        const uploaded = await uploadImageToCloudinary(selectedImageFile, category, targetId);
+
+        payload.image = uploaded.url;
+        payload.imageProvider = "cloudinary";
+        payload.imagePublicId = uploaded.publicId;
+        payload.imageMeta = {
+          width: uploaded.width,
+          height: uploaded.height,
+          format: uploaded.format,
+          bytes: uploaded.bytes
+        };
+        payload.imageUpdatedAt = serverTimestamp();
+
+        console.log("[Menu image] uploaded:", uploaded.publicId);
+        console.log("[Menu image] saved URL:", uploaded.url);
+      } else if (typeof currentImage === "string" && currentImage.trim()) {
+        payload.image = normalizeDbImagePath(currentImage);
+      } else if (currentImage === null && editingId) {
+        payload.image = deleteField();
+        payload.imageProvider = deleteField();
+        payload.imagePublicId = deleteField();
+        payload.imageMeta = deleteField();
+        payload.imageUpdatedAt = serverTimestamp();
+      }
+
+      if (saveBtn) saveBtn.textContent = "Запазване...";
+
+      if (editingId) {
+        await updateDoc(targetRef, payload);
+      } else {
+        payload.createdAt = serverTimestamp();
+        await setDoc(targetRef, payload);
       }
 
       resetForm();

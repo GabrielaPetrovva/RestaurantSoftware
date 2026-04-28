@@ -16,6 +16,26 @@ const translations = {
             subtitle: 'Our Story',
             text: 'The restaurant opened its doors in 2015 with one simple idea – to offer genuine taste and comfort in the heart of the city. Since then, we have been combining traditional recipes with modern culinary techniques to create experiences that are truly unforgettable.'
         },
+        testimonials: {
+            label: 'What Guests Say',
+            title: 'Voice of Our Guests',
+            quote1: 'One of the best dining experiences in town. The food was excellent and the service was warm and professional.',
+            quote2: 'The atmosphere is elegant and cozy at the same time. Every dish looked beautiful and tasted even better.',
+            quote3: 'Perfect place for special occasions. We came for an anniversary and everything was memorable.'
+        },
+        faq: {
+            label: 'Questions',
+            title: 'Frequently Asked Questions',
+            subtitle: 'Quick answers to the most common questions about reservations and visits.',
+            q1: 'Do you have parking?',
+            a1: 'Yes, we have free parking in front of the restaurant. During weekends we recommend arriving a bit earlier.',
+            q2: 'How can I make a reservation?',
+            a2: 'You can reserve by phone, through our contact form, or directly on-site. Weekend reservations are best made in advance.',
+            q3: 'Do you offer vegetarian options?',
+            a3: 'Yes, our menu includes vegetarian options and several dishes can be adapted on request.',
+            q4: 'Can I organize a private event?',
+            a4: 'Yes, we host private and corporate events. Contact us and we will prepare a personalized offer.'
+        },
         contact: {
             title: 'Leave a Review',
             subtitle: 'We’d love to hear your thoughts.',
@@ -50,6 +70,26 @@ const translations = {
             title: 'За нас',
             subtitle: 'Нашата история',
             text: 'Ресторантът отвори врати през 2015 г. с една проста идея – да предложи автентичен вкус и комфорт в сърцето на града. Оттогава комбинираме традиционни рецепти с модерни кулинарни техники, за да създадем преживявания, които са наистина незабравими.'
+        },
+        testimonials: {
+            label: 'Гласът на гостите',
+            title: 'Какво казват нашите гости',
+            quote1: 'Едно от най-добрите кулинарни изживявания в града. Храната беше отлична, а обслужването - топло и професионално.',
+            quote2: 'Атмосферата е елегантна и уютна едновременно. Всяко ястие изглеждаше красиво и имаше още по-добър вкус.',
+            quote3: 'Перфектно място за специални поводи. Дойдохме за годишнина и всичко беше запомнящо се.'
+        },
+        faq: {
+            label: 'Въпроси',
+            title: 'Често задавани въпроси',
+            subtitle: 'Бързи отговори на най-често задаваните въпроси за резервации и посещения.',
+            q1: 'Имате ли паркинг?',
+            a1: 'Да, разполагаме с безплатен паркинг пред ресторанта. През уикенда препоръчваме да дойдете малко по-рано.',
+            q2: 'Как мога да направя резервация?',
+            a2: 'Можете да резервирате по телефона, чрез контактната форма или на място. За уикенд е най-добре да резервирате предварително.',
+            q3: 'Предлагате ли вегетариански опции?',
+            a3: 'Да, менюто ни включва вегетариански предложения, а някои ястия могат да бъдат адаптирани по желание.',
+            q4: 'Мога ли да организирам частно събитие?',
+            a4: 'Да, организираме частни и корпоративни събития. Свържете се с нас и ще подготвим персонализирана оферта.'
         },
         contact: {
             title: 'Оставете отзив',
@@ -150,6 +190,7 @@ function toggleMenu() {
     if (navMenu && menuToggle) {
         navMenu.classList.toggle('show');
         menuToggle.classList.toggle('active');
+        menuToggle.setAttribute('aria-expanded', navMenu.classList.contains('show') ? 'true' : 'false');
         body.classList.toggle('menu-open');
         
         // Prevent body scroll when menu is open
@@ -201,6 +242,7 @@ function closeMenu() {
     if (navMenu && menuToggle) {
         navMenu.classList.remove('show');
         menuToggle.classList.remove('active');
+        menuToggle.setAttribute('aria-expanded', 'false');
         body.classList.remove('menu-open');
         body.style.overflow = '';
     }
@@ -215,6 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hamburger menu toggle - check if inline onclick is not already set
     const menuToggle = document.querySelector('.menu-toggle');
     if (menuToggle && !menuToggle.getAttribute('onclick')) {
+        // index.html has its own dedicated menu controller in inline script.
+        if (menuToggle.id === 'menuToggle' && document.getElementById('navMenu')) {
+            // Avoid double-toggling that immediately closes mobile menu.
+        } else {
         // If no onclick attribute, add event listener
         // Check which structure is being used
         const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
@@ -222,6 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
             menuToggle.addEventListener('click', toggleMobileMenu);
         } else {
             menuToggle.addEventListener('click', toggleMenu);
+        }
         }
     }
 

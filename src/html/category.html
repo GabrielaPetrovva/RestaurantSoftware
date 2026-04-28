@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ястия по категория</title>
-<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/main.css">
 <link rel="stylesheet" href="../css/category.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -17,12 +17,12 @@
     <header class="header navbar-wrapper">
         <div class="navbar">
             <nav>
-                <div class="menu-toggle" onclick="toggleMenu()">
+                <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false" onclick="toggleMenu()">
                     <span></span>
                     <span></span>
                     <span></span>
-                </div>
-                <ul>
+                </button>
+                <ul id="navMenu">
                     <li><a href="../index.html" data-translate="nav.home">Начало</a></li>
                     <li><a href="menu.html" data-translate="nav.menu">Меню</a></li>
                     <li><a href="../index.html#about" data-translate="nav.about">За нас</a></li>
@@ -123,17 +123,17 @@
         <div>
             <h4>Serve Software</h4>
             <ul>
-                <li data-translate="footer.privacy">Поверителност</li>
-                <li data-translate="footer.services">Услуги</li>
-                <li data-translate="footer.about">За нас</li>
+                <li><a href="privacy.html" data-translate="footer.privacy">Поверителност</a></li>
+                <li><a href="terms.html" data-translate="footer.services">Услуги</a></li>
+                <li><a href="../index.html#about" data-translate="footer.about">За нас</a></li>
             </ul>
         </div>
         <div>
             <h4 data-translate="footer.quickLinks">Бързи връзки</h4>
             <ul>
-                <li data-translate="footer.menu">Меню</li>
-                <li data-translate="footer.story">Нашата история</li>
-                <li data-translate="footer.reservations">Резервации</li>
+                <li><a href="menu.html" data-translate="footer.menu">Меню</a></li>
+                <li><a href="../index.html#about" data-translate="footer.story">Нашата история</a></li>
+                <li><a href="../index.html#contact" data-translate="footer.reservations">Резервации</a></li>
             </ul>
         </div>
         <div>

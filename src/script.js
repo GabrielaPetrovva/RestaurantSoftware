@@ -252,12 +252,17 @@
   });
 
   function toggleMenu() {
-    const navMenu = document.querySelector('nav ul');
-    const menuToggle = document.querySelector('.menu-toggle');
+    const navMenu = document.getElementById('navMenu') || document.querySelector('nav ul');
+    const menuToggle = document.getElementById('menuToggle') || document.querySelector('.menu-toggle');
     const body = document.body;
-    
+
+    if (!navMenu || !menuToggle) {
+      return;
+    }
+
     navMenu.classList.toggle('show');
     menuToggle.classList.toggle('active');
+    menuToggle.setAttribute('aria-expanded', navMenu.classList.contains('show') ? 'true' : 'false');
     body.classList.toggle('menu-open');
     
     // Prevent body scroll when menu is open
@@ -271,52 +276,91 @@
   // Close menu when clicking on a link
   document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', function() {
-      const navMenu = document.querySelector('nav ul');
-      const menuToggle = document.querySelector('.menu-toggle');
+      const navMenu = document.getElementById('navMenu') || document.querySelector('nav ul');
+      const menuToggle = document.getElementById('menuToggle') || document.querySelector('.menu-toggle');
       const body = document.body;
-      
+
+      if (!navMenu || !menuToggle) {
+        return;
+      }
+
       navMenu.classList.remove('show');
       menuToggle.classList.remove('active');
+      menuToggle.setAttribute('aria-expanded', 'false');
       body.classList.remove('menu-open');
       body.style.overflow = '';
     });
   });
   
   // Close menu when clicking outside (on the background overlay)
-  document.querySelector('nav ul').addEventListener('click', function(e) {
-    if (e.target === this) {
-      const menuToggle = document.querySelector('.menu-toggle');
-      const body = document.body;
-      
-      this.classList.remove('show');
-      menuToggle.classList.remove('active');
-      body.classList.remove('menu-open');
-      body.style.overflow = '';
-    }
-  });
+  const navMenuOverlay = document.getElementById('navMenu') || document.querySelector('nav ul');
+  if (navMenuOverlay) {
+    navMenuOverlay.addEventListener('click', function(e) {
+      if (e.target === this) {
+        const menuToggle = document.getElementById('menuToggle') || document.querySelector('.menu-toggle');
+        const body = document.body;
+
+        this.classList.remove('show');
+        if (menuToggle) {
+          menuToggle.classList.remove('active');
+          menuToggle.setAttribute('aria-expanded', 'false');
+        }
+        body.classList.remove('menu-open');
+        body.style.overflow = '';
+      }
+    });
+  }
 
   //Contact form
   document.addEventListener("DOMContentLoaded", () => {
-    emailjs.init("kGsBidM1aclQjY3y3"); 
-
     const form = document.getElementById("contact-form");
+    const toast = document.getElementById("toast");
+    const lang = localStorage.getItem("language") || "en";
 
-    form.addEventListener("submit", function(e) {
+    if (!form || !toast) {
+      return;
+    }
+
+    const toastMessages = {
+      en: {
+        sending: "Sending message...",
+        success: "Message sent successfully!",
+        failed: "Failed to send message.",
+        serviceDown: "Message service is unavailable."
+      },
+      bg: {
+        sending: "Изпращане на съобщение...",
+        success: "Съобщението е изпратено успешно!",
+        failed: "Грешка при изпращане на съобщението.",
+        serviceDown: "Услугата за изпращане не е налична."
+      }
+    };
+    const t = toastMessages[lang] || toastMessages.en;
+
+    if (!window.emailjs) {
+      console.error("EmailJS is not loaded.");
+      showToast(t.serviceDown, false);
+      return;
+    }
+
+    emailjs.init("kGsBidM1aclQjY3y3");
+
+    form.addEventListener("submit", async function(e) {
       e.preventDefault();
+      showToast(t.sending, true);
 
-      emailjs.sendForm(
-        "service_3d3a8yj",
-        "template_u7f8rnm",  
-        this
-      )
-      .then(() => {
-        showToast("Message sent successfully!", true);
+      try {
+        await emailjs.sendForm(
+          "service_3d3a8yj",
+          "template_u7f8rnm",
+          this
+        );
+        showToast(t.success, true);
         form.reset();
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error(error);
-        showToast("Failed to send message.", false);
-      });
+        showToast(t.failed, false);
+      }
     });
 
     function showToast(message, success = true) {
