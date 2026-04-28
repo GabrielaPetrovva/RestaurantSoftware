@@ -36,6 +36,31 @@ const translations = {
             q4: 'Can I organize a private event?',
             a4: 'Yes, we host private and corporate events. Contact us and we will prepare a personalized offer.'
         },
+        menu: {
+            heroTitle: 'Discover Our Categories',
+            heroSubtitle: 'Choose a category and explore the full selection of dishes.'
+        },
+        category: {
+            backToMenu: '← Back to Menu',
+            label: 'Category',
+            subtitle: 'Explore the selection and choose your favorite dishes.'
+        },
+        order: {
+            title: 'Your Order',
+            empty: 'No items added',
+            total: 'Total',
+            generateQR: 'Generate QR Code'
+        },
+        nutrition: {
+            calories: 'Calories',
+            carbs: 'Carbs (g)',
+            protein: 'Protein (g)',
+            fat: 'Fat (g)',
+            addToCart: 'Add to Cart'
+        },
+        receipt: {
+            title: 'Last Order Receipt'
+        },
         contact: {
             title: 'Leave a Review',
             subtitle: 'We’d love to hear your thoughts.',
@@ -90,6 +115,31 @@ const translations = {
             a3: 'Да, менюто ни включва вегетариански предложения, а някои ястия могат да бъдат адаптирани по желание.',
             q4: 'Мога ли да организирам частно събитие?',
             a4: 'Да, организираме частни и корпоративни събития. Свържете се с нас и ще подготвим персонализирана оферта.'
+        },
+        menu: {
+            heroTitle: 'Разгледайте нашите категории',
+            heroSubtitle: 'Изберете категория и вижте пълната селекция от ястия.'
+        },
+        category: {
+            backToMenu: '← Назад към меню',
+            label: 'Категория',
+            subtitle: 'Разгледайте предложенията и изберете любимите си ястия.'
+        },
+        order: {
+            title: 'Вашата поръчка',
+            empty: 'Няма добавени ястия',
+            total: 'Общо',
+            generateQR: 'Генерирай QR код'
+        },
+        nutrition: {
+            calories: 'Калории',
+            carbs: 'Въглехидрати (г)',
+            protein: 'Протеини (г)',
+            fat: 'Мазнини (г)',
+            addToCart: 'Добави в количката'
+        },
+        receipt: {
+            title: 'Последна поръчка'
         },
         contact: {
             title: 'Оставете отзив',

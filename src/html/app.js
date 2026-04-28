@@ -28,6 +28,25 @@ const CATEGORY_IMAGE_FILE_ALIASES = {
   starters: "starter"
 };
 
+const CATEGORY_DISPLAY_ORDER = [
+  'starter',
+  'starters',
+  'salad',
+  'salads',
+  'bread',
+  'pizza',
+  'pasta',
+  'chicken',
+  'pork',
+  'veal',
+  'fish',
+  'saj',
+  'burger',
+  'dessert',
+  'desserts',
+  'drinks'
+];
+
 function categoryImageFallback(categoryKey) {
   const key = String(categoryKey || "").trim().toLowerCase();
   if (!key) return "../images/background.jpg";
@@ -96,8 +115,18 @@ async function renderCategoriesPage() {
     });
   });
 
-  // sort by order
-  cats.sort((a, b) => a.order - b.order);
+  // Stable display order: starters, salads, mains, etc.
+  cats.sort((a, b) => {
+    const aKey = String(a.key || '').toLowerCase();
+    const bKey = String(b.key || '').toLowerCase();
+    const aIndex = CATEGORY_DISPLAY_ORDER.indexOf(aKey);
+    const bIndex = CATEGORY_DISPLAY_ORDER.indexOf(bKey);
+    const aRank = aIndex === -1 ? 999 : aIndex;
+    const bRank = bIndex === -1 ? 999 : bIndex;
+    if (aRank !== bRank) return aRank - bRank;
+    if (a.order !== b.order) return a.order - b.order;
+    return aKey.localeCompare(bKey);
+  });
 
   console.log("Categories loaded:", cats.map(x => x.key));
 

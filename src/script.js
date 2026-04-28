@@ -65,7 +65,13 @@
         addToCart: 'Add to Cart'
       },
       category: {
-        backToMenu: '← Back to Menu'
+        backToMenu: '← Back to Menu',
+        label: 'Category',
+        subtitle: 'Explore the selection and choose your favorite dishes.'
+      },
+      menu: {
+        heroTitle: 'Discover Our Categories',
+        heroSubtitle: 'Choose a category and explore the full selection of dishes.'
       },
       receipt: {
         title: 'Last Order Receipt'
@@ -137,7 +143,13 @@
         addToCart: 'Добави в количката'
       },
       category: {
-        backToMenu: '← Назад към меню'
+        backToMenu: '← Назад към меню',
+        label: 'Категория',
+        subtitle: 'Разгледайте предложенията и изберете любимите си ястия.'
+      },
+      menu: {
+        heroTitle: 'Разгледайте нашите категории',
+        heroSubtitle: 'Изберете категория и вижте пълната селекция от ястия.'
       },
       receipt: {
         title: 'Последна поръчка'
