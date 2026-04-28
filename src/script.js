@@ -257,8 +257,25 @@
     return categoryKey.toUpperCase();
   }
 
+  function resetScrollLockState() {
+    const navMenu = document.getElementById('navMenu') || document.querySelector('nav ul');
+    const menuToggle = document.getElementById('menuToggle') || document.querySelector('.menu-toggle');
+
+    document.body.style.overflow = '';
+    document.body.classList.remove('menu-open');
+
+    if (navMenu) {
+      navMenu.classList.remove('show');
+    }
+    if (menuToggle) {
+      menuToggle.classList.remove('active');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+
   // Initialize language on page load
   document.addEventListener('DOMContentLoaded', function() {
+    resetScrollLockState();
     updateLanguage();
     updateLanguageButtons();
   });
@@ -322,6 +339,8 @@
       }
     });
   }
+
+  window.addEventListener('pageshow', resetScrollLockState);
 
   //Contact form
   document.addEventListener("DOMContentLoaded", () => {
