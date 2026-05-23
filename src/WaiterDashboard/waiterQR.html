@@ -470,58 +470,262 @@
       background: rgba(0,0,0,.25) !important;
     }
 
-    #reader{
-      width:100%;
-      border-radius: 18px;
-      overflow:hidden;
-      border: 2px solid rgba(255, 204, 102, 0.3);
-      background: rgba(10,6,4,.45);
-      min-height: 260px;
-      position:relative;
+    .qr-reader-shell {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 14px auto 12px;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .qr-reader-wrap {
+      --qr-size: min(94vw, 70vh, 720px);
+
+      position: relative;
+      width: var(--qr-size);
+      height: var(--qr-size);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      min-width: 280px;
+      min-height: 280px;
+      max-width: 720px;
+      max-height: 720px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: #050302;
+      border: 2px solid rgba(255, 204, 102, 0.25);
       box-shadow:
-        inset 0 2px 8px rgba(0,0,0,.5),
-        0 0 30px rgba(255,204,102,.08);
-      animation: scannerBreath 3s ease-in-out infinite;
+        0 20px 60px rgba(0,0,0,.55),
+        0 0 34px rgba(255,204,102,.12);
     }
 
-    @keyframes scannerBreath{
-      0%, 100%{
-        border-color: rgba(255, 204, 102, 0.3);
-        box-shadow: inset 0 2px 8px rgba(0,0,0,.5), 0 0 30px rgba(255,204,102,.08);
-      }
-      50%{
-        border-color: rgba(255, 204, 102, 0.5);
-        box-shadow: inset 0 2px 8px rgba(0,0,0,.5), 0 0 50px rgba(255,204,102,.15);
-      }
+    #reader {
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100% !important;
+      border: 0 !important;
+      border-radius: 24px !important;
+      overflow: hidden !important;
+      background: #000 !important;
     }
 
+    /* Заключваме html5-qrcode вътрешните div-ове да не правят правоъгълник */
+    /* Let html5-qrcode manage its inner div layout; only style rendered media. */
+    #reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      object-position: center center !important;
+      border-radius: 24px !important;
+    }
+
+    #reader canvas {
+      max-width: 100% !important;
+      max-height: 100% !important;
+    }
+
+    #reader__dashboard_section {
+      display: none !important;
+    }
+
+    #reader__scan_region {
+      width: 100% !important;
+      min-height: 100% !important;
+    }
+
+    /* Скриваме default картинки/рамки на html5-qrcode, ако се появят */
+    #reader__scan_region img,
+    #reader__scan_region svg {
+      display: none !important;
+    }
+
+    /* Махаме старите псевдо ъгли */
     #reader::before,
-    #reader::after{
-      content:"";
-      position:absolute;
-      width:40px; height:40px;
-      border: 3px solid var(--gold2);
-      z-index:10;
-      opacity:.7;
-      animation: cornerPulse 2s ease-in-out infinite;
-      pointer-events:none;
+    #reader::after {
+      display: none !important;
+      content: none !important;
     }
 
-    #reader::before{
-      top:12px; left:12px;
-      border-right:none;
-      border-bottom:none;
+    /* Истинската premium QR рамка */
+    .qr-square-frame {
+      pointer-events: none;
+      position: absolute;
+      inset: 4.5%;
+      z-index: 30;
+
+      border-radius: 20px;
+      border: 1px solid rgba(255, 204, 102, 0.18);
+      box-shadow:
+        inset 0 0 28px rgba(0,0,0,.35),
+        0 0 24px rgba(255,204,102,.10);
     }
 
-    #reader::after{
-      bottom:12px; right:12px;
-      border-left:none;
-      border-top:none;
+    .qr-corner {
+      position: absolute;
+      width: clamp(46px, 12vw, 78px);
+      height: clamp(46px, 12vw, 78px);
+      border: 5px solid #ffcc66;
+      filter: drop-shadow(0 0 10px rgba(255,204,102,.55));
     }
 
-    @keyframes cornerPulse{
-      0%, 100%{ opacity:.7; }
-      50%{ opacity:1; }
+    .qr-corner.top-left {
+      top: -3px;
+      left: -3px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 18px 0 0 0;
+    }
+
+    .qr-corner.top-right {
+      top: -3px;
+      right: -3px;
+      border-left: none;
+      border-bottom: none;
+      border-radius: 0 18px 0 0;
+    }
+
+    .qr-corner.bottom-left {
+      bottom: -3px;
+      left: -3px;
+      border-right: none;
+      border-top: none;
+      border-radius: 0 0 0 18px;
+    }
+
+    .qr-corner.bottom-right {
+      bottom: -3px;
+      right: -3px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 18px 0;
+    }
+
+    /* iPhone и малки телефони */
+    @media (max-width: 520px) {
+      .wrap {
+        align-items: flex-start;
+        padding: max(14px, env(safe-area-inset-top)) 12px max(22px, env(safe-area-inset-bottom));
+      }
+
+      .shell {
+        width: 100%;
+        padding: 16px 14px;
+        border-radius: 24px;
+      }
+
+      .header {
+        padding-bottom: 16px;
+      }
+
+      .title {
+        font-size: clamp(26px, 8vw, 34px);
+      }
+
+      .subtitle {
+        font-size: 10px;
+        letter-spacing: 2.4px;
+      }
+
+      .grid {
+        gap: 14px;
+      }
+
+      .card {
+        padding: 16px 14px;
+        border-radius: 18px;
+      }
+
+      .qr-reader-shell {
+        margin: 12px auto 10px;
+      }
+
+      .qr-reader-wrap {
+        --qr-size: min(96vw, 60vh, 520px);
+        min-width: 280px;
+        min-height: 280px;
+        border-radius: 22px;
+      }
+
+      #reader,
+      #reader video {
+        border-radius: 22px !important;
+      }
+
+      .qr-square-frame {
+        inset: 4%;
+        border-radius: 18px;
+      }
+
+      .qr-corner {
+        width: 48px;
+        height: 48px;
+        border-width: 4px;
+      }
+    }
+
+    /* Малки iPhone-и: SE / 12 mini / тесни екрани */
+    @media (max-width: 390px) {
+      .shell {
+        padding: 14px 12px;
+      }
+
+      .qr-reader-wrap {
+        --qr-size: min(95vw, 56vh, 390px);
+        min-width: 260px;
+        min-height: 260px;
+      }
+
+      .cardTitle {
+        font-size: 15px;
+      }
+
+      .muted {
+        font-size: 12px;
+      }
+    }
+
+    /* Много ниска височина / iPhone landscape */
+    @media (orientation: landscape) and (max-height: 620px) {
+      .wrap {
+        align-items: flex-start;
+        padding: 10px 14px;
+      }
+
+      .shell {
+        padding: 14px;
+      }
+
+      .header {
+        padding-bottom: 10px;
+      }
+
+      .title {
+        font-size: 26px;
+      }
+
+      .qr-reader-wrap {
+        --qr-size: min(72vh, 58vw, 520px);
+        min-width: 240px;
+        min-height: 240px;
+      }
+    }
+
+    /* iOS Safari стабилизация */
+    @supports (-webkit-touch-callout: none) {
+      .qr-reader-wrap,
+      #reader,
+      #reader video {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+      }
+
+      #reader video {
+        object-fit: cover !important;
+      }
     }
 
     #decodedBox{
@@ -716,12 +920,31 @@
           </div>
 
           <div class="mt-12">
-            <div id="reader"></div>
+            <div class="qr-reader-shell">
+              <div class="qr-reader-wrap">
+                <div id="reader"></div>
+
+                <div class="qr-square-frame" aria-hidden="true">
+                  <span class="qr-corner top-left"></span>
+                  <span class="qr-corner top-right"></span>
+                  <span class="qr-corner bottom-left"></span>
+                  <span class="qr-corner bottom-right"></span>
+                </div>
+              </div>
+            </div>
+            <div class="muted mt-12" id="qrHelpText">
+              Новите QR кодове са оптимизирани: сканира се кратък код, а поръчката се зарежда автоматично. След това натисни Send както досега.
+            </div>
           </div>
 
           <div class="mt-14">
             <div class="muted mb-8">Decoded QR payload</div>
             <div id="decodedBox">(empty)</div>
+          </div>
+
+          <div class="row mt-12">
+            <input id="manualQrInput" type="text" placeholder="Постави QR текст ръчно, ако камерата не го хване">
+            <button id="btnManualQr" class="secondary">Зареди QR</button>
           </div>
 
           <div class="row">

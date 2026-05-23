@@ -27,21 +27,6 @@ window.logout = function () {
   }
 };
 
-// 🔹 Fake realtime animation (stats)
-setInterval(() => {
-  const stats = document.querySelectorAll(".stat-value");
-  if (!stats.length) return;
-
-  const el = stats[Math.floor(Math.random() * stats.length)];
-  el.style.transform = "scale(1.05)";
-  el.style.color = "#4CAF50";
-
-  setTimeout(() => {
-    el.style.transform = "scale(1)";
-    el.style.color = "#333";
-  }, 300);
-}, 5000);
-
 // 🔹 Manager profile modal (profile icon opens this)
 function openProfileModal() {
   const modal = document.getElementById("managerProfileModal");

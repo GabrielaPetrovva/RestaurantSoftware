@@ -5,7 +5,7 @@ import {
   serverTimestamp, arrayUnion, arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { normalizeStationValue, looksLikeDrink } from "../js/station-utils.js";
+import { resolveFinalStation } from "../js/station-utils.js";
 
 /* ================== CONFIG ================== */
 if (!window.firebaseConfig) alert("Липсва config.js (window.firebaseConfig).");
@@ -72,7 +72,6 @@ let tipCustom = 0;
 
 /* ================== HELPERS ================== */
 const euro = (n) => `${(Number(n) || 0).toFixed(2)}€`;
-const DRINK_CATEGORY_HINTS = ["drink", "drinks", "beverage", "beverages", "napit", "coffee", "tea", "bar"];
 const parseEuroInput = (s) => {
   if (!s) return 0;
   const cleaned = String(s).replace(",", ".").replace(/[^\d.]/g, "");
@@ -80,16 +79,14 @@ const parseEuroInput = (s) => {
 };
 
 function resolveStationForMenuItem(menuItem, fallbackName, fallbackCategory) {
-  const direct = normalizeStationValue(menuItem?.station || menuItem?.department || "");
-  if (direct) return direct;
-
-  const category = String(fallbackCategory || menuItem?.category || menuItem?.type || "").trim().toLowerCase();
-  if (category) {
-    const isDrinkCategory = DRINK_CATEGORY_HINTS.some((hint) => category.includes(hint));
-    return isDrinkCategory ? "bar" : "kitchen";
-  }
-
-  return looksLikeDrink(fallbackName || menuItem?.name || menuItem?.id || "") ? "bar" : "kitchen";
+  return resolveFinalStation(
+    {
+      ...menuItem,
+      name: fallbackName || menuItem?.name || menuItem?.id || "",
+      category: fallbackCategory || menuItem?.category || menuItem?.categoryKey || menuItem?.categorySlug || menuItem?.type || ""
+    },
+    menuItem || null
+  );
 }
 
 function setView(viewName) {
@@ -438,7 +435,14 @@ async function addMenuToOrder(m) {
   const itemId = menuId || name;
 
   const items = Array.isArray(currentOrder.items) ? [...currentOrder.items] : [];
-  const idx = items.findIndex(x => String(x.menuId || x.itemId || "").trim() === itemId);
+  const idx = items.findIndex((x) => {
+    const leftId = String(x.menuId || x.itemId || "").trim();
+    const leftName = String(x.name || x.itemId || "").trim().toLowerCase();
+    const rightName = String(name || itemId || "").trim().toLowerCase();
+    const sameItem = leftId && itemId ? leftId === itemId : leftName === rightName;
+    if (!sameItem) return false;
+    return resolveFinalStation(x, m) === station;
+  });
 
   if (idx === -1) {
     items.push({
@@ -455,7 +459,7 @@ async function addMenuToOrder(m) {
     items[idx].menuId = items[idx].menuId || menuId;
     items[idx].itemId = items[idx].itemId || itemId;
     items[idx].category = items[idx].category || category;
-    items[idx].station = items[idx].station || station;
+    items[idx].station = station;
     items[idx].name = items[idx].name || name;
     items[idx].price = Number(items[idx].price) || price;
   }

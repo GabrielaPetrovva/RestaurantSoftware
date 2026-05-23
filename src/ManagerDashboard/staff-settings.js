@@ -41,7 +41,7 @@ function fullName(e) {
   const fn = (e.firstName ?? "").trim();
   const ln = (e.lastName ?? "").trim();
   const n = `${fn} ${ln}`.trim();
-  return n || "—";
+  return String(e.name || e.displayName || n || e.email || e.id || "—").trim();
 }
 function isActive(e) {
   // status: "active" / "inactive"

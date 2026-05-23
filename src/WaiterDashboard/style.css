@@ -1097,18 +1097,216 @@
     background: #f5f4f3;
   }
 
-  @media print {
-    .receipt-modal {
-      background: white;
-      position: static;
-      display: flex;
-    }
+  /* Fiscal receipt modal and print-only receipt output */
+  .receipt-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: none;
+    background: rgba(0,0,0,0.55);
+    padding: 24px;
+    overflow-y: auto;
+  }
 
-    .receipt-footer {
-      display: none;
-    }
+  .receipt-modal.show {
+    display: block;
+  }
 
-    .receipt-header .close-receipt-btn {
-      display: none;
-    }
+  .receipt-content {
+    max-width: 420px;
+    margin: 40px auto;
+    background: #fff;
+    color: #111;
+    border-radius: 14px;
+    overflow: hidden;
+    display: block;
+    max-height: none;
+    box-shadow: 0 20px 70px rgba(0,0,0,0.35);
+  }
+
+  .receipt-header,
+  .receipt-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    color: #111;
+  }
+
+  .receipt-footer {
+    border-top: 1px solid #eee;
+    border-bottom: 0;
+  }
+
+  .receipt-body {
+    padding: 16px;
+    background: #f7f7f7;
+    overflow: visible;
+    flex: none;
+  }
+
+  .fiscal-receipt {
+    width: 320px;
+    max-width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    color: #000;
+    padding: 14px 12px;
+    font-family: "Courier New", "Consolas", monospace;
+    font-size: 12px;
+    line-height: 1.28;
+    border: 1px dashed #999;
+  }
+
+  .fiscal-center {
+    text-align: center;
+  }
+
+  .fiscal-left {
+    text-align: left;
+  }
+
+  .fiscal-right {
+    text-align: right;
+  }
+
+  .fiscal-strong {
+    font-weight: 900;
+  }
+
+  .fiscal-title {
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .fiscal-subtitle {
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .fiscal-small {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+
+  .fiscal-separator {
+    border-top: 1px dashed #000;
+    margin: 6px 0;
+    height: 0;
+  }
+
+  .fiscal-double-separator {
+    border-top: 2px solid #000;
+    margin: 7px 0;
+    height: 0;
+  }
+
+  .fiscal-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .fiscal-row span:first-child {
+    flex: 0 0 auto;
+  }
+
+  .fiscal-row span:last-child {
+    flex: 1 1 auto;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .fiscal-item {
+    margin-bottom: 6px;
+  }
+
+  .fiscal-item-name {
+    font-weight: 800;
+    word-break: break-word;
+    text-transform: uppercase;
+  }
+
+  .fiscal-item-line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .fiscal-item-line span:last-child {
+    text-align: right;
+    font-weight: 700;
+  }
+
+  .fiscal-tax-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .fiscal-total {
+    font-weight: 900;
+    font-size: 14px;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 4px 0;
+    margin-top: 4px;
+  }
+
+  .fiscal-barcode {
+    margin-top: 8px;
+    text-align: center;
+    font-family: "Courier New", monospace;
+    font-size: 18px;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .fiscal-qr-box {
+    width: 24mm;
+    height: 24mm;
+    margin: 8px auto 4px;
+    border: 2px solid #000;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 1px;
+    padding: 2px;
+  }
+
+  .fiscal-qr-box span {
+    background: #000;
+  }
+
+  .fiscal-qr-box span.empty {
+    background: #fff;
+  }
+
+  .print-receipt-btn,
+  .close-receipt-btn-secondary,
+  .close-receipt-btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 800;
+  }
+
+  .print-receipt-btn {
+    background: #111;
+    color: #fff;
+  }
+
+  .close-receipt-btn-secondary,
+  .close-receipt-btn {
+    background: #eee;
+    color: #111;
   }

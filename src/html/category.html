@@ -66,6 +66,7 @@
             <h3><span data-translate="order.total">Общо</span>: <span id="total-price">0.00</span> €</h3>
         </div>
         <button class="generate-qr-btn" onclick="generateQR()" data-translate="order.generateQR">Генерирай QR код</button>
+        <button id="restoreQrBtn" class="generate-qr-btn" style="display:none;" type="button">Покажи последния QR</button>
     </div>
 </div>
 
@@ -74,6 +75,7 @@
     <div class="qr-modal-content">
         <span class="qr-close" onclick="closeQRModal()">&times;</span>
         <div id="qr-code-display" class="qr-code-display"></div>
+        <div id="qrExpiryInfo" class="qr-expiry-info"></div>
     </div>
 </div>
 

@@ -10,23 +10,203 @@
   }
 
   function toNumber(value, fallback) {
-    const n = Number(value);
+    if (value == null || value === "") return fallback;
+    const n = Number(String(value).replace(",", "."));
     return Number.isFinite(n) ? n : fallback;
   }
 
-  function normalizeStation(value) {
-    return toLower(value) === "bar" ? "bar" : "kitchen";
+  function readQty(value, fallback = 1) {
+    const n = Number(String(value ?? "").replace(",", "."));
+    if (!Number.isFinite(n) || n <= 0) return fallback;
+    return n;
   }
+
+  function lineTotal(item) {
+    const totalRaw = item?.totalPrice ?? item?.lineTotal ?? item?.total;
+    const totalPrice = totalRaw == null ? null : toNumber(totalRaw, null);
+    if (Number.isFinite(Number(totalPrice))) return Number(totalPrice);
+    return toNumber(item?.price, 0) * readQty(item?.qty ?? item?.quantity ?? item?.count ?? item?.q ?? item?.amount, 1);
+  }
+
+  const CAKE_WORDS = ["торта", "торти", "cake", "cakes", "cheesecake", "чийзкейк", "tiramisu", "тирамису"];
+
+  function looksLikeCakeItem(item) {
+    const text = [
+      item?.name,
+      item?.title,
+      item?.itemName,
+      item?.productName,
+      item?.category,
+      item?.type,
+      item?.group,
+      item?.menuId,
+      item?.itemId
+    ].join(" ").toLowerCase();
+    return CAKE_WORDS.some((word) => text.includes(word));
+  }
+
+  function normalizeStation(value, item) {
+    const station = toLower(value);
+    if (station === "bar") return "bar";
+    if (looksLikeCakeItem(item)) return "bar";
+    return "kitchen";
+  }
+
+  const READY_DESSERT_WORDS = [
+    "торта", "торти", "cake", "cakes", "шоколадова торта", "чийзкейк", "cheesecake",
+    "тирамису", "tiramisu", "баклава", "baklava", "сладолед", "ice cream",
+    "паста", "пасти", "еклер", "еклери", "мъфин", "muffin", "крем карамел",
+    "крем", "десерт в чаша"
+  ];
+  const MADE_TO_ORDER_DESSERT_WORDS = [
+    "палачинка", "палачинки", "pancake", "pancakes", "гофрета", "гофрети",
+    "waffle", "waffles", "суфле", "souffle", "катма", "катми",
+    "fried dessert", "hot dessert"
+  ];
+  const DESSERT_CATEGORY_WORDS = [
+    "dessert", "desserts", "desert", "deserts", "десерт", "десерти",
+    "сладки", "sweet", "sweets"
+  ];
+  const PASTA_FOOD_WORDS = [
+    "карбонара", "carbonara", "болонезе", "bolognese", "спагети",
+    "spaghetti", "макарони", "macaroni", "пене", "penne",
+    "tagliatelle", "талятели"
+  ];
+  const DRINK_WORDS = [
+    "напитка", "напитки", "drink", "drinks", "beverage", "beverages",
+    "вода", "water", "минерална", "минерал", "газирана", "газира", "сода", "soda", "тоник",
+    "cola", "кола", "coke", "pepsi", "пепси", "fanta", "фанта", "sprite", "спрайт",
+    "сок", "juice", "фреш", "fresh", "лимонада", "lemonade", "айрян", "ayran",
+    "кафе", "coffee", "еспресо", "espresso", "капучино", "cappuccino",
+    "лате", "латте", "latte", "макиато", "macchiato", "американо", "americano",
+    "фрапе", "frappe", "мока", "mocha", "чай", "tea",
+    "бира", "beer", "вино", "wine", "бяло вино", "white wine", "червено вино", "red wine",
+    "розе", "rose", "rosé", "просеко", "prosecco", "шампанско", "champagne",
+    "уиски", "whisky", "whiskey", "водка", "vodka", "ракия", "rakia",
+    "ром", "rum", "джин", "gin", "текила", "tequila", "коняк", "cognac",
+    "бренди", "brandy", "ликьор", "liqueur", "коктейл", "cocktail",
+    "мохито", "mojito", "маргарита", "margarita", "джин тоник", "gin tonic",
+    "аперол", "aperol", "сприц", "spritz", "ред бул", "red bull",
+    "monster", "монстър", "енергийна", "energy", "енерг"
+  ];
+  const DRINK_CATEGORY_WORDS = [
+    "drink", "drinks", "beverage", "beverages", "bar", "бар",
+    "напитка", "напитки", "napit", "напит",
+    "alcohol", "алкохол", "coffee", "кафе", "tea", "чай",
+    "wine", "вино", "beer", "бира", "cocktail", "коктейл"
+  ];
+
+  function hasAnyKeyword(text, keywords) {
+    const source = String(text || "").toLowerCase();
+    return keywords.some((word) => source.includes(String(word).toLowerCase()));
+  }
+
+  function normalizeStationValue(value) {
+    const station = toLower(value);
+    if (["bar", "drink", "drinks", "beverage", "beverages", "napitki", "napitka", "бар", "напитки"].includes(station)) {
+      return "bar";
+    }
+    if (["kitchen", "food", "kitchenfood", "cook", "kuhnq", "kuhnya", "kuhnia", "кухня"].includes(station)) {
+      return "kitchen";
+    }
+    return "";
+  }
+
+  function buildStationText(item) {
+    return [
+      item?.name,
+      item?.title,
+      item?.itemName,
+      item?.productName,
+      item?.itemId,
+      item?.menuId,
+      item?.category,
+      item?.categoryKey,
+      item?.categorySlug,
+      item?.type,
+      item?.station,
+      item?.department
+    ].join(" ").toLowerCase();
+  }
+
+  function looksLikeReadyDessert(item) {
+    const text = buildStationText(item);
+    if (hasAnyKeyword(text, ["паста", "пасти"]) && hasAnyKeyword(text, PASTA_FOOD_WORDS)) {
+      return false;
+    }
+    return hasAnyKeyword(text, READY_DESSERT_WORDS);
+  }
+
+  function looksLikeMadeToOrderDessert(item) {
+    return hasAnyKeyword(buildStationText(item), MADE_TO_ORDER_DESSERT_WORDS);
+  }
+
+  function looksLikePastaFood(item) {
+    const text = buildStationText(item);
+    return hasAnyKeyword(text, ["паста", "пасти"]) && hasAnyKeyword(text, PASTA_FOOD_WORDS);
+  }
+
+  function looksLikeDessertCategory(item) {
+    const text = [
+      item?.category,
+      item?.categoryKey,
+      item?.categorySlug,
+      item?.type
+    ].filter(Boolean).join(" ").toLowerCase();
+    return hasAnyKeyword(text, DESSERT_CATEGORY_WORDS);
+  }
+
+  function looksLikeDrink(item) {
+    if (item?.isDrink === true) return true;
+    const categoryText = [item?.category, item?.categoryKey, item?.categorySlug, item?.type].filter(Boolean).join(" ").toLowerCase();
+    if (hasAnyKeyword(categoryText, DRINK_CATEGORY_WORDS)) return true;
+    return hasAnyKeyword(buildStationText(item), DRINK_WORDS);
+  }
+
+  function logStationRouting(item, directStation, finalStation, reason) {
+    console.log("[station-routing]", {
+      name: String(item?.name || item?.title || item?.productName || item?.itemId || item?.menuId || "").trim(),
+      category: String(item?.category || item?.categoryKey || item?.categorySlug || item?.type || "").trim(),
+      directStation,
+      finalStation,
+      reason
+    });
+  }
+
+  function resolveFinalStationLocal(item) {
+    const source = item || {};
+    const directStation = normalizeStationValue(
+      source.station || source.targetStation || source.department || source.prepStation || source.destination
+    );
+    const done = (finalStation, reason) => {
+      logStationRouting(source, directStation, finalStation, reason);
+      return finalStation;
+    };
+
+    if (looksLikeMadeToOrderDessert(source)) return done("kitchen", "made-to-order-dessert");
+    if (looksLikePastaFood(source)) return done("kitchen", "default-kitchen");
+    if (looksLikeDrink(source)) return done("bar", "drink");
+    if (looksLikeReadyDessert(source)) return done("bar", "ready-dessert");
+    if (directStation === "bar") return done("bar", "direct-bar");
+    if (directStation === "kitchen") return done("kitchen", "direct-kitchen");
+    if (looksLikeDessertCategory(source)) return done("kitchen", "dessert-category-default-kitchen");
+    return done("kitchen", "default-kitchen");
+  }
+
+  normalizeStation = function normalizeStation(value, item) {
+    return resolveFinalStationLocal({ ...(item || {}), station: value || item?.station || "" });
+  };
 
   function normalizeItems(items) {
     return (Array.isArray(items) ? items : [])
       .map((item) => ({
         name: String(item?.name || item?.itemId || item?.menuId || "Item").trim(),
-        qty: Math.max(1, toNumber(item?.qty, 1)),
+        qty: readQty(item?.qty ?? item?.quantity ?? item?.count ?? item?.q ?? item?.amount, 1),
         price: toNumber(item?.price, 0),
+        totalPrice: item?.totalPrice ?? item?.lineTotal ?? item?.total ?? null,
         menuId: toId(item?.menuId || item?.itemId),
-        category: String(item?.category || "").trim(),
-        station: normalizeStation(item?.station),
+        category: String(item?.category || item?.categoryKey || item?.categorySlug || "").trim(),
+        station: normalizeStation(item?.station, item),
         notes: String(item?.notes || item?.note || "").trim()
       }))
       .filter((item) => item.name);
@@ -111,8 +291,8 @@
     let totalDelta = 0;
     let countDelta = 0;
     items.forEach((item) => {
-      totalDelta += toNumber(item.price, 0) * toNumber(item.qty, 1);
-      countDelta += toNumber(item.qty, 1);
+      totalDelta += lineTotal(item);
+      countDelta += readQty(item.qty, 1);
     });
     return { totalDelta, countDelta };
   }
@@ -183,11 +363,12 @@
       orderId,
       tableId,
       name: item.name,
-      qty: toNumber(item.qty, 1),
+      qty: readQty(item.qty, 1),
       price: toNumber(item.price, 0),
+      totalPrice: lineTotal(item),
       menuId: item.menuId || "",
       category: item.category || "",
-      station: normalizeStation(item.station),
+      station: normalizeStation(item.station, item),
       notes: item.notes || "",
       status: "new",
       createdAt: nowTs,
@@ -202,8 +383,8 @@
   function itemsMatch(leftItem, rightItem) {
     const leftMenuId = toId(leftItem?.menuId || leftItem?.itemId);
     const rightMenuId = toId(rightItem?.menuId || rightItem?.itemId);
-    const leftStation = normalizeStation(leftItem?.station);
-    const rightStation = normalizeStation(rightItem?.station);
+    const leftStation = normalizeStation(leftItem?.station, leftItem);
+    const rightStation = normalizeStation(rightItem?.station, rightItem);
     const leftNotes = toLower(leftItem?.notes || leftItem?.note || "");
     const rightNotes = toLower(rightItem?.notes || rightItem?.note || "");
 
@@ -228,22 +409,26 @@
   function mergeIncomingItems(items) {
     const merged = [];
     (Array.isArray(items) ? items : []).forEach((item) => {
-      const incomingQty = Math.max(1, toNumber(item?.qty, 1));
+      const incomingQty = readQty(item?.qty ?? item?.quantity ?? item?.count ?? item?.q ?? item?.amount, 1);
       const idx = merged.findIndex((entry) => itemsMatch(entry, item));
       if (idx < 0) {
         merged.push({
           ...item,
-          qty: incomingQty
+          qty: incomingQty,
+          totalPrice: lineTotal({ ...item, qty: incomingQty })
         });
         return;
       }
 
-      merged[idx].qty = toNumber(merged[idx].qty, 1) + incomingQty;
+      const existingTotal = lineTotal(merged[idx]);
+      const incomingTotal = lineTotal({ ...item, qty: incomingQty });
+      merged[idx].qty = readQty(merged[idx].qty, 1) + incomingQty;
+      merged[idx].totalPrice = existingTotal + incomingTotal;
       if (!merged[idx].menuId && item.menuId) merged[idx].menuId = item.menuId;
       if (!merged[idx].name && item.name) merged[idx].name = item.name;
       if (!merged[idx].category && item.category) merged[idx].category = item.category;
       if (!merged[idx].notes && item.notes) merged[idx].notes = item.notes;
-      if (!merged[idx].station && item.station) merged[idx].station = item.station;
+      merged[idx].station = normalizeStation(item.station, item);
     });
     return merged;
   }
@@ -560,11 +745,12 @@
               return;
             }
 
-            const nextQty = toNumber(match.data.qty, 0) + toNumber(item.qty, 1);
+            const nextQty = readQty(match.data.qty, 0) + readQty(item.qty, 1);
             const patch = {
               orderId: selected.id,
               tableId,
               qty: nextQty,
+              totalPrice: lineTotal(match.data) + lineTotal(item),
               updatedAt: nowTs,
               status: "new"
             };
@@ -584,9 +770,7 @@
             if (!String(match.data.notes || match.data.note || "").trim() && String(item.notes || "").trim()) {
               patch.notes = String(item.notes).trim();
             }
-            if (!String(match.data.station || "").trim() && String(item.station || "").trim()) {
-              patch.station = normalizeStation(item.station);
-            }
+            patch.station = normalizeStation(item.station, item);
 
             tx.set(match.ref, patch, { merge: true });
             match.data = { ...match.data, ...patch };
@@ -898,11 +1082,12 @@
               return;
             }
 
-            const nextQty = toNumber(match.data.qty, 0) + toNumber(item.qty, 1);
+            const nextQty = readQty(match.data.qty, 0) + readQty(item.qty, 1);
             const patch = {
               orderId: selected.id,
               tableId,
               qty: nextQty,
+              totalPrice: lineTotal(match.data) + lineTotal(item),
               updatedAt: nowTs,
               status: "new"
             };
@@ -922,9 +1107,7 @@
             if (!String(match.data.notes || match.data.note || "").trim() && String(item.notes || "").trim()) {
               patch.notes = String(item.notes).trim();
             }
-            if (!String(match.data.station || "").trim() && String(item.station || "").trim()) {
-              patch.station = normalizeStation(item.station);
-            }
+            patch.station = normalizeStation(item.station, item);
 
             tx.set(match.ref, patch, { merge: true });
             match.data = { ...match.data, ...patch };

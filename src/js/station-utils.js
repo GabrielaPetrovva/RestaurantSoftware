@@ -9,7 +9,10 @@ const BAR_STATION_VALUES = new Set([
   "napitki",
   "napitka",
   "бар",
-  "напитки"
+  "напитка",
+  "напитки",
+  "Р±Р°СЂ",
+  "РЅР°РїРёС‚РєРё"
 ]);
 
 const KITCHEN_STATION_VALUES = new Set([
@@ -21,67 +24,133 @@ const KITCHEN_STATION_VALUES = new Set([
   "kuhnya",
   "kuhnia",
   "kuhnenska",
+  "кухня",
   "готвено",
-  "кухня"
+  "РіРѕС‚РІРµРЅРѕ",
+  "РєСѓС…РЅСЏ"
 ]);
 
-const DRINK_CATEGORY_HINTS = [
-  "drink",
-  "drinks",
-  "beverage",
-  "beverages",
-  "napit",
-  "coffee",
-  "tea",
-  "bar"
+const DRINK_CATEGORY_WORDS = [
+  "drink", "drinks",
+  "beverage", "beverages",
+  "bar", "бар",
+  "напитка", "напитки", "napit", "напит",
+  "alcohol", "алкохол",
+  "coffee", "кафе",
+  "tea", "чай",
+  "wine", "вино",
+  "beer", "бира",
+  "cocktail", "коктейл"
 ];
 
-const DRINK_NAME_KEYWORDS = [
-  "drink",
-  "drinks",
-  "beverage",
-  "beverages",
-  "juice",
-  "tea",
-  "coffee",
-  "water",
-  "sparkling",
-  "soda",
-  "cola",
-  "fanta",
-  "sprite",
-  "red bull",
-  "energy",
-  "beer",
-  "wine",
-  "whiskey",
-  "vodka",
-  "gin",
-  "rum",
-  "rakia",
-  "ayran",
-  "lemonade",
-  "чай",
-  "кафе",
-  "вода",
-  "минерална",
-  "газирана",
-  "сок",
-  "бира",
-  "вино",
-  "кола",
-  "фанта",
-  "спрайт",
-  "ред бул",
-  "енергийна",
-  "уиски",
-  "водка",
-  "джин",
-  "ром",
-  "ракия",
-  "айрян",
-  "лимонада"
+const DRINK_WORDS = [
+  "напитка", "напитки", "drink", "drinks", "beverage", "beverages",
+
+  "вода", "water", "минерална", "минерал", "газирана", "газира",
+  "sparkling", "сода", "soda", "тоник",
+  "cola", "кола", "coke", "pepsi", "пепси",
+  "fanta", "фанта", "sprite", "спрайт",
+  "сок", "juice", "фреш", "fresh",
+  "лимонада", "lemonade", "айрян", "ayran",
+
+  "кафе", "coffee", "еспресо", "espresso",
+  "капучино", "cappuccino", "лате", "латте", "latte",
+  "макиато", "macchiato", "американо", "americano",
+  "фрапе", "frappe", "мока", "mocha",
+
+  "чай", "tea",
+
+  "бира", "beer", "вино", "wine",
+  "бяло вино", "white wine", "червено вино", "red wine",
+  "розе", "rose", "rosé", "просеко", "prosecco",
+  "шампанско", "champagne",
+
+  "уиски", "whisky", "whiskey", "водка", "vodka",
+  "ракия", "rakia", "ром", "rum", "джин", "gin",
+  "текила", "tequila", "коняк", "cognac",
+  "бренди", "brandy", "ликьор", "liqueur",
+
+  "коктейл", "cocktail", "мохито", "mojito",
+  "маргарита", "margarita", "джин тоник", "gin tonic",
+  "аперол", "aperol", "сприц", "spritz",
+
+  "ред бул", "red bull", "monster", "монстър",
+  "енергийна", "energy", "енерг"
 ];
+
+export const READY_DESSERT_WORDS = [
+  "торта",
+  "торти",
+  "cake",
+  "cakes",
+  "шоколадова торта",
+  "чийзкейк",
+  "cheesecake",
+  "тирамису",
+  "tiramisu",
+  "баклава",
+  "baklava",
+  "сладолед",
+  "ice cream",
+  "паста",
+  "пасти",
+  "еклер",
+  "еклери",
+  "мъфин",
+  "muffin",
+  "крем карамел",
+  "крем",
+  "десерт в чаша"
+];
+
+export const MADE_TO_ORDER_DESSERT_WORDS = [
+  "палачинка",
+  "палачинки",
+  "pancake",
+  "pancakes",
+  "гофрета",
+  "гофрети",
+  "waffle",
+  "waffles",
+  "суфле",
+  "souffle",
+  "катма",
+  "катми",
+  "fried dessert",
+  "hot dessert"
+];
+
+export const DESSERT_CATEGORY_WORDS = [
+  "dessert",
+  "desserts",
+  "desert",
+  "deserts",
+  "десерт",
+  "десерти",
+  "сладки",
+  "sweet",
+  "sweets"
+];
+
+export const PASTA_FOOD_WORDS = [
+  "карбонара",
+  "carbonara",
+  "болонезе",
+  "bolognese",
+  "спагети",
+  "spaghetti",
+  "макарони",
+  "macaroni",
+  "пене",
+  "penne",
+  "tagliatelle",
+  "талятели"
+];
+
+export function hasAnyKeyword(text, keywords) {
+  const source = String(text || "").toLowerCase();
+  return keywords.some((word) => source.includes(String(word).toLowerCase()));
+}
 
 export function normalizeStationValue(value) {
   const key = norm(value);
@@ -91,16 +160,159 @@ export function normalizeStationValue(value) {
   return "";
 }
 
-export function looksLikeDrink(value) {
-  const text = norm(value);
-  if (!text) return false;
-  return DRINK_NAME_KEYWORDS.some((keyword) => text.includes(keyword));
+export function buildStationText(item, resolvedMenu) {
+  return [
+    item?.name,
+    item?.title,
+    item?.productName,
+    item?.itemName,
+    item?.itemId,
+    item?.menuId,
+    item?.category,
+    item?.categoryKey,
+    item?.categorySlug,
+    item?.type,
+    item?.station,
+    item?.department,
+    resolvedMenu?.name,
+    resolvedMenu?.title,
+    resolvedMenu?.category,
+    resolvedMenu?.categoryKey,
+    resolvedMenu?.categorySlug,
+    resolvedMenu?.type,
+    resolvedMenu?.station,
+    resolvedMenu?.department
+  ].filter(Boolean).join(" ").toLowerCase();
 }
 
-function categoryLooksDrink(value) {
-  const key = norm(value);
-  if (!key) return false;
-  return DRINK_CATEGORY_HINTS.some((hint) => key.includes(hint));
+export function looksLikeDessertCategory(item, resolvedMenu = null) {
+  const text = [
+    item?.category,
+    item?.categoryKey,
+    item?.categorySlug,
+    item?.type,
+    resolvedMenu?.category,
+    resolvedMenu?.categoryKey,
+    resolvedMenu?.categorySlug,
+    resolvedMenu?.type
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return hasAnyKeyword(text, DESSERT_CATEGORY_WORDS);
+}
+
+export function looksLikeMadeToOrderDessert(item, resolvedMenu = null) {
+  const text = buildStationText(item, resolvedMenu);
+  return hasAnyKeyword(text, MADE_TO_ORDER_DESSERT_WORDS);
+}
+
+export function looksLikePastaFood(item, resolvedMenu = null) {
+  const text = buildStationText(item, resolvedMenu);
+  return hasAnyKeyword(text, ["паста", "пасти"]) && hasAnyKeyword(text, PASTA_FOOD_WORDS);
+}
+
+export function looksLikeReadyDessert(item, resolvedMenu = null) {
+  const text = typeof item === "string" && !resolvedMenu
+    ? norm(item)
+    : buildStationText(item, resolvedMenu);
+
+  if (hasAnyKeyword(text, ["паста", "пасти"]) && hasAnyKeyword(text, PASTA_FOOD_WORDS)) return false;
+
+  return hasAnyKeyword(text, READY_DESSERT_WORDS);
+}
+
+export function looksLikeDrink(item, resolvedMenu = null) {
+  if (item && typeof item === "object") {
+    if (item?.isDrink === true || resolvedMenu?.isDrink === true) return true;
+
+    const categoryText = [
+      item?.category,
+      item?.categoryKey,
+      item?.categorySlug,
+      item?.type,
+      resolvedMenu?.category,
+      resolvedMenu?.categoryKey,
+      resolvedMenu?.categorySlug,
+      resolvedMenu?.type
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    if (hasAnyKeyword(categoryText, DRINK_CATEGORY_WORDS)) return true;
+
+    return hasAnyKeyword(buildStationText(item, resolvedMenu), DRINK_WORDS);
+  }
+
+  const text = norm(item);
+  return hasAnyKeyword(text, DRINK_WORDS) || hasAnyKeyword(text, DRINK_CATEGORY_WORDS);
+}
+
+export function looksLikeCake(value, resolvedMenu = null) {
+  return looksLikeReadyDessert(value, resolvedMenu);
+}
+
+function stationLogName(item, resolvedMenu) {
+  return String(
+    item?.name ||
+    item?.title ||
+    item?.productName ||
+    item?.itemName ||
+    resolvedMenu?.name ||
+    resolvedMenu?.title ||
+    item?.itemId ||
+    item?.menuId ||
+    ""
+  ).trim();
+}
+
+function stationLogCategory(item, resolvedMenu) {
+  return String(
+    item?.category ||
+    item?.categoryKey ||
+    item?.categorySlug ||
+    item?.type ||
+    resolvedMenu?.category ||
+    resolvedMenu?.categoryKey ||
+    resolvedMenu?.categorySlug ||
+    resolvedMenu?.type ||
+    ""
+  ).trim();
+}
+
+function logStationRouting(item, resolvedMenu, directStation, finalStation, reason) {
+  console.log("[station-routing]", {
+    name: stationLogName(item, resolvedMenu),
+    category: stationLogCategory(item, resolvedMenu),
+    directStation,
+    finalStation,
+    reason
+  });
+}
+
+export function resolveFinalStation(item, resolvedMenu = null) {
+  const directStation = normalizeStationValue(
+    item?.station ||
+    item?.targetStation ||
+    item?.department ||
+    item?.prepStation ||
+    item?.destination ||
+    resolvedMenu?.station ||
+    resolvedMenu?.department ||
+    resolvedMenu?.prepStation ||
+    resolvedMenu?.destination ||
+    ""
+  );
+
+  const done = (finalStation, reason) => {
+    logStationRouting(item, resolvedMenu, directStation, finalStation, reason);
+    return finalStation;
+  };
+
+  if (looksLikeMadeToOrderDessert(item, resolvedMenu)) return done("kitchen", "made-to-order-dessert");
+  if (looksLikePastaFood(item, resolvedMenu)) return done("kitchen", "default-kitchen");
+  if (looksLikeDrink(item, resolvedMenu)) return done("bar", "drink");
+  if (looksLikeReadyDessert(item, resolvedMenu)) return done("bar", "ready-dessert");
+  if (directStation === "bar") return done("bar", "direct-bar");
+  if (directStation === "kitchen") return done("kitchen", "direct-kitchen");
+  if (looksLikeDessertCategory(item, resolvedMenu)) return done("kitchen", "dessert-category-default-kitchen");
+  return done("kitchen", "default-kitchen");
 }
 
 export function buildMenuIndexByIdAndName(rows = []) {
@@ -119,7 +331,7 @@ export function buildMenuIndexByIdAndName(rows = []) {
       raw.destination ||
       ""
     );
-    const category = String(raw.category || raw.type || raw.group || "").trim();
+    const category = String(raw.category || raw.categoryKey || raw.type || raw.group || "").trim();
 
     const row = {
       ...raw,
@@ -150,6 +362,7 @@ export function resolveMenuForItem(item, menuIndex = {}) {
     item?.name,
     item?.title,
     item?.itemName,
+    item?.productName,
     item?.itemId,
     item?.menuId
   ];
@@ -163,42 +376,8 @@ export function resolveMenuForItem(item, menuIndex = {}) {
 }
 
 export function resolveStationForItem(item, resolvedMenu, displayName = "") {
-  const direct = normalizeStationValue(
-    item?.station ||
-    item?.department ||
-    item?.prepStation ||
-    item?.destination ||
-    ""
+  return resolveFinalStation(
+    displayName ? { ...item, name: displayName || item?.name } : item,
+    resolvedMenu
   );
-  if (direct) return direct;
-
-  const menuStation = normalizeStationValue(
-    resolvedMenu?.station ||
-    resolvedMenu?.department ||
-    resolvedMenu?.prepStation ||
-    resolvedMenu?.destination ||
-    ""
-  );
-  if (menuStation) return menuStation;
-
-  const category = String(
-    item?.category ||
-    item?.type ||
-    item?.group ||
-    resolvedMenu?.category ||
-    resolvedMenu?.type ||
-    resolvedMenu?.group ||
-    ""
-  ).trim();
-  if (category) return categoryLooksDrink(category) ? "bar" : "kitchen";
-
-  const fallbackName = String(
-    displayName ||
-    item?.name ||
-    resolvedMenu?.name ||
-    item?.itemId ||
-    item?.menuId ||
-    ""
-  ).trim();
-  return looksLikeDrink(fallbackName) ? "bar" : "kitchen";
 }

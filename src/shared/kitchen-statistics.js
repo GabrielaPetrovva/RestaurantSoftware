@@ -188,7 +188,7 @@ export function buildKitchenHeatmapData(
 
 export function classifyKitchenHeatmapCount(count) {
   const value = Number(count) || 0;
-  if (value >= 51) return "heat-high";
-  if (value >= 31) return "heat-medium";
+  if (value >= 10) return "heat-high";
+  if (value >= 4) return "heat-medium";
   return "heat-low";
 }

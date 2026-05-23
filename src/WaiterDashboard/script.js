@@ -23,6 +23,7 @@ import {
   WAITER_NOTIFICATIONS_COLLECTION,
   WAITER_NOTIFICATIONS_LIMIT
 } from "../shared/waiter-notifications.js";
+import { resolveFinalStation } from "../js/station-utils.js";
 
 /* ======================= CONFIG ======================= */
 if (!window.firebaseConfig) {
@@ -519,55 +520,55 @@ function parseEuroInput(s) {
 }
 
 const BG_DRINK_WORDS = [
-  "чай",
-  "кафе",
-  "вода",
-  "минерална",
-  "бира",
-  "вино",
-  "сок",
-  "кола",
-  "фанта",
-  "спрайт",
-  "енергийна",
-  "редбул",
-  "уиски",
-  "водка",
-  "ракия",
-  "ром",
-  "джин",
-  "лимонада",
-  "айрян"
+  "напитка", "напитки", "drink", "drinks", "beverage", "beverages",
+  "вода", "water", "минерална", "минерал", "газирана", "газира", "сода", "soda", "тоник",
+  "cola", "кола", "coke", "pepsi", "пепси", "fanta", "фанта", "sprite", "спрайт",
+  "сок", "juice", "фреш", "fresh", "лимонада", "lemonade", "айрян", "ayran",
+  "кафе", "coffee", "еспресо", "espresso", "капучино", "cappuccino",
+  "лате", "латте", "latte", "макиато", "macchiato", "американо", "americano",
+  "фрапе", "frappe", "мока", "mocha", "чай", "tea",
+  "бира", "beer", "вино", "wine", "бяло вино", "white wine", "червено вино", "red wine",
+  "розе", "rose", "rosé", "просеко", "prosecco", "шампанско", "champagne",
+  "уиски", "whisky", "whiskey", "водка", "vodka", "ракия", "rakia",
+  "ром", "rum", "джин", "gin", "текила", "tequila", "коняк", "cognac",
+  "бренди", "brandy", "ликьор", "liqueur", "коктейл", "cocktail",
+  "мохито", "mojito", "маргарита", "margarita", "джин тоник", "gin tonic",
+  "аперол", "aperol", "сприц", "spritz", "ред бул", "red bull",
+  "редбул", "monster", "монстър", "енергийна", "energy", "енерг"
 ];
+const CAKE_WORDS = ["торта", "торти", "cake", "cakes", "cheesecake", "чийзкейк", "tiramisu", "тирамису"];
+
+function looksLikeCakeNameCategory(name, category = "") {
+  const text = `${name || ""} ${category || ""}`.toLowerCase();
+  return CAKE_WORDS.some((word) => text.includes(word));
+}
 
 function resolveStationFallbackByName(name) {
   const n = String(name || "").toLowerCase();
+  if (looksLikeCakeNameCategory(n)) return "bar";
   return BG_DRINK_WORDS.some((w) => n.includes(w)) ? "bar" : "kitchen";
 }
 
 async function resolveStation(dbInstance, item) {
-  const direct = String(item?.station || "").toLowerCase().trim();
-  if (direct === "bar" || direct === "kitchen") return direct;
-
+  const itemName = String(item?.name || item?.itemId || item?.menuId || "").trim();
+  const itemCategory = String(item?.category || item?.categoryKey || item?.categorySlug || item?.type || "").trim();
+  let menuData = null;
   const menuId = String(item?.menuId || "").trim();
   if (menuId) {
     try {
       const snap = await getDoc(doc(dbInstance, "menus", menuId));
       if (snap.exists()) {
-        const menu = snap.data() || {};
-        const st = String(menu.station || "").toLowerCase().trim();
-        if (st === "bar" || st === "kitchen") return st;
-
-        const cat = String(menu.category || menu.type || "").toLowerCase();
-        if (cat.includes("напитки") || cat.includes("drink")) return "bar";
-        if (menu.isDrink === true) return "bar";
+        menuData = { id: snap.id, ...(snap.data() || {}) };
       }
     } catch (err) {
       console.warn("resolveStation menu lookup failed:", { menuId, err });
     }
   }
 
-  return resolveStationFallbackByName(item?.name);
+  return resolveFinalStation(
+    { ...item, name: itemName, category: itemCategory },
+    menuData
+  );
 }
 
 function summarizeOrderItems(items) {
@@ -585,12 +586,13 @@ function summarizeOrderItems(items) {
 
 function mergeOrderSummaryItems(existingItems, incomingItem) {
   const out = Array.isArray(existingItems) ? existingItems.map((it) => ({ ...it })) : [];
+  const resolvedStation = resolveFinalStation(incomingItem);
   const next = {
     itemId: String(incomingItem?.itemId || incomingItem?.menuId || incomingItem?.name || "Item").trim(),
     menuId: String(incomingItem?.menuId || "").trim(),
     name: String(incomingItem?.name || incomingItem?.itemId || "Item").trim(),
     category: String(incomingItem?.category || "").trim(),
-    station: String(incomingItem?.station || "kitchen").toLowerCase() === "bar" ? "bar" : "kitchen",
+    station: resolvedStation,
     price: Number(incomingItem?.price || 0) || 0,
     qty: Math.max(1, Number(incomingItem?.qty || 1) || 1)
   };
@@ -600,7 +602,7 @@ function mergeOrderSummaryItems(existingItems, incomingItem) {
     const rightId = String(next.menuId || next.itemId || "").trim().toLowerCase();
     const leftName = String(it?.name || it?.itemId || "").trim().toLowerCase();
     const rightName = String(next.name || next.itemId || "").trim().toLowerCase();
-    const leftStation = String(it?.station || "").trim().toLowerCase();
+    const leftStation = resolveFinalStation(it);
     const rightStation = String(next.station || "").trim().toLowerCase();
     return (leftId && rightId ? leftId === rightId : leftName === rightName) && leftStation === rightStation;
   });
@@ -615,7 +617,7 @@ function mergeOrderSummaryItems(existingItems, incomingItem) {
   if (!out[idx].category && next.category) out[idx].category = next.category;
   if (!out[idx].name && next.name) out[idx].name = next.name;
   if (!Number.isFinite(Number(out[idx].price))) out[idx].price = next.price;
-  out[idx].station = out[idx].station === "bar" ? "bar" : next.station;
+  out[idx].station = next.station;
   return out;
 }
 
@@ -1264,87 +1266,525 @@ customTipEl.addEventListener("input", () => {
 });
 
 /* ======================= RECEIPT ======================= */
-function showReceipt(orderData, items, baseAmount, tipAmount, payMethod, tableNumber) {
-  if (!receiptModal || !receiptBody) return;
+let lastReceiptHtml = "";
 
-  const date = new Date();
-  const dateStr = date.toLocaleString(currentLang === 'bg' ? 'bg-BG' : 'en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+function escapeReceiptText(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (m) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[m]));
+}
 
-  const totalAmount = baseAmount + tipAmount;
+function formatReceiptMoney(value) {
+  return `${(Number(value) || 0).toFixed(2)} €`;
+}
 
-  let itemsHtml = '';
-  if (items && items.length > 0) {
-    items.forEach((item) => {
-      const name = item.name || item.itemId || 'Item';
-      const price = Number(item.price) || 0;
-      const qty = Number(item.qty) || 0;
-      const lineTotal = price * qty;
-      
-      itemsHtml += `
-        <div class="receipt-item">
-          <div>
-            <div class="receipt-item-name">${name}</div>
-            <div class="receipt-item-details">${t('Quantity')}: ${qty} Г— ${euro(price)}</div>
-          </div>
-          <div class="receipt-item-price">${euro(lineTotal)}</div>
+function formatReceiptDate(date = new Date()) {
+  return new Intl.DateTimeFormat("bg-BG", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function getPaymentMethodLabel(method) {
+  const value = String(method || "").toLowerCase();
+  if (value === "cash") return "В брой";
+  if (value === "card") return "Карта";
+  return method || "—";
+}
+
+function generateReceiptNumber() {
+  return String(Date.now()).slice(-8).padStart(8, "0");
+}
+
+function getReceiptTableLabel(order, selectedTableId) {
+  return order?.tableNumber || order?.tableName || order?.tableLabel || order?.tableId || selectedTableId || "—";
+}
+
+function getReceiptWaiterLabel(employee, fallbackUid) {
+  return employee?.name || employee?.firstName || employee?.email || fallbackUid || "—";
+}
+
+function buildFiscalReceiptHtml({
+  order,
+  items,
+  subtotal,
+  tip,
+  total,
+  paymentMethod,
+  tableId,
+  waiter,
+  receiptNo
+}) {
+  const safeItems = Array.isArray(items) ? items : [];
+  const nowText = formatReceiptDate(new Date());
+  const tableText = getReceiptTableLabel(order, tableId);
+  const waiterText = getReceiptWaiterLabel(waiter, order?.waiterId);
+  const paymentLabel = getPaymentMethodLabel(paymentMethod);
+  const finalReceiptNo = receiptNo || generateReceiptNumber();
+
+  const subtotalNumber = Number(subtotal) || 0;
+  const tipNumber = Number(tip) || 0;
+  const totalNumber = Number(total) || subtotalNumber + tipNumber;
+
+  const vatBase = totalNumber / 1.2;
+  const vatAmount = totalNumber - vatBase;
+
+  const rowsHtml = safeItems.map((item, index) => {
+    const name = escapeReceiptText(item?.name || item?.itemId || `Артикул ${index + 1}`);
+    const qty = Number(item?.qty ?? item?.quantity ?? 1) || 1;
+    const price = Number(item?.price || 0) || 0;
+    const lineTotal = Number.isFinite(Number(item?.totalPrice))
+      ? Number(item.totalPrice)
+      : qty * price;
+
+    return `
+      <div class="fiscal-item">
+        <div class="fiscal-item-name">${index + 1}. ${name}</div>
+        <div class="fiscal-item-line">
+          <span>${qty.toFixed(qty % 1 === 0 ? 0 : 3)} x ${price.toFixed(2)}</span>
+          <span>${lineTotal.toFixed(2)}</span>
         </div>
-      `;
-    });
-  }
-
-  const paymentMethodText = payMethod === 'cash' ? t('Cash') : t('Card');
-
-  receiptBody.innerHTML = `
-    <div class="receipt-info">
-      <div class="receipt-info-row">
-        <span class="receipt-info-label">${t('Table')}:</span>
-        <span class="receipt-info-value">${tableNumber || '-'}</span>
-      </div>
-      <div class="receipt-info-row">
-        <span class="receipt-info-label">${t('Date')}:</span>
-        <span class="receipt-info-value">${dateStr}</span>
-      </div>
-      <div class="receipt-info-row">
-        <span class="receipt-info-label">${t('Payment Method')}:</span>
-        <span class="receipt-info-value">${paymentMethodText}</span>
-      </div>
-    </div>
-
-    <div class="receipt-items">
-      ${itemsHtml}
-    </div>
-
-    <div class="receipt-totals">
-      <div class="receipt-total-row">
-        <span class="receipt-total-label">${t('Subtotal')}:</span>
-        <span class="receipt-total-value">${euro(baseAmount)}</span>
-      </div>
-      ${tipAmount > 0 ? `
-        <div class="receipt-total-row">
-          <span class="receipt-total-label">${t('Tip')}:</span>
-          <span class="receipt-total-value">${euro(tipAmount)}</span>
+        <div class="fiscal-tax-line">
+          <span>ДДС група Б 20%</span>
+          <span>${lineTotal.toFixed(2)}</span>
         </div>
-      ` : ''}
-      <div class="receipt-total-row final">
-        <span class="receipt-total-label">${t('Total')}:</span>
-        <span class="receipt-total-value">${euro(totalAmount)}</span>
       </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="fiscal-receipt">
+      <div class="fiscal-center fiscal-strong">РЕСТОРАНТ “DEMO RESTAURANT”</div>
+      <div class="fiscal-center">гр. София, бул. “Витоша” № 100</div>
+      <div class="fiscal-center">ЕИК: 123456789</div>
+      <div class="fiscal-center">ДДС №: BG123456789</div>
+      <div class="fiscal-center">Тел: 0888 123 456</div>
+      <div class="fiscal-center">Обект: 001 &nbsp;&nbsp; Каса: 01</div>
+
+      <div class="fiscal-separator"></div>
+
+      <div class="fiscal-center fiscal-title">ФИСКАЛЕН БОН</div>
+      <div class="fiscal-center fiscal-subtitle">КАСОВА БЕЛЕЖКА</div>
+
+      <div class="fiscal-separator"></div>
+
+      <div class="fiscal-row">
+        <span>Бон №:</span>
+        <span>${escapeReceiptText(finalReceiptNo)}</span>
+      </div>
+      <div class="fiscal-row">
+        <span>Дата:</span>
+        <span>${escapeReceiptText(nowText)}</span>
+      </div>
+      <div class="fiscal-row">
+        <span>Маса:</span>
+        <span>${escapeReceiptText(tableText)}</span>
+      </div>
+      <div class="fiscal-row">
+        <span>Оператор:</span>
+        <span>${escapeReceiptText(waiterText)}</span>
+      </div>
+
+      <div class="fiscal-double-separator"></div>
+
+      ${rowsHtml || `<div class="fiscal-center">НЯМА АРТИКУЛИ</div>`}
+
+      <div class="fiscal-double-separator"></div>
+
+      <div class="fiscal-row">
+        <span>Междинна сума:</span>
+        <span>${subtotalNumber.toFixed(2)} €</span>
+      </div>
+      <div class="fiscal-row">
+        <span>Бакшиш:</span>
+        <span>${tipNumber.toFixed(2)} €</span>
+      </div>
+
+      <div class="fiscal-row fiscal-total">
+        <span>ОБЩО:</span>
+        <span>${totalNumber.toFixed(2)} €</span>
+      </div>
+
+      <div class="fiscal-row">
+        <span>${escapeReceiptText(paymentLabel)}:</span>
+        <span>${totalNumber.toFixed(2)} €</span>
+      </div>
+
+      <div class="fiscal-separator"></div>
+
+      <div class="fiscal-row">
+        <span>Данъчна основа Б:</span>
+        <span>${vatBase.toFixed(2)} €</span>
+      </div>
+      <div class="fiscal-row">
+        <span>ДДС Б 20%:</span>
+        <span>${vatAmount.toFixed(2)} €</span>
+      </div>
+
+      <div class="fiscal-separator"></div>
+
+      <div class="fiscal-row">
+        <span>ФП №:</span>
+        <span>DT123456</span>
+      </div>
+      <div class="fiscal-row">
+        <span>ФМ №:</span>
+        <span>12345678</span>
+      </div>
+      <div class="fiscal-row">
+        <span>КЛЕН №:</span>
+        <span>00001234</span>
+      </div>
+
+      <div class="fiscal-barcode">|||| ||| |||| || |||||</div>
+
+      <div class="fiscal-qr-box" aria-hidden="true">
+        <span></span><span></span><span></span><span class="empty"></span><span></span>
+        <span></span><span class="empty"></span><span></span><span></span><span class="empty"></span>
+        <span></span><span></span><span class="empty"></span><span></span><span></span>
+        <span class="empty"></span><span></span><span></span><span class="empty"></span><span></span>
+        <span></span><span class="empty"></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="fiscal-center fiscal-small">Проверка на бележката: demo.local/receipt/${escapeReceiptText(finalReceiptNo)}</div>
+
+      <div class="fiscal-separator"></div>
+
+      <div class="fiscal-center">БЛАГОДАРИМ ВИ!</div>
+      <div class="fiscal-center fiscal-small">Заповядайте отново</div>
+
+      <div class="fiscal-separator"></div>
+      <div class="fiscal-center fiscal-small">Визуална бележка за целите на софтуера</div>
     </div>
   `;
+}
 
-  receiptModal.classList.add('show');
+function buildReceiptPrintDocument(receiptInnerHtml, title = "Касова бележка") {
+  return `
+    <!DOCTYPE html>
+    <html lang="bg">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>${escapeReceiptText(title)}</title>
+      <style>
+        @page {
+          size: 80mm auto;
+          margin: 0;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+          width: 80mm;
+          min-width: 80mm;
+          max-width: 80mm;
+          background: #fff;
+          color: #000;
+          font-family: "Courier New", "Consolas", monospace;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        body {
+          padding: 0;
+        }
+
+        .print-shell {
+          width: 80mm;
+          min-width: 80mm;
+          max-width: 80mm;
+          margin: 0;
+          padding: 0;
+          background: #fff;
+        }
+
+        .fiscal-receipt {
+          width: 76mm;
+          min-width: 76mm;
+          max-width: 76mm;
+          margin: 0 auto;
+          padding: 3mm 2mm 5mm;
+          background: #fff;
+          color: #000;
+          font-family: "Courier New", "Consolas", monospace;
+          font-size: 11px;
+          line-height: 1.25;
+        }
+
+        .fiscal-center {
+          text-align: center;
+        }
+
+        .fiscal-left {
+          text-align: left;
+        }
+
+        .fiscal-right {
+          text-align: right;
+        }
+
+        .fiscal-strong {
+          font-weight: 900;
+        }
+
+        .fiscal-title {
+          font-weight: 900;
+          font-size: 13px;
+          letter-spacing: 0.4px;
+          text-transform: uppercase;
+        }
+
+        .fiscal-subtitle {
+          font-weight: 700;
+          font-size: 11px;
+        }
+
+        .fiscal-small {
+          font-size: 9px;
+          line-height: 1.2;
+        }
+
+        .fiscal-separator {
+          border-top: 1px dashed #000;
+          margin: 6px 0;
+          height: 0;
+        }
+
+        .fiscal-double-separator {
+          border-top: 2px solid #000;
+          margin: 7px 0;
+          height: 0;
+        }
+
+        .fiscal-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 6px;
+          width: 100%;
+        }
+
+        .fiscal-row span:first-child {
+          flex: 0 0 auto;
+        }
+
+        .fiscal-row span:last-child {
+          flex: 1 1 auto;
+          text-align: right;
+          word-break: break-word;
+        }
+
+        .fiscal-item {
+          margin-bottom: 6px;
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        .fiscal-item-name {
+          font-weight: 800;
+          word-break: break-word;
+          text-transform: uppercase;
+        }
+
+        .fiscal-item-line {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 8px;
+          width: 100%;
+        }
+
+        .fiscal-item-line span:last-child {
+          text-align: right;
+          font-weight: 700;
+        }
+
+        .fiscal-tax-line {
+          display: flex;
+          justify-content: space-between;
+          gap: 6px;
+          font-size: 10px;
+        }
+
+        .fiscal-total {
+          font-weight: 900;
+          font-size: 14px;
+          border-top: 1px solid #000;
+          border-bottom: 1px solid #000;
+          padding: 4px 0;
+          margin-top: 4px;
+        }
+
+        .fiscal-barcode {
+          margin-top: 8px;
+          text-align: center;
+          font-family: "Courier New", monospace;
+          font-size: 18px;
+          letter-spacing: -1px;
+          line-height: 1;
+        }
+
+        .fiscal-qr-box {
+          width: 24mm;
+          height: 24mm;
+          margin: 8px auto 4px;
+          border: 2px solid #000;
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          grid-template-rows: repeat(5, 1fr);
+          gap: 1px;
+          padding: 2px;
+        }
+
+        .fiscal-qr-box span {
+          background: #000;
+        }
+
+        .fiscal-qr-box span.empty {
+          background: #fff;
+        }
+
+        @media screen {
+          html,
+          body {
+            width: 100%;
+            max-width: none;
+            background: #e5e5e5;
+          }
+
+          body {
+            padding: 18px 0;
+          }
+
+          .print-shell {
+            width: 80mm;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.22);
+          }
+        }
+
+        @media print {
+          html,
+          body {
+            width: 80mm !important;
+            min-width: 80mm !important;
+            max-width: 80mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            overflow: visible !important;
+          }
+
+          .print-shell {
+            width: 80mm !important;
+            min-width: 80mm !important;
+            max-width: 80mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            background: #fff !important;
+          }
+
+          .fiscal-receipt {
+            width: 76mm !important;
+            min-width: 76mm !important;
+            max-width: 76mm !important;
+            margin: 0 auto !important;
+            padding: 3mm 2mm 5mm !important;
+            background: #fff !important;
+            color: #000 !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-shell">
+        ${receiptInnerHtml}
+      </div>
+
+      <script>
+        window.addEventListener("load", () => {
+          setTimeout(() => {
+            window.focus();
+            window.print();
+          }, 200);
+        });
+
+        window.addEventListener("afterprint", () => {
+          setTimeout(() => {
+            window.close();
+          }, 200);
+        });
+      <\/script>
+    </body>
+    </html>
+  `;
+}
+
+function showFiscalReceipt(receiptHtml) {
+  if (!receiptModal || !receiptBody) return;
+  lastReceiptHtml = receiptHtml || "";
+  if (receiptTitle) receiptTitle.textContent = "Касова бележка";
+  receiptBody.innerHTML = lastReceiptHtml;
+  receiptModal.style.display = "block";
+  receiptModal.classList.add("show");
+  receiptModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("receipt-open");
+}
+
+function hideFiscalReceipt() {
+  if (!receiptModal) return;
+  receiptModal.style.display = "none";
+  receiptModal.classList.remove("show");
+  receiptModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("receipt-open");
+}
+
+function printFiscalReceiptFromNewWindow(receiptHtml) {
+  const printWindow = window.open("", "receiptPrintWindow", "width=420,height=900");
+
+  if (!printWindow) {
+    alert("Браузърът блокира прозореца за печат. Позволи pop-up и опитай пак.");
+    return;
+  }
+
+  const docHtml = buildReceiptPrintDocument(receiptHtml, "Касова бележка");
+  printWindow.document.open();
+  printWindow.document.write(docHtml);
+  printWindow.document.close();
+
+  console.info("[receipt-print] Ако preview пак е A4, избери Paper size 80mm/Receipt в настройките на принтера. За Microsoft Print to PDF браузърът може да показва A4, но документът е 80mm layout.");
+}
+
+function showReceipt(orderData, items, baseAmount, tipAmount, payMethod, tableNumber) {
+  const receiptHtml = buildFiscalReceiptHtml({
+    order: orderData,
+    items,
+    subtotal: baseAmount,
+    tip: tipAmount,
+    total: Number(baseAmount || 0) + Number(tipAmount || 0),
+    paymentMethod: payMethod,
+    tableId: tableNumber,
+    waiter: meEmp,
+    receiptNo: generateReceiptNumber()
+  });
+  showFiscalReceipt(receiptHtml);
 }
 
 function hideReceipt() {
-  if (receiptModal) {
-    receiptModal.classList.remove('show');
-  }
+  hideFiscalReceipt();
 }
 
 if (closeReceipt) {
@@ -1365,7 +1805,12 @@ if (receiptModal) {
 
 if (printReceipt) {
   printReceipt.addEventListener("click", () => {
-    window.print();
+    if (!lastReceiptHtml) {
+      alert("Няма генерирана касова бележка.");
+      return;
+    }
+
+    printFiscalReceiptFromNewWindow(lastReceiptHtml);
   });
 }
 
@@ -1378,8 +1823,14 @@ completePaymentBtn.addEventListener("click", async () => {
     const items = Array.isArray(currentOrder.items) ? currentOrder.items : [];
     if (!items.length) return alert("Поръчката е празна.");
 
-    const baseAmount = currentTotal;
-    const tipAmount = tipPercent > 0 ? baseAmount * tipPercent : (Number(tipCustom) || 0);
+    const receiptOrder = currentOrder ? { ...currentOrder } : null;
+    const receiptItems = items.map((item) => ({ ...item }));
+    const baseAmount = Number(currentTotal || 0);
+    const tipAmount = tipPercent > 0
+      ? baseAmount * tipPercent
+      : parseEuroInput(customTipEl?.value || String(tipCustom || ""));
+    const finalTotal = baseAmount + tipAmount;
+    const receiptNo = generateReceiptNumber();
     const paymentRef = doc(collection(db, "payments"));
 
     await runTransaction(db, async (tx) => {
@@ -1413,6 +1864,8 @@ completePaymentBtn.addEventListener("click", async () => {
         method: payMethod,
         amount: baseAmount,
         tipAmount,
+        totalAmount: finalTotal,
+        receiptNo,
         createdAt: nowTs
       });
 
@@ -1434,9 +1887,18 @@ completePaymentBtn.addEventListener("click", async () => {
       }, { merge: true });
     });
 
-    // Receipt must be deleted after waiter completes payment (do not show; hide and clear)
-    hideReceipt();
-    if (receiptBody) receiptBody.innerHTML = '';
+    const receiptHtml = buildFiscalReceiptHtml({
+      order: receiptOrder,
+      items: receiptItems,
+      subtotal: baseAmount,
+      tip: tipAmount,
+      total: finalTotal,
+      paymentMethod: payMethod,
+      tableId: selectedTableId,
+      waiter: meEmp,
+      receiptNo
+    });
+    showFiscalReceipt(receiptHtml);
 
     selectedTableId = null;
     selectedOrderId = null;

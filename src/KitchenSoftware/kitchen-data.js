@@ -91,6 +91,7 @@ const DRINK_WORDS = [
   "бренди",
   "коктейл"
 ];
+const CAKE_WORDS = ["торта", "торти", "cake", "cakes", "cheesecake", "чийзкейк", "tiramisu", "тирамису"];
 
 const state = {
   lang: localStorage.getItem("kitchenLang") || "bg",
@@ -297,18 +298,28 @@ function looksLikeDrink(category, type, name, menuName, menuCategory) {
   return DRINK_WORDS.some((word) => nameText.includes(word));
 }
 
+function looksLikeCake(category, type, name, menuName, menuCategory) {
+  const text = [category, type, name, menuName, menuCategory].map(norm).join(" ");
+  return CAKE_WORDS.some((word) => text.includes(word));
+}
+
 function itemStation(item, name) {
   const direct = normalizeStationValue(
     item?.station || item?.targetStation || item?.department || item?.prepStation || item?.destination
   );
-  if (direct === "bar" || direct === "kitchen") return direct;
 
   const menu = state.menuByName.get(norm(name));
+  const cakeLike = looksLikeCake(item?.category, item?.type, name, menu?.name, menu?.category);
+
+  if (direct === "bar") return "bar";
+  if (direct === "kitchen" && !cakeLike) return "kitchen";
+  if (cakeLike) return "bar";
 
   if (looksLikeDrink(item?.category, item?.type, name, menu?.name, menu?.category)) return "bar";
 
   const menuStation = normalizeStationValue(menu?.station || menu?.prepStation || menu?.department);
-  if (menuStation === "bar" || menuStation === "kitchen") return menuStation;
+  if (menuStation === "bar") return "bar";
+  if (menuStation === "kitchen" && !cakeLike) return "kitchen";
 
   return "kitchen";
 }

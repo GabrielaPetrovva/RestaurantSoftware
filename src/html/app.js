@@ -88,6 +88,168 @@ const isCategoryPage = window.location.pathname.includes("category.html");
 const urlParams = new URLSearchParams(window.location.search);
 const currentCategory = urlParams.get("category"); // напр. "burger"
 
+function normalizeCategoryValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function normalizeMenuItemFromDoc(docSnap) {
+  const data = docSnap?.data?.() || {};
+  const menuId = String(data.menuId || data.itemId || docSnap?.id || "").trim();
+  const itemId = String(data.itemId || data.menuId || docSnap?.id || "").trim();
+  const qrCode = String(data.qrCode || data.shortCode || data.code || data.qr || "").trim();
+
+  return {
+    ...data,
+    id: docSnap?.id || data.id || menuId,
+    docId: docSnap?.id || data.docId || menuId,
+    menuId,
+    itemId,
+    qrCode: qrCode || data.qrCode || "",
+    shortCode: String(data.shortCode || data.qrCode || data.code || data.qr || "").trim(),
+    code: String(data.code || data.qrCode || data.shortCode || data.qr || "").trim(),
+    qr: String(data.qr || data.qrCode || data.shortCode || data.code || "").trim()
+  };
+}
+
+function isMenuItemVisible(item) {
+  if (!item) return false;
+  if (item.active === false) return false;
+
+  const status = normalizeCategoryValue(item.status);
+  if (status && status !== "active" && status !== "available") return false;
+
+  return true;
+}
+
+function getMenuItemCategoryValues(item) {
+  return [
+    item?.category,
+    item?.categoryKey,
+    item?.categorySlug,
+    item?.categoryId,
+    item?.type
+  ].map(normalizeCategoryValue).filter(Boolean);
+}
+
+function categoryValueMatches(value, selectedKey) {
+  if (!value || !selectedKey) return false;
+  return (
+    value === selectedKey ||
+    `${value}s` === selectedKey ||
+    value === `${selectedKey}s`
+  );
+}
+
+function menuItemMatchesCategory(item, selectedKey) {
+  return getMenuItemCategoryValues(item).some((value) => categoryValueMatches(value, selectedKey));
+}
+
+function logMenuCategoryFilter(selectedCategory, selectedKey, allItems, filteredItems, source) {
+  console.log("[MENU CATEGORY FILTER]", {
+    selectedCategory,
+    selectedKey,
+    source,
+    totalItems: allItems.length,
+    filteredItems: filteredItems.length,
+    sample: allItems.slice(0, 5).map((x) => ({
+      id: x.id,
+      menuId: x.menuId,
+      name: x.name,
+      category: x.category,
+      categoryKey: x.categoryKey,
+      categorySlug: x.categorySlug,
+      categoryId: x.categoryId,
+      type: x.type,
+      hasQrCode: !!(x.qrCode || x.shortCode || x.code || x.qr)
+    }))
+  });
+}
+
+function makeShortQrCode(index, prefix = "") {
+  const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const n = Math.max(1, Number(index || 1));
+  return `${prefix}${n.toString(alphabet.length)}`;
+}
+
+function getShortQrCodePrefix(category) {
+  const key = String(category || "").trim().toLowerCase();
+  const map = {
+    drinks: "d",
+    drink: "d",
+    beverages: "d",
+    beverage: "d",
+    food: "f",
+    dessert: "s",
+    desserts: "s",
+    burger: "b",
+    burgers: "b",
+    pizza: "p",
+    pizzas: "p",
+    salad: "l",
+    salads: "l"
+  };
+  if (map[key]) return map[key];
+  const fallback = key.replace(/[^a-z0-9]/g, "");
+  return fallback ? fallback.slice(0, 1) : "";
+}
+
+function getRuntimeShortQrCode(item, index) {
+  const existing = String(item?.qrCode || item?.shortCode || item?.code || item?.qr || "").trim();
+  if (existing) return existing;
+  const prefix = getShortQrCodePrefix(item?.category || item?.categoryKey || item?.categorySlug || item?.type || "");
+  return makeShortQrCode(index + 1, prefix);
+}
+
+function makeUniqueRuntimeShortQrCode(item, startIndex, usedCodes) {
+  const existing = String(item?.qrCode || item?.shortCode || item?.code || item?.qr || "").trim();
+  if (existing) return existing;
+
+  let index = Math.max(0, Number(startIndex || 0));
+  let code = getRuntimeShortQrCode(item, index);
+
+  while (usedCodes?.has(String(code).toLowerCase())) {
+    index += 1;
+    code = getRuntimeShortQrCode(item, index);
+  }
+
+  return code;
+}
+
+async function persistMissingQrCode(docRef, item, qrCode) {
+  if (!docRef || !qrCode || item?.qrCode || item?.shortCode || item?.code || item?.qr) {
+    return String(item?.qrCode || item?.shortCode || item?.code || item?.qr || "").trim();
+  }
+  try {
+    await docRef.set({
+      qrCode,
+      shortCode: qrCode,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    return qrCode;
+  } catch (err) {
+    console.warn("[Menu QR] qrCode backfill skipped:", { id: docRef.id, qrCode, err });
+    return "";
+  }
+}
+
+async function buildQrMenuCacheFromDocs(docs) {
+  const sourceDocs = Array.isArray(docs) ? docs : [];
+  return sourceDocs.map((doc) => normalizeMenuItemFromDoc(doc));
+}
+
+async function loadQrMenuCache(fallbackSnap) {
+  try {
+    const snap = await db
+      .collection(MENUS_COLLECTION)
+      .where("active", "==", true)
+      .get();
+    return buildQrMenuCacheFromDocs(snap.docs);
+  } catch (err) {
+    console.warn("[QR] full menu cache skipped:", err);
+    return buildQrMenuCacheFromDocs(fallbackSnap?.docs || []);
+  }
+}
+
 // ---------------- MENU PAGE: categories ----------------
 async function renderCategoriesPage() {
   const topRow = document.getElementById("topRow");
@@ -297,24 +459,64 @@ async function renderCategoryPage() {
 
   menuDiv.innerHTML = "";
 
-  // IMPORTANT: category в базата ти е "burger", "bread" и т.н.
-  const snap = await db
-    .collection(MENUS_COLLECTION)
-    .where("active", "==", true)
-    .where("category", "==", cat)
-    .get();
+  let snap;
+  let collectionSource = `${MENUS_COLLECTION}.where(active == true)`;
 
-  console.log(`Items loaded for "${cat}":`, snap.size);
+  try {
+    snap = await db
+      .collection(MENUS_COLLECTION)
+      .where("active", "==", true)
+      .get();
 
-  if (snap.empty) {
+    if (snap.empty) {
+      console.warn("[MENU] active query returned no items, falling back to full collection.");
+      collectionSource = MENUS_COLLECTION;
+      snap = await db.collection(MENUS_COLLECTION).get();
+    }
+  } catch (err) {
+    console.warn("[MENU] active query failed, falling back to full collection:", err);
+    collectionSource = MENUS_COLLECTION;
+    snap = await db.collection(MENUS_COLLECTION).get();
+  }
+
+  const selectedKey = normalizeCategoryValue(cat);
+  const allItems = snap.docs
+    .map((docSnap) => normalizeMenuItemFromDoc(docSnap))
+    .filter(isMenuItemVisible);
+  let filteredItems = allItems.filter((item) => menuItemMatchesCategory(item, selectedKey));
+
+  if (!filteredItems.length) {
+    filteredItems = allItems.filter((item) => {
+      const values = getMenuItemCategoryValues(item);
+      return values.some((value) => value.includes(selectedKey) || selectedKey.includes(value));
+    });
+  }
+
+  logMenuCategoryFilter(
+    {
+      key: cat,
+      slug: cat,
+      id: cat,
+      name: cat
+    },
+    selectedKey,
+    allItems,
+    filteredItems,
+    collectionSource
+  );
+
+  window.menusCache = allItems;
+  window.menuItems = filteredItems;
+
+  if (!filteredItems.length) {
     const lang = localStorage.getItem('language') || 'en';
-    const emptyMsg = lang === 'bg' ? 'Няма активни ястия в тази категория.' : 'No active items in this category.';
+    const emptyMsg = lang === 'bg' ? 'Няма заредени ястия за тази категория.' : 'No loaded items for this category.';
     menuDiv.innerHTML = `<p>${emptyMsg}</p>`;
     return;
   }
 
-  snap.forEach(doc => {
-    const item = doc.data();
+  for (const item of filteredItems) {
+    const safeMenuId = item.menuId || item.itemId || item.id || item.docId || "";
 
     const itemEl = document.createElement("div");
     itemEl.className = "menu-item";
@@ -340,7 +542,18 @@ async function renderCategoryPage() {
         weight,
         price,
         priceValue,
-        resolveImg(item.image)
+          resolveImg(item.image),
+        {
+          id: safeMenuId,
+          menuId: safeMenuId,
+          itemId: safeMenuId,
+          category: item.category || item.categoryKey || item.categorySlug || item.categoryId || item.type || "",
+          station: item.station || item.targetStation || item.department || "",
+          qrCode: item.qrCode || item.shortCode || item.code || item.qr || "",
+          shortCode: item.shortCode || item.qrCode || item.code || item.qr || "",
+          code: item.code || item.qrCode || item.shortCode || item.qr || "",
+          qr: item.qr || item.qrCode || item.shortCode || item.code || ""
+        }
       );
     };
     
@@ -361,7 +574,7 @@ async function renderCategoryPage() {
     
     itemEl.innerHTML = itemHTML;
     menuDiv.appendChild(itemEl);
-  });
+  }
 }
 
 // ---------------- Run ----------------

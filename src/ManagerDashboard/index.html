@@ -70,23 +70,23 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Продажби (Днес)</div>
-                        <div class="stat-value">2,450 €</div>
-                        <div class="stat-change">↑ 12.5%</div>
+                        <div class="stat-value" id="financeTodayRevenue">0 €</div>
+                        <div class="stat-change" id="financeTodayChange">—</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Продажби (Седмица)</div>
-                        <div class="stat-value">15,280 €</div>
-                        <div class="stat-change">↑ 8.3%</div>
+                        <div class="stat-value" id="financeWeekRevenue">0 €</div>
+                        <div class="stat-change" id="financeWeekChange">—</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Продажби (Месец)</div>
-                        <div class="stat-value">67,420 €</div>
-                        <div class="stat-change">↑ 15.7%</div>
+                        <div class="stat-value" id="financeMonthRevenue">0 €</div>
+                        <div class="stat-change" id="financeMonthChange">—</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Среден чек</div>
-                        <div class="stat-value">28.50 €</div>
-                        <div class="stat-change">↑ 3.2%</div>
+                        <div class="stat-value" id="financeAvgCheck">0 €</div>
+                        <div class="stat-change" id="financeAvgCheckChange">—</div>
                     </div>
                 </div>
 
@@ -101,16 +101,9 @@
                                     <th>%</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="financeCategoryRows">
                                 <tr>
-                                    <td>Храна</td>
-                                    <td>1,680 €</td>
-                                    <td>68.6%</td>
-                                </tr>
-                                <tr>
-                                    <td>Напитки</td>
-                                    <td>520 €</td>
-                                    <td>21.2%</td>
+                                    <td colspan="3">Няма данни.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -120,23 +113,23 @@
                         <div class="card-header">Ключови Показатели</div>
                         <div style="margin-bottom: 20px;">
                             <div class="stat-label">Food Cost %</div>
-                            <div style="font-size: 24px; font-weight: 700; color: #4CAF50;">28.5%</div>
+                            <div id="financeFoodCost" style="font-size: 24px; font-weight: 700; color: #4CAF50;">—</div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 28.5%"></div>
+                                <div id="financeFoodCostBar" class="progress-fill" style="width: 0%"></div>
                             </div>
                         </div>
                         <div style="margin-bottom: 20px;">
                             <div class="stat-label">Labor Cost %</div>
-                            <div style="font-size: 24px; font-weight: 700; color: #ff9800;">32.8%</div>
+                            <div id="financeLaborCost" style="font-size: 24px; font-weight: 700; color: #ff9800;">—</div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 32.8%; background: linear-gradient(90deg, #ff9800, #ffa726);"></div>
+                                <div id="financeLaborCostBar" class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #ff9800, #ffa726);"></div>
                             </div>
                         </div>
                         <div>
                             <div class="stat-label">Gross Margin</div>
-                            <div style="font-size: 24px; font-weight: 700; color: #2196F3;">38.7%</div>
+                            <div id="financeGrossMargin" style="font-size: 24px; font-weight: 700; color: #2196F3;">—</div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 38.7%; background: linear-gradient(90deg, #2196F3, #42a5f5);"></div>
+                                <div id="financeGrossMarginBar" class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #2196F3, #42a5f5);"></div>
                             </div>
                         </div>
                     </div>
@@ -145,16 +138,16 @@
                 <div class="card">
                     <div class="card-header">Печалба по смяна</div>
                     <div class="chart-bar">
-                        <div class="bar" style="height: 75%;">
-                            <span class="bar-value">850 €</span>
+                        <div class="bar" id="financeShiftMorningBar" style="height: 0%;">
+                            <span class="bar-value" id="financeShiftMorningValue">0 €</span>
                             <span class="bar-label">Сутрин</span>
                         </div>
-                        <div class="bar" style="height: 60%;">
-                            <span class="bar-value">680 €</span>
+                        <div class="bar" id="financeShiftLunchBar" style="height: 0%;">
+                            <span class="bar-value" id="financeShiftLunchValue">0 €</span>
                             <span class="bar-label">Обяд</span>
                         </div>
-                        <div class="bar" style="height: 90%;">
-                            <span class="bar-value">920 €</span>
+                        <div class="bar" id="financeShiftEveningBar" style="height: 0%;">
+                            <span class="bar-value" id="financeShiftEveningValue">0 €</span>
                             <span class="bar-label">Вечер</span>
                         </div>
                     </div>
@@ -176,36 +169,36 @@
                                 <th>Брой потребители</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tblRoleCounts">
                             <tr>
                                 <td><span class="status-badge status-info">Сервитьор</span></td>
                                 <td>Маси, поръчки, сметки</td>
                                 <td>Добавя/редактира поръчки, приема плащания</td>
-                                <td>6</td>
+                                <td id="roleCountWaiter">0</td>
                             </tr>
                             <tr>
                                 <td><span class="status-badge status-success">Готвач</span></td>
                                 <td>Поръчки за кухнята, таймери</td>
                                 <td>Отбелязва статус на поръчки</td>
-                                <td>4</td>
+                                <td id="roleCountCook">0</td>
                             </tr>
                             <tr>
                                 <td><span class="status-badge status-warning">Барман</span></td>
                                 <td>Напитки, рецепти</td>
                                 <td>Маркира готови напитки</td>
-                                <td>3</td>
+                                <td id="roleCountBar">0</td>
                             </tr>
                             <tr>
                                 <td><span class="status-badge" style="background: #9c27b0; color: white;">Мениджър</span></td>
                                 <td>Всички данни + отчети</td>
                                 <td>Управлява меню, персонал, цени</td>
-                                <td>2</td>
+                                <td id="roleCountManager">0</td>
                             </tr>
                             <tr>
                                 <td><span class="status-badge" style="background: #212121; color: white;">Собственик</span></td>
                                 <td>Финансови отчети, KPI, прогнози</td>
                                 <td>Променя всичко</td>
-                                <td>1</td>
+                                <td id="roleCountOwner">0</td>
                             </tr>
                         </tbody>
                     </table>
@@ -221,24 +214,24 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Активен персонал</div>
-                        <div class="stat-value" id="kpiActiveStaff">12</div>
-                        <div class="stat-sub" id="kpiTotalStaff">от 15 общо</div>
+                        <div class="stat-value" id="kpiActiveStaff">0</div>
+                        <div class="stat-sub" id="kpiTotalStaff">от 0 общо</div>
 
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Работни часове (Днес)</div>
-                        <div class="stat-value">96 ч</div>
-                        <div class="stat-change">↑ 5 часа</div>
+                        <div class="stat-value" id="kpiWorkedHoursToday">0 ч</div>
+                        <div class="stat-change" id="kpiWorkedHoursTodayChange">—</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Средна производителност</div>
-                        <div class="stat-value">204 €/ч</div>
-                        <div class="stat-change">↑ 8.5%</div>
+                        <div class="stat-value" id="kpiAvgProductivity">—</div>
+                        <div class="stat-change" id="kpiAvgProductivityChange">—</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Изплатени бонуси</div>
-                        <div class="stat-value">580 €</div>
-                        <div class="stat-change">тази седмица</div>
+                        <div class="stat-value" id="kpiPaidBonuses">0 €</div>
+                        <div class="stat-change" id="kpiPaidBonusesSub">тази седмица</div>
                     </div>
                 </div>
 
@@ -310,31 +303,9 @@
                                     <th>Статус</th>
                                 </tr>
                             </thead>
-                            <tbody id="tblWaiterSales"></tbody>
-
+                            <tbody id="tblWaiterSales">
                                 <tr>
-                                    <td>Мария Иванова</td>
-                                    <td>680 €</td>
-                                    <td>24</td>
-                                    <td><span class="status-badge status-success">Активен</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Георги Петров</td>
-                                    <td>520 €</td>
-                                    <td>18</td>
-                                    <td><span class="status-badge status-success">Активен</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Елена Димитрова</td>
-                                    <td>450 €</td>
-                                    <td>16</td>
-                                    <td><span class="status-badge status-warning">Почивка</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Иван Стоянов</td>
-                                    <td>380 €</td>
-                                    <td>14</td>
-                                    <td><span class="status-badge status-success">Активен</span></td>
+                                    <td colspan="4">Няма данни.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -353,24 +324,9 @@
                                     <th>KPI</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="tblCookPerformance">
                                 <tr>
-                                    <td>Стефан Колев</td>
-                                    <td>12 мин</td>
-                                    <td>0</td>
-                                    <td><span class="status-badge status-success">Отличен</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Николай Тодоров</td>
-                                    <td>14 мин</td>
-                                    <td>1</td>
-                                    <td><span class="status-badge status-success">Добър</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Петър Георгиев</td>
-                                    <td>16 мин</td>
-                                    <td>2</td>
-                                    <td><span class="status-badge status-warning">Среден</span></td>
+                                    <td colspan="4">Няма данни.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -390,38 +346,9 @@
                                 <th>Статус</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tblAttendance">
                             <tr>
-                                <td>Мария Иванова</td>
-                                <td>Сервитьор</td>
-                                <td>09:00</td>
-                                <td>17:00</td>
-                                <td>8 ч</td>
-                                <td><span class="status-badge status-success">Присъства</span></td>
-                            </tr>
-                            <tr>
-                                <td>Георги Петров</td>
-                                <td>Сервитьор</td>
-                                <td>10:00</td>
-                                <td>18:00</td>
-                                <td>8 ч</td>
-                                <td><span class="status-badge status-success">Присъства</span></td>
-                            </tr>
-                            <tr>
-                                <td>Стефан Колев</td>
-                                <td>Готвач</td>
-                                <td>08:00</td>
-                                <td>16:00</td>
-                                <td>8 ч</td>
-                                <td><span class="status-badge status-success">Присъства</span></td>
-                            </tr>
-                            <tr>
-                                <td>Ана Петкова</td>
-                                <td>Барман</td>
-                                <td>12:00</td>
-                                <td>20:00</td>
-                                <td>8 ч</td>
-                                <td><span class="status-badge status-warning">Закъснение</span></td>
+                                <td colspan="6">Няма данни.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -750,18 +677,18 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Пиков час</div>
-                        <div class="stat-value">19:00-21:00</div>
-                        <div class="stat-change">Средно 45 клиенти</div>
+                        <div class="stat-value" id="analyticsPeakHour">—</div>
+                        <div class="stat-change" id="analyticsPeakHourSub">Няма данни.</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Най-натоварен ден</div>
-                        <div class="stat-value">Петък</div>
-                        <div class="stat-change">+35% над средното</div>
+                        <div class="stat-value" id="analyticsBusiestDay">—</div>
+                        <div class="stat-change" id="analyticsBusiestDaySub">Няма данни.</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Среден рейтинг</div>
-                        <div class="stat-value">4.7 ⭐</div>
-                        <div class="stat-change">от 234 ревюта</div>
+                        <div class="stat-value" id="analyticsAvgRating">—</div>
+                        <div class="stat-change" id="analyticsAvgRatingSub">Няма данни.</div>
                     </div>
                 </div>
 
@@ -839,15 +766,15 @@
                     <div class="heatmap-legend">
                         <div class="heatmap-legend-item">
                             <div class="heatmap-legend-swatch" style="background: #90caf9;"></div>
-                            <span>Ниско (0-30 ястия)</span>
+                            <span>Ниско (0-3 ястия)</span>
                         </div>
                         <div class="heatmap-legend-item">
                             <div class="heatmap-legend-swatch" style="background: #ffa726;"></div>
-                            <span>Средно (31-50 ястия)</span>
+                            <span>Средно (4-9 ястия)</span>
                         </div>
                         <div class="heatmap-legend-item">
                             <div class="heatmap-legend-swatch" style="background: #ef5350;"></div>
-                            <span>Високо (51+ ястия)</span>
+                            <span>Високо (10+ ястия)</span>
                         </div>
                     </div>
                 </div>
@@ -857,13 +784,13 @@
                     <div class="stats-grid" style="margin-bottom: 0;">
                         <div style="text-align: center; padding: 15px;">
                             <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Средно време</div>
-                            <div style="font-size: 32px; font-weight: 700; color: #4CAF50;">28 мин</div>
-                            <div style="font-size: 12px; color: #4CAF50;">↓ 3 мин подобрение</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #4CAF50;">—</div>
+                            <div style="font-size: 12px; color: #4CAF50;">Няма данни.</div>
                         </div>
                         <div style="text-align: center; padding: 15px;">
                             <div style="font-size: 14px; color: #888; margin-bottom: 8px;">Рейтинг</div>
-                            <div style="font-size: 32px; font-weight: 700; color: #ff9800;">4.8 ⭐</div>
-                            <div style="font-size: 12px; color: #4CAF50;">↑ 0.2 точки</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #ff9800;">—</div>
+                            <div style="font-size: 12px; color: #4CAF50;">Няма данни.</div>
                         </div>
                     </div>
                 </div>
@@ -871,7 +798,7 @@
                 <div class="content-grid">
                         <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 8px;">
                             <div style="font-weight: 600; color: #856404; margin-bottom: 5px;">⚠ AI Препоръка</div>
-                            <div style="font-size: 13px; color: #856404;">Очаква се високо натоварване в петък и събота. Препоръчваме +2 сервитьора и +1 готвач.</div>
+                            <div style="font-size: 13px; color: #856404;">Няма достатъчно данни за препоръка.</div>
                         </div>
                     </div>
 
@@ -880,31 +807,31 @@
                         <div style="margin-bottom: 25px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                 <span style="font-weight: 600;">Храна</span>
-                                <span style="font-weight: 600;">1,680 € / 480 €</span>
+                                <span style="font-weight: 600;">— / —</span>
                             </div>
                             <div class="progress-bar" style="height: 12px;">
-                                <div style="height: 100%; background: #4CAF50; width: 71.4%; border-radius: 10px; position: relative;">
-                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 28.6%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
+                                <div style="height: 100%; background: #4CAF50; width: 0%; border-radius: 10px; position: relative;">
+                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 0%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
                                 </div>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666;">
-                                <span>Приход: 1,680 €</span>
-                                <span>Разход: 480 € (28.6%)</span>
+                                <span>Приход: —</span>
+                                <span>Разход: —</span>
                             </div>
                         </div>
                         <div style="margin-bottom: 25px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                 <span style="font-weight: 600;">Напитки</span>
-                                <span style="font-weight: 600;">520 € / 104 €</span>
+                                <span style="font-weight: 600;">— / —</span>
                             </div>
                             <div class="progress-bar" style="height: 12px;">
-                                <div style="height: 100%; background: #2196F3; width: 80%; border-radius: 10px; position: relative;">
-                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 20%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
+                                <div style="height: 100%; background: #2196F3; width: 0%; border-radius: 10px; position: relative;">
+                                    <div style="position: absolute; right: 0; top: 0; height: 100%; width: 0%; background: #ff9800; border-radius: 0 10px 10px 0;"></div>
                                 </div>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666;">
-                                <span>Приход: 520 €</span>
-                                <span>Разход: 104 € (20%)</span>
+                                <span>Приход: —</span>
+                                <span>Разход: —</span>
                             </div>
                         </div>
                     </div>

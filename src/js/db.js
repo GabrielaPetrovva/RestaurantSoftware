@@ -1,6 +1,6 @@
 // src/js/db.js
 import { db } from "./firebase.js";
-import { normalizeStationValue, looksLikeDrink } from "./station-utils.js";
+import { resolveFinalStation } from "./station-utils.js";
 import {
   collection, collectionGroup, doc,
   getDoc, getDocs,
@@ -13,20 +13,11 @@ import {
 
 const ts = () => serverTimestamp();
 const norm = (x) => String(x ?? "").trim().toLowerCase();
-const DRINK_CATEGORY_HINTS = ["drink", "drinks", "beverage", "beverages", "napit", "coffee", "tea", "bar"];
 
 function resolveStationForWrite(item) {
-  const direct = normalizeStationValue(item?.station || item?.department || "");
-  if (direct) return direct;
-
   const category = norm(item?.category || item?.type || "");
-  if (category) {
-    const isDrinkCategory = DRINK_CATEGORY_HINTS.some((hint) => category.includes(hint));
-    return isDrinkCategory ? "bar" : "kitchen";
-  }
-
   const name = String(item?.name || item?.itemId || item?.menuId || "").trim();
-  return looksLikeDrink(name) ? "bar" : "kitchen";
+  return resolveFinalStation({ ...item, name, category });
 }
 
 /* ---------------- LOGS ---------------- */

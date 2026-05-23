@@ -6,10 +6,11 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import {
-  collection, doc, getDoc, onSnapshot,
+  collection, doc, getDoc, getDocs, onSnapshot,
   setDoc, updateDoc, deleteDoc,
   serverTimestamp, deleteField
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import { looksLikeCake } from "../js/station-utils.js";
 
 const CLOUDINARY_CLOUD_NAME = "dxo6w1a7p";
 const CLOUDINARY_UPLOAD_PRESET = "restaurant_menu_upload";
@@ -126,7 +127,32 @@ function numOrNull(v) {
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
-
+function makeShortQrCode(index, prefix = "") {
+  const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const n = Math.max(1, Number(index || 1));
+  return `${prefix}${n.toString(alphabet.length)}`;
+}
+function getShortQrCodePrefix(category) {
+  const key = normalizeCategoryToEN(category);
+  const map = {
+    drinks: "d",
+    drink: "d",
+    beverages: "d",
+    beverage: "d",
+    food: "f",
+    dessert: "s",
+    desserts: "s",
+    burger: "b",
+    burgers: "b",
+    pizza: "p",
+    pizzas: "p",
+    salad: "l",
+    salads: "l"
+  };
+  if (map[key]) return map[key];
+  const fallback = key.replace(/[^a-z0-9]/g, "");
+  return fallback ? fallback.slice(0, 1) : "";
+}
 // ✅ FIX: грамаж винаги "300 г."
 function normalizeWeight(v) {
   const s = String(v ?? "").trim();
@@ -394,6 +420,7 @@ function wireModalClose() {
 let selectedImageFile = null;
 let selectedImagePath = "";
 let currentImage = undefined; // undefined=don’t touch, null=remove, string=existing image value
+let stationTouched = false;
 
 function showPreview(src) {
   if (!imagePrevEl) return;
@@ -457,9 +484,57 @@ function wireImage() {
   });
 }
 
+function itemLooksLikeCakeFromForm(name = nameEl?.value, category = categoryEl?.value) {
+  return looksLikeCake(`${name || ""} ${category || ""}`);
+}
+
+function applyCakeStationDefault() {
+  if (!stationEl || stationTouched) return;
+  if (itemLooksLikeCakeFromForm()) {
+    stationEl.value = "bar";
+  } else if (!stationEl.value) {
+    stationEl.value = "kitchen";
+  }
+}
+
+function resolveStationForSave(name, category, rawStation) {
+  const selected = norm(rawStation);
+  if (itemLooksLikeCakeFromForm(name, category) && !stationTouched) return "bar";
+  return selected || (itemLooksLikeCakeFromForm(name, category) ? "bar" : "kitchen");
+}
+
+async function fixCakeMenuStations() {
+  const snap = await getDocs(collection(db, "menus"));
+  const updates = [];
+  let skipped = 0;
+
+  snap.forEach((docSnap) => {
+    const item = { id: docSnap.id, ...(docSnap.data() || {}) };
+    if (!looksLikeCake(`${item.name || ""} ${item.category || ""}`)) return;
+    if (norm(item.station) === "bar") {
+      skipped += 1;
+      return;
+    }
+
+    updates.push(updateDoc(doc(db, "menus", docSnap.id), {
+      station: "bar",
+      updatedAt: serverTimestamp(),
+      stationFixReason: "cake-to-bar"
+    }));
+  });
+
+  await Promise.all(updates);
+  console.log(`[CakeStationFix] updated=${updates.length}, skipped=${skipped}`);
+  return { updated: updates.length, skipped };
+}
+
+window.fixCakeMenuStations = fixCakeMenuStations;
+window.fixCakeStationsToBar = fixCakeMenuStations;
+
 /* ================= STATE ================= */
 let editingId = null;
 let started = false;
+let qrBackfillRunning = false;
 
 /* ================= INIT / AUTH GUARD ================= */
 onAuthStateChanged(auth, async (user) => {
@@ -526,11 +601,97 @@ function startCategorySuggestions() {
 /* ================= MENUS LISTENER ================= */
 function startMenusListener() {
   onSnapshot(collection(db, "menus"), (snap) => {
+    backfillMissingMenuQrCodes(snap.docs).catch((err) => {
+      console.warn("[Menu QR] backfill failed:", err);
+    });
     const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const activeCount = items.filter(i => i.active !== false).length;
     if (countEl) countEl.textContent = String(activeCount);
     if (listEl) renderList(items);
   }, (err) => setErr("menus: " + err.message));
+}
+
+async function backfillMissingMenuQrCodes(docSnaps) {
+  if (qrBackfillRunning) return;
+  qrBackfillRunning = true;
+
+  try {
+    const docs = Array.isArray(docSnaps) ? docSnaps : [];
+    const usedCodes = new Set();
+    const counters = {};
+
+    docs.forEach((docSnap) => {
+      const item = docSnap.data() || {};
+      const code = String(item.qrCode || item.shortCode || item.code || item.qr || "").trim();
+      if (code) usedCodes.add(code.toLowerCase());
+    });
+
+    const updates = [];
+    docs.forEach((docSnap) => {
+      const item = docSnap.data() || {};
+      const category = normalizeCategoryToEN(item.category || item.categoryKey || item.type || "");
+      const key = category || "item";
+      counters[key] = (counters[key] || 0) + 1;
+
+      const existing = String(item.qrCode || item.shortCode || item.code || item.qr || "").trim();
+      if (existing) return;
+
+      const prefix = getShortQrCodePrefix(category);
+      let index = counters[key];
+      let code = makeShortQrCode(index, prefix);
+      while (usedCodes.has(code.toLowerCase())) {
+        index += 1;
+        code = makeShortQrCode(index, prefix);
+      }
+      counters[key] = index;
+      usedCodes.add(code.toLowerCase());
+      updates.push(updateDoc(docSnap.ref, { qrCode: code, shortCode: code }));
+    });
+
+    if (updates.length) {
+      await Promise.all(updates);
+      console.log("[Menu QR] qrCode backfilled:", updates.length);
+    }
+  } finally {
+    qrBackfillRunning = false;
+  }
+}
+
+async function resolveQrCodeForSave(category, targetId) {
+  const snap = await getDocs(collection(db, "menus"));
+  const usedCodes = new Set();
+  const counters = {};
+  const categoryKey = normalizeCategoryToEN(category) || "item";
+  let existingForTarget = "";
+  let targetIndex = 0;
+
+  snap.docs.forEach((docSnap) => {
+    const item = docSnap.data() || {};
+    const itemCategory = normalizeCategoryToEN(item.category || item.categoryKey || item.type || "") || "item";
+    counters[itemCategory] = (counters[itemCategory] || 0) + 1;
+
+    if (docSnap.id === targetId && itemCategory === categoryKey) {
+      targetIndex = counters[itemCategory];
+    }
+
+    const code = String(item.qrCode || item.shortCode || item.code || item.qr || "").trim();
+    if (code) {
+      usedCodes.add(code.toLowerCase());
+      if (docSnap.id === targetId) existingForTarget = code;
+    }
+  });
+
+  if (existingForTarget) return "";
+
+  const prefix = getShortQrCodePrefix(categoryKey);
+  let index = targetIndex || ((counters[categoryKey] || 0) + 1);
+  let code = makeShortQrCode(index, prefix);
+  while (usedCodes.has(code.toLowerCase())) {
+    index += 1;
+    code = makeShortQrCode(index, prefix);
+  }
+
+  return code;
 }
 
 /* ================= OPTIONAL ADMIN LIST ================= */
@@ -613,6 +774,13 @@ function wireButtons() {
 
 /* ================= SAVE (ADD/EDIT) ================= */
 function wireForm() {
+  stationEl?.addEventListener("change", () => {
+    stationTouched = true;
+  });
+  nameEl?.addEventListener("input", applyCakeStationDefault);
+  categoryEl?.addEventListener("input", applyCakeStationDefault);
+  categoryEl?.addEventListener("change", applyCakeStationDefault);
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -628,7 +796,7 @@ function wireForm() {
     const category = normalizeCategoryToEN(categoryEl?.value);
     const price = numOrNull(priceEl?.value);
     const cost = numOrNull(costEl?.value);
-    const station = norm(stationEl?.value || "kitchen");
+    const station = resolveStationForSave(name, category, stationEl?.value);
     const active = activeEl ? !!activeEl.checked : true;
 
     const description = norm(descEl?.value);
@@ -690,6 +858,12 @@ function wireForm() {
         targetId = targetRef.id;
       }
 
+      const qrCodeForSave = await resolveQrCodeForSave(category, targetId);
+      if (qrCodeForSave) {
+        payload.qrCode = qrCodeForSave;
+        payload.shortCode = qrCodeForSave;
+      }
+
       if (selectedImageFile) {
         if (saveBtn) saveBtn.textContent = "Качване на снимка...";
 
@@ -742,6 +916,7 @@ function wireForm() {
 /* ================= EDIT / RESET ================= */
 function openEdit(item) {
   editingId = item.id;
+  stationTouched = false;
 
   if (idEl) {
     idEl.value = item.id;
@@ -781,6 +956,7 @@ function openEdit(item) {
 
 function resetForm() {
   editingId = null;
+  stationTouched = false;
 
   if (idEl) {
     idEl.disabled = false;
@@ -883,7 +1059,3 @@ function wireMenuLiveEvents() {
 }
 
 /* ================= END ================= */
-
-
-
-
