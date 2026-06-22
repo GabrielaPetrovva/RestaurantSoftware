@@ -181,6 +181,64 @@ const categoryTitles = {
     desserts: "ДЕСЕРТИ"
 };
 
+function getMenuDishForDisplay(dish) {
+    if (typeof window !== "undefined" && typeof window.getTranslatedItem === "function") {
+        return window.getTranslatedItem(dish);
+    }
+
+    return {
+        ...dish,
+        displayName: dish?.name || dish?.title || "Item",
+        displayDescription: dish?.description || dish?.desc || ""
+    };
+}
+
+function getMenuCategoryTitle(categoryKey) {
+    if (typeof window !== "undefined" && typeof window.getTranslatedCategory === "function") {
+        return window.getTranslatedCategory(categoryKey);
+    }
+
+    return categoryTitles[categoryKey] || categoryKey;
+}
+
+function findMenuDishByName(name) {
+    const key = String(name || "").trim().toLowerCase();
+
+    for (const dishes of Object.values(menuData)) {
+        const match = dishes.find((dish) => String(dish.name || "").trim().toLowerCase() === key);
+        if (match) return match;
+    }
+
+    return null;
+}
+
+function getOrderDisplayName(item) {
+    const sourceDish = findMenuDishByName(item?.name);
+    if (sourceDish) return getMenuDishForDisplay(sourceDish).displayName || item?.name || "Item";
+    if (item?.displayName) return item.displayName;
+    return getMenuDishForDisplay(item).displayName || item?.name || "Item";
+}
+
+async function updateLegacyDishCardTranslationAsync(card, dish) {
+    const lang = localStorage.getItem("language") || localStorage.getItem("lang") || window.currentLang || "en";
+    if (lang !== "en") return;
+    if (!card || !dish || typeof window.getTranslatedItemAsync !== "function") return;
+
+    const translated = await window.getTranslatedItemAsync(dish);
+    const stillEnglish = (localStorage.getItem("language") || localStorage.getItem("lang") || window.currentLang || "en") === "en";
+    if (!stillEnglish || !card.isConnected) return;
+
+    const titleEl = card.querySelector("[data-menu-item-title]");
+    const descEl = card.querySelector("[data-menu-item-description]");
+    const imgEl = card.querySelector("img");
+
+    if (titleEl) titleEl.textContent = translated.displayName || "";
+    if (descEl) descEl.textContent = translated.displayDescription || "";
+    if (imgEl) imgEl.alt = translated.displayName || "";
+
+    console.log("[ITEM TRANSLATED ASYNC]", translated.displayName, translated.displayDescription);
+}
+
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     updateOrderCount();
@@ -194,20 +252,23 @@ function showCategoryDetails(categoryKey) {
     const dishesContainer = document.getElementById('category-dishes');
     
     // Set category title
-    title.textContent = categoryTitles[categoryKey];
+    title.textContent = getMenuCategoryTitle(categoryKey);
     
     // Get dishes for this category
     const dishes = menuData[categoryKey];
     
     // Generate dish cards
-    dishesContainer.innerHTML = dishes.map(dish => `
-        <div class="dish-card">
+    dishesContainer.innerHTML = dishes.map(dish => {
+        const displayDish = getMenuDishForDisplay(dish);
+
+        return `
+        <div class="dish-card" data-menu-item-id="${displayDish.id || dish.id || dish.menuId || dish.itemId || dish.name}">
             <div class="dish-image">
-                <img src="${dish.image}" alt="${dish.name}">
+                <img src="${dish.image}" alt="${displayDish.displayName}">
             </div>
             <div class="dish-content">
-                <h3>${dish.name}</h3>
-                <p class="dish-description">${dish.description}</p>
+                <h3 data-menu-item-title>${displayDish.displayName}</h3>
+                <p class="dish-description" data-menu-item-description>${displayDish.displayDescription}</p>
                 
                 <div class="nutritional-info">
                     <h4>Хранителна стойност (на порция)</h4>
@@ -235,7 +296,11 @@ function showCategoryDetails(categoryKey) {
                 <button class="add-to-order-btn" onclick="addToOrder('${dish.name}', ${dish.price})">Добави в поръчката</button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
+    Array.from(dishesContainer.querySelectorAll("[data-menu-item-id]")).forEach((card, index) => {
+        updateLegacyDishCardTranslationAsync(card, dishes[index]);
+    });
     
     // Show modal
     modal.style.display = 'block';
@@ -249,15 +314,20 @@ function closeCategoryDetails() {
 
 // Add item to order
 function addToOrder(dishName, price) {
+    const sourceDish = findMenuDishByName(dishName);
+    const displayName = sourceDish ? getMenuDishForDisplay(sourceDish).displayName : dishName;
+
     // Check if item already exists in order
     const existingItem = orderItems.find(item => item.name === dishName);
     
     if (existingItem) {
         existingItem.quantity += 1;
+        existingItem.displayName = displayName;
         existingItem.totalPrice = existingItem.price * existingItem.quantity;
     } else {
         orderItems.push({
             name: dishName,
+            displayName,
             price: price,
             quantity: 1,
             totalPrice: price
@@ -269,7 +339,7 @@ function addToOrder(dishName, price) {
     saveOrderToStorage();
     
     // Show success message
-    showOrderMessage(`${dishName} е добавен в поръчката!`);
+    showOrderMessage(`${displayName} е добавен в поръчката!`);
 }
 
 // Remove item from order
@@ -339,7 +409,7 @@ function displayOrderItems() {
         orderItemsContainer.innerHTML = orderItems.map(item => `
             <div class="order-item">
                 <div class="order-item-info">
-                    <div class="order-item-name">${item.name}</div>
+                    <div class="order-item-name">${getOrderDisplayName(item)}</div>
                     <div class="order-item-quantity">
                         <button onclick="updateItemQuantity('${item.name}', ${item.quantity - 1})" class="quantity-btn">-</button>
                         <span class="quantity">${item.quantity}</span>
@@ -377,7 +447,7 @@ function createOrderSummary() {
     summary += '==================\n\n';
     
     orderItems.forEach(item => {
-        summary += `${item.name} x${item.quantity} - ${item.totalPrice.toFixed(2)} €\n`;
+        summary += `${getOrderDisplayName(item)} x${item.quantity} - ${item.totalPrice.toFixed(2)} €\n`;
     });
     
     summary += '\n==================\n';

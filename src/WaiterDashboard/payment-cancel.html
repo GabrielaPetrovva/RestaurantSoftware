@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Payment Cancelled</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="payment-body" data-result-page="cancel">
+  <main class="payment-page">
+    <section class="payment-shell">
+      <div class="payment-card payment-page-card">
+        <h1 id="resultTitle">Payment cancelled</h1>
+        <p id="resultSubtitle">Order is still open.</p>
+        <div id="resultStatus" class="payment-page-status" role="status" aria-live="polite"></div>
+        <div class="payment-result-actions">
+          <button id="checkAgain" class="secondary-payment-btn" type="button">Check payment status</button>
+          <button id="backToDashboard" class="primary-payment-btn" type="button">Back to dashboard</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script type="module" src="./payment-result.js"></script>
+</body>
+</html>

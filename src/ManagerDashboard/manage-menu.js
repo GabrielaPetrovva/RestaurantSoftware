@@ -345,6 +345,7 @@ window.buildDbImagePath = buildDbImagePath;
 const form = pickEl("menuForm", "#menuForm", "form[data-menu-form]");
 
 const nameEl = pickEl("menuName", "#menuName", 'input[name="name"]');
+const nameEnEl = pickEl("menuNameEn", "#menuNameEn", 'input[name="nameEn"]');
 const categoryEl = pickEl("menuCategory", "#menuCategory", 'input[name="category"]', 'select[name="category"]');
 const priceEl = pickEl("menuPrice", "#menuPrice", 'input[name="price"]');
 const costEl = pickEl("menuCost", "#menuCost", 'input[name="cost"]');
@@ -359,6 +360,7 @@ const countEl = pickEl("menuTotalCount", "#menuTotalCount");
 
 const idEl = pickEl("menuId", "#menuId", 'input[name="id"]');
 const descEl = pickEl("menuDescription", "#menuDescription", 'textarea[name="description"]');
+const descEnEl = pickEl("menuDescriptionEn", "#menuDescriptionEn", 'textarea[name="descriptionEn"]');
 const weightEl = pickEl("menuWeight", "#menuWeight", 'input[name="weight"]');
 
 const caloriesEl = pickEl("menuCalories", "#menuCalories", 'input[name="calories"]');
@@ -793,6 +795,7 @@ function wireForm() {
     const manualId = cleanId(idEl?.value);
 
     const name = norm(nameEl?.value);
+    const nameEn = norm(nameEnEl?.value);
     const category = normalizeCategoryToEN(categoryEl?.value);
     const price = numOrNull(priceEl?.value);
     const cost = numOrNull(costEl?.value);
@@ -800,6 +803,7 @@ function wireForm() {
     const active = activeEl ? !!activeEl.checked : true;
 
     const description = norm(descEl?.value);
+    const descriptionEn = norm(descEnEl?.value);
     const weight = normalizeWeight(weightEl?.value);
 
     const calories = numOrNull(caloriesEl?.value);
@@ -827,7 +831,9 @@ function wireForm() {
         station,
         active,
 
+        ...(nameEn ? { nameEn } : {}),
         ...(description ? { description } : {}),
+        ...(descriptionEn ? { descriptionEn } : {}),
         ...(weight ? { weight } : {}),
 
         ...(calories != null ? { calories } : {}),
@@ -924,6 +930,7 @@ function openEdit(item) {
   }
 
   if (nameEl) nameEl.value = item.name ?? "";
+  if (nameEnEl) nameEnEl.value = item.nameEn ?? item.name_en ?? item.englishName ?? item.translations?.en?.name ?? "";
   if (categoryEl) categoryEl.value = categoryForInputDisplay(item.category);
   if (priceEl) priceEl.value = item.price ?? "";
   if (costEl) costEl.value = item.cost ?? "";
@@ -931,6 +938,7 @@ function openEdit(item) {
   if (activeEl) activeEl.checked = item.active !== false;
 
   if (descEl) descEl.value = item.description ?? "";
+  if (descEnEl) descEnEl.value = item.descriptionEn ?? item.description_en ?? item.englishDescription ?? item.translations?.en?.description ?? "";
   if (weightEl) weightEl.value = item.weight ?? "";
 
   if (caloriesEl) caloriesEl.value = item.calories ?? "";
@@ -964,6 +972,7 @@ function resetForm() {
   }
 
   if (nameEl) nameEl.value = "";
+  if (nameEnEl) nameEnEl.value = "";
   if (categoryEl) categoryEl.value = "";
   if (priceEl) priceEl.value = "";
   if (costEl) costEl.value = "";
@@ -971,6 +980,7 @@ function resetForm() {
   if (activeEl) activeEl.checked = true;
 
   if (descEl) descEl.value = "";
+  if (descEnEl) descEnEl.value = "";
   if (weightEl) weightEl.value = "";
   if (caloriesEl) caloriesEl.value = "";
   if (proteinEl)  proteinEl.value  = "";

@@ -4,6 +4,7 @@
 let orderItems = [];
 let orderTotal = 0;
 let lastOrder = []; // Store accumulated completed orders (all items from all QR generations)
+let activeModalItem = null;
 const CART_STORAGE_KEY = "guest_cart_v1";
 const QR_STATE_STORAGE_KEY = "guest_qr_state_v1";
 const QR_TTL_MS = 20 * 60 * 1000;
@@ -69,6 +70,74 @@ function getStableMenuId(item) {
         item?.firestoreId ||
         ""
     ).trim();
+}
+
+function resolveDishImageUrl(path) {
+    let p = String(path || "").trim();
+    if (!p) return "";
+    if (/^data:image\//i.test(p)) return p;
+    if (/^(https?:)?\/\//i.test(p)) return p;
+
+    p = p.replace(/\\/g, "/");
+    const lower = p.toLowerCase();
+
+    if (lower.startsWith("../images/")) return p;
+    if (lower.startsWith("../image/")) return `../images/${p.slice("../image/".length)}`;
+    if (lower.startsWith("./images/")) return `..${p.slice(1)}`;
+    if (lower.startsWith("./image/")) return `../images/${p.slice("./image/".length)}`;
+    if (lower.startsWith("images/")) return `../${p}`;
+    if (lower.startsWith("image/")) return `../images/${p.slice("image/".length)}`;
+
+    return `../images/${p}`;
+}
+
+function getDishNumber(item, keys) {
+    for (const key of keys) {
+        const value = item?.[key] ?? item?.nutrition?.[key];
+        const number = Number(value);
+        if (Number.isFinite(number)) return number;
+    }
+    return 0;
+}
+
+function buildMenuMetaFromItem(item) {
+    const menuId = getStableMenuId(item);
+    const qrCode = String(item?.qrCode || item?.shortCode || item?.code || item?.qr || "").trim();
+
+    return {
+        id: menuId,
+        menuId,
+        itemId: menuId,
+        category: item?.category || item?.categoryKey || item?.categorySlug || item?.categoryId || item?.type || "",
+        station: item?.station || item?.targetStation || item?.department || "",
+        qrCode,
+        shortCode: item?.shortCode || qrCode,
+        code: item?.code || qrCode,
+        qr: item?.qr || qrCode,
+        item
+    };
+}
+
+function getDisplayItem(item) {
+    if (typeof window.getTranslatedItem === "function") {
+        return window.getTranslatedItem(item);
+    }
+
+    return {
+        ...item,
+        displayName: item?.name || item?.title || "Item",
+        displayDescription: item?.description || item?.desc || item?.details || ""
+    };
+}
+
+function getDishPriceValue(item, fallback) {
+    const value = Number(item?.price ?? item?.cost ?? item?.priceValue ?? fallback ?? 0);
+    return Number.isFinite(value) ? value : 0;
+}
+
+function formatDishPrice(value) {
+    const price = Number(value);
+    return Number.isFinite(price) && price > 0 ? `${price.toFixed(2)} \u20ac` : "";
 }
 
 function buildMenuLookup(menuList) {
@@ -443,29 +512,49 @@ function showNutritionInfo(name, description, calories, carbs, protein, fat, wei
     const weightEl = document.getElementById('nutrition-weight');
     const priceEl = document.getElementById('nutrition-price');
     const addBtn = document.getElementById('nutrition-add-btn');
+
+    if (!modal || !title || !desc || !imageEl || !caloriesEl || !carbsEl || !proteinEl || !fatEl || !weightEl || !priceEl || !addBtn) {
+        console.warn("Nutrition modal markup is missing.");
+        return;
+    }
+
+    function safeDisplayText(value, fallback) {
+        if (typeof window.isBadTranslationResult === 'function' && window.isBadTranslationResult(value)) {
+            return fallback || '';
+        }
+
+        return value || fallback || '';
+    }
     
     const lang = localStorage.getItem('language') || 'en';
-    
-    // Set content immediately (show original, then translate if English)
-    title.textContent = name;
-    desc.textContent = description;
-    
-    // Translate dish name and description to English when app language is English
-    if (lang === 'en' && typeof window.translateText === 'function') {
-        if (description && description.trim()) {
-            window.translateText(description, 'bg', 'en').then(function(translated) {
-                if (desc) desc.textContent = translated || description;
-            }).catch(function() {});
-        }
-        if (name && name.trim()) {
-            window.translateText(name, 'bg', 'en').then(function(translated) {
-                if (title) title.textContent = translated || name;
-            }).catch(function() {});
-        }
-    }
+    const menuItem = menuMeta.item || {
+        ...menuMeta,
+        name,
+        description,
+        calories,
+        carbs,
+        protein,
+        fat,
+        weight,
+        price: priceValue,
+        image: imageUrl
+    };
+    activeModalItem = menuItem;
+    window.activeModalItem = activeModalItem;
+    const translatedItem = typeof window.getTranslatedItem === 'function'
+        ? window.getTranslatedItem(menuItem)
+        : { displayName: name, displayDescription: description };
+    const translationKey = String(menuMeta.menuId || menuMeta.itemId || menuMeta.id || name || "").trim();
+
+    modal.dataset.translationKey = translationKey;
+    const displayName = safeDisplayText(translatedItem.displayName, name);
+    const displayDescription = safeDisplayText(translatedItem.displayDescription, description);
+    title.textContent = displayName;
+    desc.textContent = displayDescription;
+
     if (imageUrl) {
         imageEl.src = imageUrl;
-        imageEl.alt = name;
+        imageEl.alt = displayName;
         imageEl.style.display = 'block';
     } else {
         imageEl.style.display = 'none';
@@ -506,22 +595,208 @@ function showNutritionInfo(name, description, calories, carbs, protein, fat, wei
     }
     
     // Update add button
-    addBtn.onclick = function() {
-        addToOrder(name, priceValue, menuMeta);
-        closeNutritionModal();
-    };
+    bindModalAddToCart();
+    addBtn.onclick = null;
     
     // Apply translations
     updateNutritionTranslations();
+    bindDishModalClose();
     
     // Show modal
+    modal.hidden = false;
     modal.style.display = 'flex';
+    modal.classList.add('active', 'show', 'open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    updateNutritionModalTranslationAsync(menuItem, translationKey);
+}
+
+async function updateNutritionModalTranslationAsync(item, translationKey) {
+    const lang = localStorage.getItem('language') || localStorage.getItem('lang') || window.currentLang || 'en';
+    if (lang !== 'en') return;
+    if (!item || typeof window.getTranslatedItemAsync !== 'function') return;
+
+    const modal = document.getElementById('nutritionModal');
+    if (!modal || modal.hidden || modal.getAttribute('aria-hidden') === 'true') return;
+    if (translationKey && modal.dataset.translationKey !== translationKey) return;
+
+    const translated = await window.getTranslatedItemAsync(item);
+    const stillEnglish = (localStorage.getItem('language') || localStorage.getItem('lang') || window.currentLang || 'en') === 'en';
+    if (!stillEnglish) return;
+    if (!modal || modal.hidden || modal.getAttribute('aria-hidden') === 'true') return;
+    if (translationKey && modal.dataset.translationKey !== translationKey) return;
+    if (window.activeModalItem && window.activeModalItem !== item) return;
+
+    const title = document.getElementById('nutrition-title');
+    const desc = document.getElementById('nutrition-description');
+    const imageEl = document.getElementById('nutrition-image');
+
+    if (title) title.textContent = translated.displayName || '';
+    if (desc) desc.textContent = translated.displayDescription || '';
+    if (imageEl) imageEl.alt = translated.displayName || '';
+
+    console.log('[MODAL TRANSLATED ASYNC]', translated.displayName, translated.displayDescription);
 }
 
 // Close nutrition modal
 function closeNutritionModal() {
     const modal = document.getElementById('nutritionModal');
+    if (!modal) return;
+
+    modal.classList.remove('active', 'show', 'open');
+    modal.hidden = true;
     modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+}
+
+function addToCart(item) {
+    if (!item) return;
+
+    const displayItem = getDisplayItem(item);
+    const dishName = displayItem.displayName || "Item";
+    const priceValue = getDishPriceValue(item);
+    addToOrder(dishName, priceValue, buildMenuMetaFromItem(item));
+}
+
+function getOrderSourceItem(orderItem) {
+    const menuId = String(orderItem?.menuId || orderItem?.itemId || orderItem?.id || "").trim();
+    const nameKey = normalizeQrName(orderItem?.name || orderItem?.title || "");
+    const menuList = getQrMenuList();
+
+    return (Array.isArray(menuList) ? menuList : []).find((item) => {
+        const itemId = getStableMenuId(item);
+        const itemName = normalizeQrName(item?.name || item?.title || "");
+        return (menuId && itemId === menuId) || (nameKey && itemName === nameKey);
+    }) || null;
+}
+
+function getOrderItemDisplayName(orderItem) {
+    const sourceItem = getOrderSourceItem(orderItem);
+    if (sourceItem) return getDisplayItem(sourceItem).displayName || orderItem?.name || "Item";
+    const lang = localStorage.getItem("language") || localStorage.getItem("lang") || window.currentLang || "en";
+    if (lang !== "en") return orderItem?.name || orderItem?.title || "Item";
+    if (orderItem?.displayName) return orderItem.displayName;
+    return getDisplayItem(orderItem).displayName || orderItem?.name || "Item";
+}
+
+function openDishModal(item) {
+    if (!item) return;
+
+    activeModalItem = item;
+    window.activeModalItem = activeModalItem;
+    const displayItem = getDisplayItem(item);
+    const priceValue = getDishPriceValue(item);
+
+    showNutritionInfo(
+        displayItem.displayName || "Item",
+        displayItem.displayDescription || "",
+        getDishNumber(item, ["calories", "kcal"]),
+        getDishNumber(item, ["carbs", "carbohydrates"]),
+        getDishNumber(item, ["protein", "proteins"]),
+        getDishNumber(item, ["fat", "fats"]),
+        item.weight || item.grams || "",
+        formatDishPrice(priceValue),
+        priceValue,
+        resolveDishImageUrl(item.imageUrl || item.image || item.img || item.photo || ""),
+        buildMenuMetaFromItem(item)
+    );
+}
+
+async function updateOpenDishModalLanguage() {
+    const modal =
+        document.getElementById('nutritionModal') ||
+        document.getElementById('dishModal') ||
+        document.getElementById('itemModal');
+
+    if (!modal || modal.hidden || modal.getAttribute('aria-hidden') === 'true') return;
+    if (!activeModalItem && window.activeModalItem) activeModalItem = window.activeModalItem;
+    if (!activeModalItem) return;
+
+    const requestedLang = localStorage.getItem('language') || localStorage.getItem('lang') || window.currentLang || 'en';
+    const displayItem = typeof window.getTranslatedItemAsync === 'function'
+        ? await window.getTranslatedItemAsync(activeModalItem)
+        : getDisplayItem(activeModalItem);
+    const currentLang = localStorage.getItem('language') || localStorage.getItem('lang') || window.currentLang || 'en';
+    if (currentLang !== requestedLang) return;
+    const stillCurrentItem = !window.activeModalItem || window.activeModalItem === activeModalItem;
+    if (!stillCurrentItem) return;
+    const titleEl =
+        modal.querySelector('[data-modal-title]') ||
+        modal.querySelector('.modal-title') ||
+        modal.querySelector('h2') ||
+        modal.querySelector('h3');
+    const descEl =
+        modal.querySelector('[data-modal-description]') ||
+        modal.querySelector('.modal-description') ||
+        modal.querySelector('.description') ||
+        document.getElementById('nutrition-description');
+    const img = modal.querySelector('[data-modal-image], .modal-image, img');
+
+    if (titleEl) titleEl.textContent = displayItem.displayName || 'Item';
+    if (descEl) descEl.textContent = displayItem.displayDescription || '';
+    if (img) img.alt = displayItem.displayName || 'Item';
+}
+
+function bindModalAddToCart() {
+    const modal = document.getElementById('nutritionModal');
+    if (!modal) return;
+
+    const btn =
+        modal.querySelector('[data-modal-add-to-cart]') ||
+        modal.querySelector('[data-add-to-cart-modal]') ||
+        modal.querySelector('.modal-add-to-cart') ||
+        document.getElementById('nutrition-add-btn') ||
+        modal.querySelector('.add-to-cart');
+
+    if (!btn || btn.dataset.bound === 'true') return;
+    btn.dataset.bound = 'true';
+
+    btn.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!activeModalItem) return;
+        addToCart(activeModalItem);
+        closeNutritionModal();
+    });
+}
+
+function bindDishModalClose() {
+    if (window.__DISH_MODAL_CLOSE_BOUND__) return;
+    window.__DISH_MODAL_CLOSE_BOUND__ = true;
+
+    const modal = document.getElementById('nutritionModal');
+    if (!modal) return;
+
+    modal.querySelectorAll('[data-close-modal], .modal-close, .close, .close-btn, .nutrition-close').forEach((btn) => {
+        btn.addEventListener('click', closeNutritionModal);
+    });
+
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal || event.target.classList.contains('modal-overlay')) {
+            closeNutritionModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') closeNutritionModal();
+    });
+}
+
+if (typeof window !== "undefined") {
+    window.activeModalItem = activeModalItem;
+    window.addToCart = addToCart;
+    window.openDishModal = openDishModal;
+    window.openNutritionModal = openDishModal;
+    window.showNutritionInfo = showNutritionInfo;
+    window.closeNutritionModal = closeNutritionModal;
+    window.closeDishModal = closeNutritionModal;
+    window.updateOpenDishModalLanguage = updateOpenDishModalLanguage;
+    window.updateNutritionModalTranslationAsync = updateNutritionModalTranslationAsync;
+    window.updateNutritionTranslations = updateNutritionTranslations;
+    window.bindDishModalClose = bindDishModalClose;
+    window.bindModalAddToCart = bindModalAddToCart;
 }
 
 // Update nutrition modal translations
@@ -584,19 +859,26 @@ function addToOrder(dishName, price, menuMeta = {}) {
     const category = String(menuMeta.category || "").trim();
     const station = String(menuMeta.station || "").trim();
     const qrCode = String(menuMeta.qrCode || menuMeta.shortCode || menuMeta.code || menuMeta.qr || "").trim();
+    const sourceItem = menuMeta.item || null;
+    const sourceDisplayItem = sourceItem ? getDisplayItem(sourceItem) : null;
+    const sourceName = String(sourceItem?.name || sourceItem?.title || menuMeta.name || dishName || "Item").trim();
+    const displayName = String(sourceDisplayItem?.displayName || dishName || sourceName || "Item").trim();
 
     // Check if item already exists in order
     const existingItem = orderItems.find((item) => {
         if (menuId) {
             const existingMenuId = String(item.menuId || item.itemId || "").trim();
-            return existingMenuId === menuId || (!existingMenuId && item.name === dishName);
+            return existingMenuId === menuId || (!existingMenuId && (item.name === sourceName || item.name === dishName));
         }
-        return item.name === dishName;
+        return item.name === sourceName || item.name === dishName;
     });
     
     if (existingItem) {
         existingItem.quantity += 1;
         existingItem.qty = existingItem.quantity;
+        existingItem.name = sourceName;
+        existingItem.displayName = displayName;
+        existingItem.nameEn = displayName;
         if (menuId) {
             existingItem.id = menuId;
             existingItem.menuId = menuId;
@@ -616,7 +898,9 @@ function addToOrder(dishName, price, menuMeta = {}) {
             id: menuId,
             menuId,
             itemId: menuId,
-            name: dishName,
+            name: sourceName,
+            displayName,
+            nameEn: displayName,
             price: price,
             category,
             station,
@@ -731,7 +1015,7 @@ function displayOrderItems() {
         orderItemsContainer.innerHTML = orderItems.map(item => `
             <div class="order-item">
                 <div class="order-item-info">
-                    <div class="order-item-name">${item.name}</div>
+                    <div class="order-item-name">${getOrderItemDisplayName(item)}</div>
                     <div class="order-item-quantity">
                         <button onclick="updateItemQuantity('${item.name}', ${item.quantity - 1})" class="quantity-btn">-</button>
                         <span class="quantity">${item.quantity}</span>
@@ -783,7 +1067,7 @@ function clearOrderCartAfterQr() {
         console.warn("[QR] storage clear skipped:", e);
     }
 
-    const qrContainer = document.getElementById("qr-code-display");
+    const qrContainer = document.getElementById("orderQrCode");
     if (qrContainer) qrContainer.innerHTML = "";
 
     const orderList = document.getElementById("order-items")
@@ -1183,46 +1467,71 @@ async function generateQR() {
     return handleGenerateQrClick();
 }
 
-// Generate QR code in full-screen modal
-function renderQrFromPayload(text) {
-    const qrDisplay = document.getElementById('qr-code-display');
-    if (!qrDisplay) return;
-    
-    // Clear previous QR code
-    qrDisplay.innerHTML = '';
-    
-    // Create QR code canvas using QRCode.js (if available) or fallback
-    const qrCodeElement = document.createElement('canvas');
-    qrCodeElement.id = 'qr-code';
-    qrCodeElement.style.width = 'min(82vw, 460px)';
-    qrCodeElement.style.height = 'min(82vw, 460px)';
-    qrCodeElement.style.imageRendering = 'pixelated';
-    
-    // Try to use QRCode.js library if available
-    if (typeof QRCode !== 'undefined') {
-        qrDisplay.appendChild(qrCodeElement);
-        QRCode.toCanvas(qrCodeElement, text, {
-            errorCorrectionLevel: 'M',
-            margin: 6,
-            scale: 12,
-            width: 1000,
+function showOrderQrError(qrContainer, message) {
+    qrContainer.innerHTML = '';
+
+    const errorMessage = document.createElement('p');
+    errorMessage.className = 'qr-error';
+    errorMessage.textContent = message;
+    qrContainer.appendChild(errorMessage);
+}
+
+function updateOrderQrInstruction() {
+    const instruction = document.getElementById('qrScanInstruction');
+    if (!instruction) return;
+
+    const lang = localStorage.getItem('language') || 'en';
+    instruction.textContent = lang === 'bg'
+        ? 'Сканирайте този код за да видите детайлите на поръчката'
+        : 'Scan this code to view order details';
+}
+
+// Render the existing order payload as a scannable QR code.
+function renderOrderQr(qrPayload) {
+    const qrContainer = document.getElementById('orderQrCode');
+    if (!qrContainer) return;
+
+    qrContainer.innerHTML = '';
+    updateOrderQrInstruction();
+
+    if (!qrPayload || typeof qrPayload !== 'string') {
+        showOrderQrError(qrContainer, 'Няма данни за QR код.');
+        return;
+    }
+
+    if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
+        showOrderQrError(qrContainer, 'QR библиотеката не е заредена.');
+        return;
+    }
+
+    const qrCanvas = document.createElement('canvas');
+    qrCanvas.id = 'order-qr-canvas';
+    qrContainer.appendChild(qrCanvas);
+
+    try {
+        window.QRCode.toCanvas(qrCanvas, qrPayload, {
+            errorCorrectionLevel: 'H',
+            margin: 4,
+            width: 230,
             color: {
                 dark: '#000000',
                 light: '#ffffff'
             }
         }, function (error) {
-            if (error) {
-                console.error('QR Code generation error:', error);
-                qrDisplay.innerHTML = '';
-                // Fallback to simple visual representation
-                generateQRCodeFallback(qrDisplay, text);
-            }
-        });
-    } else {
-        // Fallback if QRCode.js is not loaded
-        generateQRCodeFallback(qrDisplay, text);
-    }
+            if (!error) return;
 
+            console.error('QR Code generation error:', error);
+            showOrderQrError(qrContainer, 'QR кодът не можа да бъде генериран.');
+        });
+    } catch (error) {
+        console.error('QR Code generation error:', error);
+        showOrderQrError(qrContainer, 'QR кодът не можа да бъде генериран.');
+    }
+}
+
+// Generate QR code in full-screen modal
+function renderQrFromPayload(qrPayload) {
+    renderOrderQr(qrPayload);
 }
 
 function showQrModal() {
@@ -1236,23 +1545,6 @@ function showQrModal() {
 function generateQRCodeModal(text) {
     renderQrFromPayload(text);
     showQrModal();
-}
-
-// Fallback QR code display (simple text representation)
-function generateQRCodeFallback(container, text) {
-    const lang = localStorage.getItem('language') || 'en';
-    const qrScanMsg = lang === 'bg' ? 'Сканирайте този код за да видите детайлите на поръчката' : 'Scan this code to view order details';
-    
-    container.innerHTML = `
-        <div style="background: white; padding: 40px; border-radius: 8px; display: inline-block; max-width: 90vw; max-height: 90vh; overflow: auto;">
-            <div style="font-family: monospace; font-size: 12px; line-height: 1.2; color: black; white-space: pre-wrap; word-break: break-all;">
-                ${text}
-            </div>
-            <p style="margin-top: 20px; color: #666; font-size: 0.9rem; text-align: center;">
-                ${qrScanMsg}
-            </p>
-        </div>
-    `;
 }
 
 // Close QR modal
@@ -1273,6 +1565,7 @@ if (typeof window !== "undefined") {
     window.closeQRModal = closeQRModal;
     window.handleGenerateQrClick = handleGenerateQrClick;
     window.generateQR = generateQR;
+    window.renderOrderQr = renderOrderQr;
     window.openSavedQrIfValid = openSavedQrIfValid;
     window.clearCartExplicitly = clearCartExplicitly;
 }
@@ -1304,7 +1597,7 @@ function showLastOrderReceipt() {
     // Display receipt items (read-only)
     receiptItems.innerHTML = lastOrder.map(item => `
         <div class="receipt-item">
-            <div class="receipt-item-name">${item.name}</div>
+            <div class="receipt-item-name">${getOrderItemDisplayName(item)}</div>
             <div class="receipt-item-quantity">x${item.quantity}</div>
             <div class="receipt-item-price">${item.totalPrice.toFixed(2)} €</div>
         </div>
@@ -1512,10 +1805,15 @@ window.addEventListener('DOMContentLoaded', function() {
     // Apply translations to nutrition modal if it exists
     if (document.getElementById('nutritionModal')) {
         updateNutritionTranslations();
+        bindDishModalClose();
+        bindModalAddToCart();
     }
-});
+}, { once: true });
 
 // Close modal when clicking outside
+if (!window.__MENU_MODAL_CLOSE_BOUND__) {
+window.__MENU_MODAL_CLOSE_BOUND__ = true;
+
 window.addEventListener('click', function(event) {
     const orderModal = document.getElementById('orderSummaryModal');
     const nutritionModal = document.getElementById('nutritionModal');
@@ -1527,7 +1825,7 @@ window.addEventListener('click', function(event) {
     }
     
     if (event.target === nutritionModal) {
-        nutritionModal.style.display = 'none';
+        closeNutritionModal();
     }
     
     if (event.target === qrModal) {
@@ -1571,8 +1869,9 @@ document.addEventListener('keydown', function(e) {
         }
         
         if (nutritionModal && nutritionModal.style.display === 'flex') {
-            nutritionModal.style.display = 'none';
+            closeNutritionModal();
             return;
         }
     }
 });
+}

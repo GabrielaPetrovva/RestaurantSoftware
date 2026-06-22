@@ -109,7 +109,10 @@
             <div class="payment-types" id="paymentTypes">
               <button type="button" class="pay-btn active" data-type="cash">Cash</button>
               <button type="button" class="pay-btn" data-type="card">Card</button>
+              <button type="button" class="pay-btn" data-type="revolut">Revolut</button>
+              <button type="button" class="pay-btn" data-type="bank_transfer">Bank Transfer</button>
             </div>
+            <div id="paymentMethodInfo" class="payment-method-info"></div>
 
             <div class="amount-row">
               <span id="labelAmount">Amount</span>
@@ -182,7 +185,7 @@
   <div id="receiptModal" class="receipt-modal" aria-hidden="true">
     <div class="receipt-content">
       <div class="receipt-header">
-        <h2 id="receiptTitle">Касова бележка</h2>
+        <h2 id="receiptTitle">Demo Electronic Receipt</h2>
         <button type="button" id="closeReceipt" class="close-receipt-btn" title="Затвори" aria-label="Затвори">✕</button>
       </div>
       <div class="receipt-body" id="receiptBody"></div>
@@ -193,6 +196,75 @@
     </div>
   </div>
 
+  <div id="paymentQrModal" class="modal payment-qr-modal" aria-hidden="true">
+    <div class="modal-overlay" data-close-payment-qr></div>
+    <div class="modal-card payment-qr-card">
+      <div class="modal-head">
+        <b id="paymentQrTitle">Scan to pay</b>
+        <button type="button" class="modal-close" data-close-payment-qr aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="paymentQrSummary" class="payment-qr-summary"></div>
+        <div class="payment-qr-code-wrap">
+          <canvas id="paymentQrCanvas" class="payment-qr-canvas" aria-label="Payment QR code"></canvas>
+          <div id="paymentQrFallback" class="payment-qr-fallback" hidden></div>
+        </div>
+        <div class="payment-qr-link-row">
+          <input id="paymentQrLink" class="payment-qr-link-input" type="text" readonly>
+        </div>
+        <div id="paymentQrStatus" class="payment-message" role="status" aria-live="polite"></div>
+        <div class="payment-qr-actions">
+          <button type="button" id="copyPaymentQrLink" class="secondary-payment-btn">Copy link</button>
+          <button type="button" id="openPaymentQrLink" class="secondary-payment-btn">Open on this device</button>
+          <button type="button" id="closePaymentQrModal" class="primary-payment-btn">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Old online payment modal disabled. Online payments redirect to payment.html.
+  <div id="onlinePaymentModal" class="modal" aria-hidden="true">
+    <div class="modal-overlay" data-close-online-payment></div>
+    <div class="modal-card online-payment-card">
+      <div class="modal-head">
+        <b id="onlinePaymentTitle">Online Payment</b>
+        <button type="button" class="modal-close" data-close-online-payment aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="onlinePaymentSummary" class="online-payment-summary"></div>
+
+        <div id="stripePaymentSection" class="provider-section" hidden>
+          <div id="stripePaymentElement"></div>
+          <div id="stripePaymentMessage" class="payment-message"></div>
+          <button type="button" id="confirmStripePayment" class="online-pay-btn">
+            Pay by card
+          </button>
+        </div>
+
+        <div id="revolutPaymentSection" class="provider-section" hidden>
+          <p id="revolutPaymentText" class="muted"></p>
+          <a id="revolutCheckoutLink" class="online-pay-link" target="_blank" rel="noopener">
+            Open Revolut checkout
+          </a>
+          <button type="button" id="checkRevolutStatus" class="online-pay-btn secondary">
+            Check payment status
+          </button>
+        </div>
+
+        <div id="bankTransferSection" class="provider-section" hidden>
+          <div id="bankTransferInstructions" class="bank-transfer-box"></div>
+          <button type="button" id="checkBankTransferStatus" class="online-pay-btn secondary">
+            Check transfer status
+          </button>
+        </div>
+
+        <div id="onlinePaymentStatus" class="payment-message"></div>
+      </div>
+    </div>
+  </div>
+  -->
+
+  <script defer src="./qrcode.min.js"></script>
   <script defer src="./config.js"></script>
   <script defer src="../shared/orders.js"></script>
   <script type="module" src="../js/auth-redirect.js"></script>

@@ -88,6 +88,9 @@ export function watchMenu(cb) {
 export async function addMenuItem(data) {
   const payload = {
     name: data.name || "",
+    nameEn: data.nameEn || data.name_en || data.englishName || "",
+    description: data.description || "",
+    descriptionEn: data.descriptionEn || data.description_en || data.englishDescription || "",
     category: data.category || "",
     price: Number(data.price || 0),
     station: (data.station || "kitchen").toLowerCase(), // kitchen / bar

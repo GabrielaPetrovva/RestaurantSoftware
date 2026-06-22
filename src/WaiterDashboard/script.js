@@ -81,6 +81,31 @@ const closeReceipt = qs("closeReceipt");
 const closeReceiptBtn = qs("closeReceiptBtn");
 const printReceipt = qs("printReceipt");
 const receiptTitle = qs("receiptTitle");
+const onlinePaymentModal = qs("onlinePaymentModal");
+const onlinePaymentTitle = qs("onlinePaymentTitle");
+const onlinePaymentSummary = qs("onlinePaymentSummary");
+const stripePaymentSection = qs("stripePaymentSection");
+const stripePaymentElement = qs("stripePaymentElement");
+const stripePaymentMessage = qs("stripePaymentMessage");
+const confirmStripePaymentBtn = qs("confirmStripePayment");
+const revolutPaymentSection = qs("revolutPaymentSection");
+const revolutPaymentText = qs("revolutPaymentText");
+const revolutCheckoutLink = qs("revolutCheckoutLink");
+const checkRevolutStatusBtn = qs("checkRevolutStatus");
+const bankTransferSection = qs("bankTransferSection");
+const bankTransferInstructions = qs("bankTransferInstructions");
+const checkBankTransferStatusBtn = qs("checkBankTransferStatus");
+const onlinePaymentStatus = qs("onlinePaymentStatus");
+const paymentQrModal = qs("paymentQrModal");
+const paymentQrTitle = qs("paymentQrTitle");
+const paymentQrSummary = qs("paymentQrSummary");
+const paymentQrCanvas = qs("paymentQrCanvas");
+const paymentQrFallback = qs("paymentQrFallback");
+const paymentQrLink = qs("paymentQrLink");
+const paymentQrStatus = qs("paymentQrStatus");
+const copyPaymentQrLinkBtn = qs("copyPaymentQrLink");
+const openPaymentQrLinkBtn = qs("openPaymentQrLink");
+const closePaymentQrModalBtn = qs("closePaymentQrModal");
 
 /* ======================= TRANSLATIONS ======================= */
 let currentLang = localStorage.getItem('waiterDashboardLang') || 'en';
@@ -103,6 +128,16 @@ const translations = {
     'Total': 'Total',
     'Cash': 'Cash',
     'Card': 'Card',
+    'Revolut': 'Revolut',
+    'Bank Transfer': 'Bank Transfer',
+    'Payment info cash': 'Cash is offline. Confirm only after receiving the money.',
+    'Payment info card': 'Real card payment through Stripe. Card data is handled securely by Stripe.',
+    'Payment info revolut': 'Real Revolut payment. The guest will complete checkout through Revolut.',
+    'Payment info bank_transfer': 'Bank transfer payment. The order stays pending until the transfer is confirmed.',
+    'Payment method info cash': 'Cash is offline. Confirm only after receiving the money.',
+    'Payment method info card': 'Real card payment through Stripe. Card data is handled securely by Stripe.',
+    'Payment method info revolut': 'Real Revolut payment. The guest will complete checkout through Revolut.',
+    'Payment method info bank_transfer': 'Bank transfer payment. The order stays pending until the transfer is confirmed.',
     'Amount': 'Amount',
     'Tip': 'Tip',
     'Comments': 'Comments',
@@ -133,6 +168,38 @@ const translations = {
     'Table': 'Table',
     'Date': 'Date',
     'Payment Method': 'Payment Method',
+    'Payment Reference': 'Payment Reference',
+    'Payment Status': 'Payment Status',
+    'Confirmed': 'Confirmed',
+    'Online Payment': 'Online Payment',
+    'Scan to pay': 'Scan to pay',
+    'Copy link': 'Copy link',
+    'Copied': 'Copied',
+    'Open on this device': 'Open on this device',
+    'Payment link': 'Payment link',
+    'QR unavailable. Use the payment link instead.': 'QR unavailable. Use the payment link instead.',
+    'Pay by card': 'Pay by card',
+    'Open Revolut checkout': 'Open Revolut checkout',
+    'Check payment status': 'Check payment status',
+    'Check transfer status': 'Check transfer status',
+    'Payment pending': 'Payment pending',
+    'Payment successful': 'Payment successful',
+    'Payment failed': 'Payment failed',
+    'Payment declined': 'Payment was declined.',
+    'Bank transfer instructions': 'Bank transfer instructions',
+    'Reference': 'Reference',
+    'IBAN': 'IBAN',
+    'Beneficiary': 'Beneficiary',
+    'Provider': 'Provider',
+    'Status': 'Status',
+    'Receipt No': 'Receipt No',
+    'No selected order': 'No selected order.',
+    'Order is empty': 'Order is empty.',
+    'Order already paid': 'The order is already paid.',
+    'Payment API not configured': 'Payment API response is missing required Stripe data.',
+    'Payment backend inactive': 'Payment server is not available.',
+    'Stripe publishable key missing': 'Stripe publishable key is missing.',
+    'Revolut checkout link missing': 'Revolut checkout link is missing.',
     'Subtotal': 'Subtotal',
     'Tip': 'Tip',
     'Total': 'Total',
@@ -165,6 +232,16 @@ const translations = {
   'Total': 'Общо',
   'Cash': 'В брой',
   'Card': 'Карта',
+  'Revolut': 'Револют',
+  'Bank Transfer': 'Банков превод',
+  'Payment info cash': 'Плащане в брой. Потвърди само след като получиш парите.',
+  'Payment info card': 'Реално плащане с карта през Stripe. Данните от картата се обработват защитено от Stripe.',
+  'Payment info revolut': 'Реално плащане през Revolut. Клиентът завършва плащането в Revolut checkout.',
+  'Payment info bank_transfer': 'Банков превод. Поръчката остава pending, докато преводът не бъде потвърден.',
+  'Payment method info cash': 'Плащане в брой. Потвърди само след като получиш парите.',
+  'Payment method info card': 'Реално плащане с карта през Stripe. Данните от картата се обработват защитено от Stripe.',
+  'Payment method info revolut': 'Реално плащане през Revolut. Клиентът завършва плащането в Revolut checkout.',
+  'Payment method info bank_transfer': 'Банков превод. Поръчката остава pending, докато преводът не бъде потвърден.',
   'Amount': 'Сума',
   'Tip': 'Бакшиш',
   'Comments': 'Коментари',
@@ -193,6 +270,38 @@ const translations = {
   'Receipt': 'Разписка',
   'Date': 'Дата',
   'Payment Method': 'Метод на плащане',
+  'Payment Reference': 'Референция на плащане',
+  'Payment Status': 'Статус на плащане',
+  'Confirmed': 'Потвърдено',
+  'Online Payment': 'Онлайн плащане',
+  'Scan to pay': 'Сканирай за плащане',
+  'Copy link': 'Копирай линк',
+  'Copied': 'Копирано',
+  'Open on this device': 'Отвори на това устройство',
+  'Payment link': 'Линк за плащане',
+  'QR unavailable. Use the payment link instead.': 'QR кодът не е наличен. Използвай линка за плащане.',
+  'Pay by card': 'Плати с карта',
+  'Open Revolut checkout': 'Отвори Revolut плащане',
+  'Check payment status': 'Провери статус',
+  'Check transfer status': 'Провери статус',
+  'Payment pending': 'Плащането чака потвърждение',
+  'Payment successful': 'Плащането е успешно',
+  'Payment failed': 'Плащането е неуспешно',
+  'Payment declined': 'Плащането беше отказано.',
+  'Bank transfer instructions': 'Инструкции за банков превод',
+  'Reference': 'Референция',
+  'IBAN': 'IBAN',
+  'Beneficiary': 'Получател',
+  'Provider': 'Доставчик',
+  'Status': 'Статус',
+  'Receipt No': 'Номер на бележка',
+  'No selected order': 'Няма избрана поръчка.',
+  'Order is empty': 'Поръчката е празна.',
+  'Order already paid': 'Поръчката вече е платена.',
+  'Payment API not configured': 'Payment API отговорът няма нужните Stripe данни.',
+  'Payment backend inactive': 'Payment server is not available.',
+  'Stripe publishable key missing': 'Stripe publishable key липсва.',
+  'Revolut checkout link missing': 'Revolut checkout link липсва.',
   'Subtotal': 'Междинна сума',
   'Print': 'Принтирай',
   'Close': 'Затвори',
@@ -210,6 +319,46 @@ const translations = {
 };
 function t(key) {
   return translations[currentLang][key] || translations['en'][key] || key;
+}
+
+const PAYMENT_METHODS = {
+  cash: {
+    labelKey: "Cash",
+    infoKey: "Payment info cash",
+    icon: "💵"
+  },
+  card: {
+    labelKey: "Card",
+    infoKey: "Payment info card",
+    icon: "💳"
+  },
+  revolut: {
+    labelKey: "Revolut",
+    infoKey: "Payment info revolut",
+    icon: "🔁"
+  },
+  bank_transfer: {
+    labelKey: "Bank Transfer",
+    infoKey: "Payment info bank_transfer",
+    icon: "🏦"
+  }
+};
+
+function normalizePaymentMethod(value) {
+  const method = String(value || "").trim().toLowerCase();
+  return PAYMENT_METHODS[method] ? method : "cash";
+}
+
+function getPaymentMethodLabel(method) {
+  const normalized = normalizePaymentMethod(method);
+  return t(PAYMENT_METHODS[normalized].labelKey);
+}
+
+function updatePaymentMethodInfo() {
+  const infoEl = qs("paymentMethodInfo");
+  if (!infoEl) return;
+  const normalized = normalizePaymentMethod(payMethod);
+  infoEl.textContent = t(PAYMENT_METHODS[normalized].infoKey);
 }
 
 function updateTranslations() {
@@ -265,6 +414,9 @@ if (waiterProfileHint) {
   
   document.querySelectorAll('.pay-btn[data-type="cash"]').forEach(el => el.textContent = t('Cash'));
   document.querySelectorAll('.pay-btn[data-type="card"]').forEach(el => el.textContent = t('Card'));
+  document.querySelectorAll('.pay-btn[data-type="revolut"]').forEach(el => el.textContent = t('Revolut'));
+  document.querySelectorAll('.pay-btn[data-type="bank_transfer"]').forEach(el => el.textContent = t('Bank Transfer'));
+  updatePaymentMethodInfo();
   
   const labelAmount = qs("labelAmount");
   if (labelAmount) labelAmount.textContent = t('Amount');
@@ -307,6 +459,16 @@ if (waiterProfileHint) {
   if (receiptTitle) receiptTitle.textContent = t('Receipt');
   if (printReceipt) printReceipt.textContent = t('Print');
   if (closeReceiptBtn) closeReceiptBtn.textContent = t('Close');
+  if (onlinePaymentTitle) onlinePaymentTitle.textContent = t('Online Payment');
+  if (confirmStripePaymentBtn) confirmStripePaymentBtn.textContent = t('Pay by card');
+  if (revolutCheckoutLink) revolutCheckoutLink.textContent = t('Open Revolut checkout');
+  if (checkRevolutStatusBtn) checkRevolutStatusBtn.textContent = t('Check payment status');
+  if (checkBankTransferStatusBtn) checkBankTransferStatusBtn.textContent = t('Check transfer status');
+  if (revolutPaymentText) revolutPaymentText.textContent = t('Payment pending');
+  if (paymentQrTitle) paymentQrTitle.textContent = t('Scan to pay');
+  if (copyPaymentQrLinkBtn) copyPaymentQrLinkBtn.textContent = t('Copy link');
+  if (openPaymentQrLinkBtn) openPaymentQrLinkBtn.textContent = t('Open on this device');
+  if (closePaymentQrModalBtn) closePaymentQrModalBtn.textContent = t('Close');
 
   if (waiterNotificationsTitle) waiterNotificationsTitle.textContent = t('Live Updates');
   if (waiterNotificationsSubtitle) waiterNotificationsSubtitle.textContent = t('Latest kitchen and bar item statuses');
@@ -365,6 +527,10 @@ let selectedCategory = null;
 let payMethod = "cash";
 let tipPercent = 0;
 let tipCustom = 0;
+let activeOnlinePayment = null;
+let stripeInstance = null;
+let stripeElements = null;
+let stripePaymentElementInstance = null;
 
 let unsubTables = null;
 let unsubOrder = null;
@@ -378,6 +544,375 @@ let clearedWaiterNotificationIds = new Set();
 
 /* ======================= HELPERS ======================= */
 const euro = (n) => `${(Number(n) || 0).toFixed(2)} €`;
+
+function buildPaymentApiUrl(path) {
+  const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
+  const base = String(window.PAYMENT_API_BASE_URL || "").replace(/\/$/, "");
+  return base ? `${base}${cleanPath}` : cleanPath;
+}
+
+async function getAuthToken() {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not signed in.");
+  return user.getIdToken();
+}
+
+async function apiPost(path, body) {
+  const token = await getAuthToken();
+  const url = buildPaymentApiUrl(path);
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(body || {})
+  });
+
+  const text = await res.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!res.ok) {
+    console.error("Payment API error:", {
+      url,
+      status: res.status,
+      statusText: res.statusText,
+      data
+    });
+    if (res.status === 404 || res.status === 405) {
+      throw new Error(
+        "Payment API route is missing. The app must be deployed as a Node web service, not as static HTML."
+      );
+    }
+    throw new Error(data.error || data.message || `API error ${res.status}`);
+  }
+  return data;
+}
+
+async function checkPaymentBackendHealth() {
+  try {
+    const res = await fetch(buildPaymentApiUrl("/api/health"));
+    const data = await res.json().catch(() => ({}));
+
+    return {
+      ok: res.ok && data.ok === true,
+      status: res.status,
+      data
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err.message || String(err)
+    };
+  }
+}
+
+async function ensurePaymentBackendActive() {
+  const health = await checkPaymentBackendHealth();
+  if (!health.ok) {
+    console.error("Payment backend health check failed:", health);
+    throw new Error("Payment server is not available.");
+  }
+  return health;
+}
+
+async function testPaymentApi() {
+  const health = await checkPaymentBackendHealth();
+  console.log("Payment API health:", health);
+  return health;
+}
+
+if (typeof window !== "undefined") {
+  window.checkPaymentBackendHealth = checkPaymentBackendHealth;
+  window.testPaymentApi = testPaymentApi;
+}
+
+function setPaymentMessage(el, message, type = "") {
+  if (!el) return;
+  el.textContent = message || "";
+  el.classList.remove("ok", "err");
+  if (type) el.classList.add(type);
+}
+
+function getStatusClass(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  if (normalized === "paid" || normalized === "succeeded" || normalized === "confirmed") return "paid";
+  if (["failed", "cancelled", "canceled"].includes(normalized)) return "failed";
+  return normalized || "pending";
+}
+
+function openOnlinePaymentModal() {
+  if (!onlinePaymentModal) return;
+  onlinePaymentModal.style.display = "block";
+  onlinePaymentModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeOnlinePaymentModal() {
+  if (!onlinePaymentModal) return;
+  if (document.activeElement && onlinePaymentModal.contains(document.activeElement)) {
+    document.activeElement.blur();
+  }
+  completePaymentBtn?.focus();
+  onlinePaymentModal.style.display = "none";
+  onlinePaymentModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function resetOnlinePaymentSections() {
+  [stripePaymentSection, revolutPaymentSection, bankTransferSection].forEach((section) => {
+    if (section) section.hidden = true;
+  });
+  setPaymentMessage(stripePaymentMessage, "");
+  setPaymentMessage(onlinePaymentStatus, "");
+  if (stripePaymentElement) stripePaymentElement.innerHTML = "";
+  if (bankTransferInstructions) bankTransferInstructions.innerHTML = "";
+  stripeElements = null;
+  stripePaymentElementInstance = null;
+}
+
+function renderOnlinePaymentSummary(context, method) {
+  if (!onlinePaymentSummary) return;
+  onlinePaymentSummary.innerHTML = `
+    <div>${getPaymentMethodLabel(method)}</div>
+    <div class="muted" style="font-size:12px; margin-top:4px;">
+      ${t('Amount')}: ${euro(context.baseAmount)}
+      ${context.tipAmount ? ` · ${t('Tip')}: ${euro(context.tipAmount)}` : ""}
+    </div>
+    <div style="margin-top:6px;">${t('Total')}: ${euro(context.finalTotal)}</div>
+  `;
+}
+
+function renderBankTransferInstructions(data) {
+  const instructions = data?.bankTransferInstructions || data?.instructions || {};
+  const reference = data?.bankTransferReference || instructions.reference || data?.reference || "—";
+  const iban = data?.bankIban || instructions.iban || instructions.account_number || "—";
+  const beneficiary = data?.beneficiary || instructions.beneficiary || instructions.account_holder_name || "—";
+  const hostedUrl = instructions.hosted_instructions_url || data?.hostedInstructionsUrl || "";
+
+  if (!bankTransferInstructions) return;
+  bankTransferInstructions.innerHTML = `
+    <div><strong>${t('Bank transfer instructions')}</strong></div>
+    <div><strong>${t('Reference')}:</strong> ${escapeReceiptText(reference)}</div>
+    <div><strong>${t('IBAN')}:</strong> ${escapeReceiptText(iban)}</div>
+    <div><strong>${t('Beneficiary')}:</strong> ${escapeReceiptText(beneficiary)}</div>
+    <div><strong>${t('Amount')}:</strong> ${euro(data?.totalAmount || 0)}</div>
+    ${hostedUrl ? `<div><a href="${escapeReceiptText(hostedUrl)}" target="_blank" rel="noopener">${escapeReceiptText(hostedUrl)}</a></div>` : ""}
+  `;
+}
+
+function buildPaymentContext() {
+  if (!selectedOrderId || !selectedTableId || !currentOrder) {
+    throw new Error(t('No selected order'));
+  }
+  if (isClosedOrderRecord(currentOrder)) {
+    throw new Error(t('Order already paid'));
+  }
+
+  const items = Array.isArray(currentOrder.items) ? currentOrder.items : [];
+  if (!items.length) {
+    throw new Error(t('Order is empty'));
+  }
+
+  const baseAmount = Number(currentTotal || 0);
+  const tipAmount = tipPercent > 0
+    ? baseAmount * tipPercent
+    : parseEuroInput(customTipEl?.value || String(tipCustom || ""));
+
+  return {
+    orderId: selectedOrderId,
+    tableId: selectedTableId,
+    receiptOrder: { ...currentOrder },
+    receiptItems: items.map((item) => ({ ...item })),
+    baseAmount,
+    tipAmount,
+    finalTotal: baseAmount + tipAmount
+  };
+}
+
+function getPublicPaymentBaseUrl() {
+  return String(window.PUBLIC_PAYMENT_BASE_URL || window.location.origin).replace(/\/$/, "");
+}
+
+function buildPublicPaymentUrl(method, context) {
+  const normalizedMethod = normalizePaymentMethod(method);
+  if (!["card", "revolut", "bank_transfer"].includes(normalizedMethod)) return "";
+
+  const orderId = context?.orderId || selectedOrderId;
+  const tableId = context?.tableId || selectedTableId;
+  if (!orderId || !tableId) {
+    throw new Error(t('No selected order'));
+  }
+
+  const tipAmount = Number.isFinite(Number(context?.tipAmount))
+    ? Number(context.tipAmount)
+    : parseEuroInput(customTipEl?.value || "0");
+  const url = new URL("./payment.html", window.location.href);
+
+  url.searchParams.set("method", normalizedMethod);
+  url.searchParams.set("orderId", orderId);
+  url.searchParams.set("tableId", tableId);
+  url.searchParams.set("tip", String(Math.round((tipAmount || 0) * 100) / 100));
+  url.searchParams.set("returnTo", "./index.html");
+  url.searchParams.set("client", "1");
+
+  if (Number.isFinite(Number(context?.baseAmount))) {
+    url.searchParams.set("amount", String(Math.round(Number(context.baseAmount) * 100) / 100));
+  }
+  if (Number.isFinite(Number(context?.finalTotal))) {
+    url.searchParams.set("total", String(Math.round(Number(context.finalTotal) * 100) / 100));
+  }
+
+  return url.toString();
+}
+
+function setPaymentQrStatus(message, type = "") {
+  setPaymentMessage(paymentQrStatus, message, type);
+}
+
+function renderPaymentQrCode(paymentUrl) {
+  if (!paymentQrCanvas || !paymentQrFallback) return;
+  paymentQrCanvas.hidden = false;
+  paymentQrFallback.hidden = true;
+  paymentQrFallback.textContent = "";
+
+  if (!window.QRCode || typeof window.QRCode.toCanvas !== "function") {
+    paymentQrCanvas.hidden = true;
+    paymentQrFallback.hidden = false;
+    paymentQrFallback.textContent = `${t('QR unavailable. Use the payment link instead.')} ${paymentUrl}`;
+    return;
+  }
+
+  window.QRCode.toCanvas(paymentQrCanvas, paymentUrl, {
+    width: 252,
+    margin: 2,
+    color: {
+      dark: "#111111",
+      light: "#ffffff"
+    }
+  }, (err) => {
+    if (!err) return;
+    console.error("QR render failed:", err);
+    paymentQrCanvas.hidden = true;
+    paymentQrFallback.hidden = false;
+    paymentQrFallback.textContent = `${t('QR unavailable. Use the payment link instead.')} ${paymentUrl}`;
+  });
+}
+
+function openPaymentQrModal(method, context) {
+  if (!paymentQrModal) return;
+  const normalizedMethod = normalizePaymentMethod(method);
+  const paymentUrl = buildPublicPaymentUrl(normalizedMethod, context);
+  const paymentTotal = Number(context?.finalTotal || 0);
+
+  if (paymentQrTitle) paymentQrTitle.textContent = t('Scan to pay');
+  if (paymentQrSummary) {
+    paymentQrSummary.innerHTML = `
+      <div class="payment-qr-summary-row"><span>${escapeReceiptText(t('Amount'))}</span><strong>${escapeReceiptText(euro(paymentTotal))}</strong></div>
+      <div class="payment-qr-summary-row"><span>${escapeReceiptText(t('Table'))}</span><strong>${escapeReceiptText(context?.tableId || selectedTableId || "—")}</strong></div>
+      <div class="payment-qr-summary-row"><span>${escapeReceiptText(t('Order'))}</span><strong>${escapeReceiptText(context?.orderId || selectedOrderId || "—")}</strong></div>
+      <div class="payment-qr-summary-row"><span>${escapeReceiptText(t('Payment Method'))}</span><strong>${escapeReceiptText(getPaymentMethodLabel(normalizedMethod))}</strong></div>
+    `;
+  }
+  if (paymentQrLink) paymentQrLink.value = paymentUrl;
+  if (copyPaymentQrLinkBtn) copyPaymentQrLinkBtn.textContent = t('Copy link');
+  if (openPaymentQrLinkBtn) openPaymentQrLinkBtn.textContent = t('Open on this device');
+  if (closePaymentQrModalBtn) closePaymentQrModalBtn.textContent = t('Close');
+  setPaymentQrStatus("");
+
+  paymentQrModal.style.display = "block";
+  paymentQrModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  renderPaymentQrCode(paymentUrl);
+}
+
+function closePaymentQrModal() {
+  if (!paymentQrModal) return;
+  if (document.activeElement && paymentQrModal.contains(document.activeElement)) {
+    document.activeElement.blur();
+  }
+  completePaymentBtn?.focus();
+  paymentQrModal.style.display = "none";
+  paymentQrModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  setPaymentQrStatus("");
+}
+
+async function copyPaymentQrLink() {
+  const paymentUrl = paymentQrLink?.value || "";
+  if (!paymentUrl) return;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(paymentUrl);
+    } else {
+      paymentQrLink.focus();
+      paymentQrLink.select();
+      document.execCommand("copy");
+    }
+    if (copyPaymentQrLinkBtn) copyPaymentQrLinkBtn.textContent = t('Copied');
+    setPaymentQrStatus(t('Copied'), "ok");
+  } catch (err) {
+    console.error(err);
+    setPaymentQrStatus(paymentUrl, "err");
+  }
+}
+
+function openPaymentQrLinkOnDevice() {
+  const paymentUrl = paymentQrLink?.value || "";
+  if (!paymentUrl) return;
+  window.open(paymentUrl, "_blank", "noopener");
+}
+
+function goToPaymentPage(method, context) {
+  const normalizedMethod = normalizePaymentMethod(method);
+  if (!["card", "revolut", "bank_transfer"].includes(normalizedMethod)) return;
+  openPaymentQrModal(normalizedMethod, context);
+}
+
+function resetPaidOrderUi() {
+  selectedTableId = null;
+  selectedOrderId = null;
+  currentOrder = null;
+  currentTotal = 0;
+
+  orderItemsEl.innerHTML = `<div class="muted">${t('No order selected. Tap a table to start.')}</div>`;
+  totalValueEl.textContent = euro(0);
+  amountValueEl.textContent = euro(0);
+
+  customTipEl.value = "";
+  tipCustom = 0;
+  tipPercent = 0;
+
+  setView("tables");
+}
+
+function showPaidReceiptFromContext(context, paymentData, method) {
+  const receiptHtml = buildFiscalReceiptHtml({
+    order: context.receiptOrder,
+    items: context.receiptItems,
+    subtotal: Number(paymentData?.amount ?? context.baseAmount),
+    tip: Number(paymentData?.tipAmount ?? context.tipAmount),
+    total: Number(paymentData?.totalAmount ?? context.finalTotal),
+    paymentMethod: normalizePaymentMethod(method || paymentData?.method),
+    tableId: context.tableId,
+    waiter: meEmp,
+    receiptNo: paymentData?.receiptNo || generateReceiptNumber()
+  });
+  showFiscalReceipt(receiptHtml);
+}
+
+async function handlePaidOnlinePayment(statusData, context, method) {
+  const payment = statusData?.payment || statusData || {};
+  showPaidReceiptFromContext(context, payment, method);
+  closeOnlinePaymentModal();
+  resetPaidOrderUi();
+}
 
 function buildWaiterNotificationItem(notification) {
   const row = document.createElement("div");
@@ -819,6 +1354,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     const modal = qs("waiterProfileModal");
     if (modal && modal.getAttribute("aria-hidden") === "false") closeWaiterProfileModal();
+    if (paymentQrModal && paymentQrModal.getAttribute("aria-hidden") === "false") closePaymentQrModal();
   }
 });
 
@@ -953,6 +1489,7 @@ async function openTable(t) {
     selectedTableId = normalizeOrderId(t?.id);
     selectedOrderId = await ensureOpenOrderForTable(selectedTableId);
     currentOrder = null;
+    completePaymentBtn.disabled = false;
     setView("orders");
     listenOrder(selectedOrderId);
   } catch (err) {
@@ -977,6 +1514,7 @@ function listenOrder(orderId) {
     }
 
     currentOrder = { id: snap.id, ...snap.data() };
+    completePaymentBtn.disabled = isClosedOrderRecord(currentOrder);
     const items = Array.isArray(currentOrder.items) ? currentOrder.items : [];
 
     orderItemsEl.innerHTML = "";
@@ -1252,12 +1790,14 @@ async function addMenuToOrder(m) {
 
 /* ======================= PAY UI ======================= */
 paymentTypes.addEventListener("click", (e) => {
-  const btn = e.target.closest(".pay-btn");
+  const btn = e.target.closest(".pay-btn[data-type]");
   if (!btn) return;
 
-  payMethod = btn.dataset.type || "cash";
-  Array.from(paymentTypes.querySelectorAll(".pay-btn")).forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  payMethod = normalizePaymentMethod(btn.dataset.type);
+  paymentTypes.querySelectorAll(".pay-btn").forEach((node) => {
+    node.classList.toggle("active", node === btn);
+  });
+  updatePaymentMethodInfo();
 });
 
 customTipEl.addEventListener("input", () => {
@@ -1290,13 +1830,6 @@ function formatReceiptDate(date = new Date()) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(date);
-}
-
-function getPaymentMethodLabel(method) {
-  const value = String(method || "").toLowerCase();
-  if (value === "cash") return "В брой";
-  if (value === "card") return "Карта";
-  return method || "—";
 }
 
 function generateReceiptNumber() {
@@ -1413,6 +1946,10 @@ function buildFiscalReceiptHtml({
       </div>
 
       <div class="fiscal-row">
+        <span>${escapeReceiptText(t('Payment Method'))}:</span>
+        <span>${escapeReceiptText(paymentLabel)}</span>
+      </div>
+      <div class="fiscal-row">
         <span>${escapeReceiptText(paymentLabel)}:</span>
         <span>${totalNumber.toFixed(2)} €</span>
       </div>
@@ -1466,7 +2003,7 @@ function buildFiscalReceiptHtml({
   `;
 }
 
-function buildReceiptPrintDocument(receiptInnerHtml, title = "Касова бележка") {
+function buildReceiptPrintDocument(receiptInnerHtml, title = "Demo Electronic Receipt") {
   return `
     <!DOCTYPE html>
     <html lang="bg">
@@ -1736,7 +2273,7 @@ function buildReceiptPrintDocument(receiptInnerHtml, title = "Касова бе�
 function showFiscalReceipt(receiptHtml) {
   if (!receiptModal || !receiptBody) return;
   lastReceiptHtml = receiptHtml || "";
-  if (receiptTitle) receiptTitle.textContent = "Касова бележка";
+  if (receiptTitle) receiptTitle.textContent = "Demo Electronic Receipt";
   receiptBody.innerHTML = lastReceiptHtml;
   receiptModal.style.display = "block";
   receiptModal.classList.add("show");
@@ -1760,7 +2297,7 @@ function printFiscalReceiptFromNewWindow(receiptHtml) {
     return;
   }
 
-  const docHtml = buildReceiptPrintDocument(receiptHtml, "Касова бележка");
+  const docHtml = buildReceiptPrintDocument(receiptHtml, "Demo Electronic Receipt");
   printWindow.document.open();
   printWindow.document.write(docHtml);
   printWindow.document.close();
@@ -1769,13 +2306,14 @@ function printFiscalReceiptFromNewWindow(receiptHtml) {
 }
 
 function showReceipt(orderData, items, baseAmount, tipAmount, payMethod, tableNumber) {
+  const normalizedPayMethod = normalizePaymentMethod(payMethod);
   const receiptHtml = buildFiscalReceiptHtml({
     order: orderData,
     items,
     subtotal: baseAmount,
     tip: tipAmount,
     total: Number(baseAmount || 0) + Number(tipAmount || 0),
-    paymentMethod: payMethod,
+    paymentMethod: normalizedPayMethod,
     tableId: tableNumber,
     waiter: meEmp,
     receiptNo: generateReceiptNumber()
@@ -1803,6 +2341,34 @@ if (receiptModal) {
   });
 }
 
+document.querySelectorAll("[data-close-online-payment]").forEach((node) => {
+  node.addEventListener("click", closeOnlinePaymentModal);
+});
+
+if (onlinePaymentModal) {
+  onlinePaymentModal.addEventListener("click", (e) => {
+    if (e.target === onlinePaymentModal) {
+      closeOnlinePaymentModal();
+    }
+  });
+}
+
+document.querySelectorAll("[data-close-payment-qr]").forEach((node) => {
+  node.addEventListener("click", closePaymentQrModal);
+});
+
+if (paymentQrModal) {
+  paymentQrModal.addEventListener("click", (e) => {
+    if (e.target === paymentQrModal) {
+      closePaymentQrModal();
+    }
+  });
+}
+
+copyPaymentQrLinkBtn?.addEventListener("click", copyPaymentQrLink);
+openPaymentQrLinkBtn?.addEventListener("click", openPaymentQrLinkOnDevice);
+closePaymentQrModalBtn?.addEventListener("click", closePaymentQrModal);
+
 if (printReceipt) {
   printReceipt.addEventListener("click", () => {
     if (!lastReceiptHtml) {
@@ -1814,109 +2380,318 @@ if (printReceipt) {
   });
 }
 
+async function completeCashPayment(context) {
+  const receiptNo = generateReceiptNumber();
+  const paymentRef = doc(collection(db, "payments"));
+  const method = "cash";
+  const methodLabel = getPaymentMethodLabel(method);
+  let resolvedPaymentTableId = context.tableId;
+
+  await runTransaction(db, async (tx) => {
+    const orderRef = doc(db, "orders", context.orderId);
+    const orderSnap = await tx.get(orderRef);
+    if (!orderSnap.exists()) {
+      throw new Error("Order not found.");
+    }
+
+    const orderData = orderSnap.data() || {};
+    if (isClosedOrderRecord(orderData)) {
+      throw new Error(t('Order already paid'));
+    }
+
+    const resolvedTableId = normalizeOrderId(orderData.tableId) || normalizeOrderId(context.tableId);
+    resolvedPaymentTableId = resolvedTableId;
+    const resolvedTableRef = doc(db, "tables", resolvedTableId);
+    const resolvedTableSnap = await tx.get(resolvedTableRef);
+    const resolvedTableData = resolvedTableSnap.exists() ? (resolvedTableSnap.data() || {}) : {};
+    const nowTs = serverTimestamp();
+    const remainingActiveOrders = await getRemainingActiveOrdersForTableTx(
+      tx,
+      resolvedTableId,
+      resolvedTableData,
+      context.orderId
+    );
+
+    tx.set(paymentRef, {
+      orderId: context.orderId,
+      tableId: resolvedTableId,
+      waiterId: meUid,
+      provider: "cash",
+      method,
+      paymentMethod: method,
+      methodLabel,
+      status: "paid",
+      paymentStatus: "paid",
+      amount: context.baseAmount,
+      tipAmount: context.tipAmount,
+      totalAmount: context.finalTotal,
+      currency: "EUR",
+      receiptNo,
+      isOffline: true,
+      source: "waiter_dashboard",
+      confirmedBy: meUid,
+      confirmedAt: nowTs,
+      paidAt: nowTs,
+      createdAt: nowTs,
+      updatedAt: nowTs
+    });
+
+    tx.set(orderRef, {
+      orderId: normalizeOrderId(orderData.orderId) || context.orderId,
+      tableId: resolvedTableId,
+      status: "paid",
+      paymentStatus: "paid",
+      paymentMethod: method,
+      paidAt: nowTs,
+      paymentPending: false,
+      pendingPaymentId: null,
+      pendingPaymentMethod: null,
+      payment: {
+        paymentId: paymentRef.id,
+        provider: "cash",
+        method,
+        methodLabel,
+        status: "paid",
+        amount: context.baseAmount,
+        tipAmount: context.tipAmount,
+        totalAmount: context.finalTotal,
+        currency: "EUR",
+        receiptNo
+      },
+      orderStatus: "closed",
+      closedAt: nowTs,
+      updatedAt: nowTs
+    }, { merge: true });
+
+    tx.set(resolvedTableRef, {
+      activeOrders: remainingActiveOrders,
+      currentOrderId: remainingActiveOrders.length ? remainingActiveOrders[0] : null,
+      status: remainingActiveOrders.length ? "busy" : "free",
+      updatedAt: nowTs
+    }, { merge: true });
+  });
+
+  try {
+    await addDoc(collection(db, "logs"), {
+      actorUid: meUid || null,
+      actorEmail: auth.currentUser?.email || meEmp?.email || null,
+      type: "PAYMENT",
+      message: `Payment completed: ${methodLabel} • ${context.finalTotal.toFixed(2)} EUR`,
+      meta: {
+        orderId: context.orderId,
+        tableId: resolvedPaymentTableId,
+        paymentId: paymentRef.id,
+        method,
+        provider: "cash",
+        amount: context.baseAmount,
+        tipAmount: context.tipAmount,
+        totalAmount: context.finalTotal,
+        receiptNo
+      },
+      createdAt: serverTimestamp()
+    });
+  } catch (logErr) {
+    console.warn("Payment log failed:", logErr);
+  }
+
+  showPaidReceiptFromContext(context, {
+    method,
+    amount: context.baseAmount,
+    tipAmount: context.tipAmount,
+    totalAmount: context.finalTotal,
+    receiptNo
+  }, method);
+  resetPaidOrderUi();
+}
+
+async function checkOnlinePaymentStatus(endpoint, paymentId, context, method) {
+  const statusData = await apiPost(endpoint, { paymentId });
+  const status = String(statusData.status || statusData.payment?.status || "").toLowerCase();
+  if (status === "paid" || status === "succeeded") {
+    await handlePaidOnlinePayment(statusData, context, method);
+    return true;
+  }
+  if (status === "failed" || status === "cancelled" || status === "canceled") {
+    setPaymentMessage(onlinePaymentStatus, t('Payment failed'), "err");
+    return false;
+  }
+  setPaymentMessage(onlinePaymentStatus, t('Payment pending'), "");
+  return false;
+}
+
+async function startStripeCardPayment(context) {
+  await ensurePaymentBackendActive();
+  resetOnlinePaymentSections();
+  renderOnlinePaymentSummary(context, "card");
+  openOnlinePaymentModal();
+  setPaymentMessage(onlinePaymentStatus, t('Payment pending'));
+
+  const data = await apiPost("/api/payments/stripe/create-intent", {
+    orderId: context.orderId,
+    tableId: context.tableId,
+    tipAmount: context.tipAmount
+  });
+
+  if (!window.Stripe) throw new Error("Stripe.js is not loaded.");
+  if (!data.publishableKey) throw new Error(t('Stripe publishable key missing'));
+  if (!data.clientSecret) throw new Error(t('Payment API not configured'));
+
+  activeOnlinePayment = {
+    paymentId: data.paymentId,
+    method: "card",
+    context
+  };
+
+  stripePaymentSection.hidden = false;
+  stripeInstance = window.Stripe(data.publishableKey);
+  stripeElements = stripeInstance.elements({ clientSecret: data.clientSecret });
+  stripePaymentElementInstance = stripeElements.create("payment");
+  stripePaymentElementInstance.mount("#stripePaymentElement");
+
+  confirmStripePaymentBtn.disabled = false;
+  confirmStripePaymentBtn.onclick = async () => {
+    confirmStripePaymentBtn.disabled = true;
+    setPaymentMessage(stripePaymentMessage, "");
+    setPaymentMessage(onlinePaymentStatus, t('Payment pending'));
+
+    try {
+      const result = await stripeInstance.confirmPayment({
+        elements: stripeElements,
+        confirmParams: {},
+        redirect: "if_required"
+      });
+
+      if (result.error) {
+        setPaymentMessage(stripePaymentMessage, result.error.message || t('Payment declined'), "err");
+        return;
+      }
+
+      const paid = await checkOnlinePaymentStatus(
+        "/api/payments/stripe/check-status",
+        data.paymentId,
+        context,
+        "card"
+      );
+      if (paid) setPaymentMessage(stripePaymentMessage, t('Payment successful'), "ok");
+    } catch (err) {
+      console.error(err);
+      setPaymentMessage(stripePaymentMessage, err.message || t('Payment failed'), "err");
+    } finally {
+      confirmStripePaymentBtn.disabled = false;
+    }
+  };
+}
+
+async function startRevolutPayment(context) {
+  await ensurePaymentBackendActive();
+  resetOnlinePaymentSections();
+  renderOnlinePaymentSummary(context, "revolut");
+  openOnlinePaymentModal();
+  setPaymentMessage(onlinePaymentStatus, t('Payment pending'));
+
+  const data = await apiPost("/api/payments/revolut/create-order", {
+    orderId: context.orderId,
+    tableId: context.tableId,
+    tipAmount: context.tipAmount
+  });
+
+  if (!data.checkoutUrl) throw new Error(t('Revolut checkout link missing'));
+
+  activeOnlinePayment = {
+    paymentId: data.paymentId,
+    method: "revolut",
+    context
+  };
+
+  revolutPaymentSection.hidden = false;
+  revolutPaymentText.textContent = t('Payment pending');
+  revolutCheckoutLink.href = data.checkoutUrl;
+  checkRevolutStatusBtn.disabled = false;
+  checkRevolutStatusBtn.onclick = async () => {
+    checkRevolutStatusBtn.disabled = true;
+    try {
+      await checkOnlinePaymentStatus(
+        "/api/payments/revolut/check-status",
+        data.paymentId,
+        context,
+        "revolut"
+      );
+    } catch (err) {
+      console.error(err);
+      setPaymentMessage(onlinePaymentStatus, err.message || t('Payment failed'), "err");
+    } finally {
+      checkRevolutStatusBtn.disabled = false;
+    }
+  };
+}
+
+async function startBankTransferPayment(context) {
+  await ensurePaymentBackendActive();
+  resetOnlinePaymentSections();
+  renderOnlinePaymentSummary(context, "bank_transfer");
+  openOnlinePaymentModal();
+  setPaymentMessage(onlinePaymentStatus, t('Payment pending'));
+
+  const data = await apiPost("/api/payments/bank-transfer/create", {
+    orderId: context.orderId,
+    tableId: context.tableId,
+    tipAmount: context.tipAmount
+  });
+
+  activeOnlinePayment = {
+    paymentId: data.paymentId,
+    method: "bank_transfer",
+    context
+  };
+
+  bankTransferSection.hidden = false;
+  renderBankTransferInstructions(data);
+
+  if (String(data.status || "").toLowerCase() === "paid") {
+    await handlePaidOnlinePayment(data, context, "bank_transfer");
+    return;
+  }
+
+  checkBankTransferStatusBtn.disabled = false;
+  checkBankTransferStatusBtn.onclick = async () => {
+    checkBankTransferStatusBtn.disabled = true;
+    try {
+      await checkOnlinePaymentStatus(
+        "/api/payments/check",
+        data.paymentId,
+        context,
+        "bank_transfer"
+      );
+    } catch (err) {
+      console.error(err);
+      setPaymentMessage(onlinePaymentStatus, err.message || t('Payment failed'), "err");
+    } finally {
+      checkBankTransferStatusBtn.disabled = false;
+    }
+  };
+}
+
 /* ======================= COMPLETE PAYMENT ======================= */
 completePaymentBtn.addEventListener("click", async () => {
   if (completePaymentBtn.disabled) return;
   completePaymentBtn.disabled = true;
+
   try {
-    if (!selectedOrderId || !selectedTableId || !currentOrder) return alert("Няма избрана маса/поръчка.");
-    const items = Array.isArray(currentOrder.items) ? currentOrder.items : [];
-    if (!items.length) return alert("Поръчката е празна.");
+    const context = buildPaymentContext();
+    const method = normalizePaymentMethod(payMethod);
 
-    const receiptOrder = currentOrder ? { ...currentOrder } : null;
-    const receiptItems = items.map((item) => ({ ...item }));
-    const baseAmount = Number(currentTotal || 0);
-    const tipAmount = tipPercent > 0
-      ? baseAmount * tipPercent
-      : parseEuroInput(customTipEl?.value || String(tipCustom || ""));
-    const finalTotal = baseAmount + tipAmount;
-    const receiptNo = generateReceiptNumber();
-    const paymentRef = doc(collection(db, "payments"));
+    if (method === "cash") {
+      await completeCashPayment(context);
+      return;
+    }
 
-    await runTransaction(db, async (tx) => {
-      const orderRef = doc(db, "orders", selectedOrderId);
-      const orderSnap = await tx.get(orderRef);
-      if (!orderSnap.exists()) {
-        throw new Error("Order not found.");
-      }
-
-      const orderData = orderSnap.data() || {};
-      if (isClosedOrderRecord(orderData)) {
-        throw new Error("Order is already closed.");
-      }
-
-      const resolvedTableId = normalizeOrderId(orderData.tableId) || normalizeOrderId(selectedTableId);
-      const resolvedTableRef = doc(db, "tables", resolvedTableId);
-      const resolvedTableSnap = await tx.get(resolvedTableRef);
-      const resolvedTableData = resolvedTableSnap.exists() ? (resolvedTableSnap.data() || {}) : {};
-      const nowTs = serverTimestamp();
-      const remainingActiveOrders = await getRemainingActiveOrdersForTableTx(
-        tx,
-        resolvedTableId,
-        resolvedTableData,
-        selectedOrderId
-      );
-
-      tx.set(paymentRef, {
-        orderId: selectedOrderId,
-        tableId: resolvedTableId,
-        waiterId: meUid,
-        method: payMethod,
-        amount: baseAmount,
-        tipAmount,
-        totalAmount: finalTotal,
-        receiptNo,
-        createdAt: nowTs
-      });
-
-      tx.set(orderRef, {
-        orderId: normalizeOrderId(orderData.orderId) || selectedOrderId,
-        tableId: resolvedTableId,
-        status: "paid",
-        paymentStatus: "paid",
-        orderStatus: "closed",
-        closedAt: nowTs,
-        updatedAt: nowTs
-      }, { merge: true });
-
-      tx.set(resolvedTableRef, {
-        activeOrders: remainingActiveOrders,
-        currentOrderId: remainingActiveOrders.length ? remainingActiveOrders[0] : null,
-        status: remainingActiveOrders.length ? "busy" : "free",
-        updatedAt: nowTs
-      }, { merge: true });
-    });
-
-    const receiptHtml = buildFiscalReceiptHtml({
-      order: receiptOrder,
-      items: receiptItems,
-      subtotal: baseAmount,
-      tip: tipAmount,
-      total: finalTotal,
-      paymentMethod: payMethod,
-      tableId: selectedTableId,
-      waiter: meEmp,
-      receiptNo
-    });
-    showFiscalReceipt(receiptHtml);
-
-    selectedTableId = null;
-    selectedOrderId = null;
-    currentOrder = null;
-    currentTotal = 0;
-
-    orderItemsEl.innerHTML = `<div class="muted">${t('No order selected. Tap a table to start.')}</div>`;
-    totalValueEl.textContent = euro(0);
-    amountValueEl.textContent = euro(0);
-
-    customTipEl.value = "";
-    tipCustom = 0;
-    tipPercent = 0;
-
-    setView("tables");
+    if (["card", "revolut", "bank_transfer"].includes(method)) {
+      goToPaymentPage(method, context);
+      return;
+    }
   } catch (err) {
     console.error(err);
-    alert("Payment failed: " + err.message);
+    alert(err.message || t('Payment failed'));
   } finally {
     completePaymentBtn.disabled = false;
   }
@@ -1943,7 +2718,23 @@ function listenPaymentsHistory() {
 
     snap.forEach((d) => {
       const p = d.data();
-      const total = (Number(p.amount) || 0) + (Number(p.tipAmount) || 0);
+      const methodKey = p.paymentMethod || p.method;
+      const methodLabel = p.methodLabel || (methodKey ? getPaymentMethodLabel(methodKey) : "—");
+      const rawStatus = String(p.status || p.paymentStatus || "").toLowerCase();
+      const statusLabel = rawStatus === "paid"
+        ? t('Payment successful')
+        : rawStatus === "confirmed"
+          ? t('Confirmed')
+        : rawStatus === "pending"
+          ? t('Payment pending')
+          : rawStatus === "failed" || rawStatus === "cancelled"
+            ? t('Payment failed')
+            : (p.status || p.paymentStatus || "—");
+      const total = Number.isFinite(Number(p.totalAmount))
+        ? Number(p.totalAmount)
+        : (Number(p.amount) || 0) + (Number(p.tipAmount) || 0);
+      const reference = p.receiptNo || p.bankTransferReference || p.stripePaymentIntentId || p.revolutOrderId || "";
+      const failureText = p.failureMessage || p.providerFailureMessage || "";
 
       const row = document.createElement("div");
       row.style.padding = "10px";
@@ -1954,10 +2745,18 @@ function listenPaymentsHistory() {
       row.innerHTML = `
         <div style="display:flex; justify-content:space-between;">
           <strong>${euro(total)}</strong>
-          <span class="muted">${String(p.method || "").toUpperCase()}</span>
+          <span class="payment-method-badge">${escapeReceiptText(methodLabel)}</span>
         </div>
         <div class="muted" style="font-size:12px; margin-top:4px;">
-          Table: ${p.tableId || "-"} Order: ${(p.orderId || "").slice(0, 6)}
+          Table: ${escapeReceiptText(p.tableId || "-")} Order: ${escapeReceiptText(String(p.orderId || "").slice(0, 6))}
+          ${p.provider ? ` · ${t('Provider')}: ${escapeReceiptText(p.provider)}` : ""}
+        </div>
+        <div class="muted" style="font-size:12px; margin-top:4px;">
+          <span class="payment-status-badge ${escapeReceiptText(getStatusClass(rawStatus))}">${escapeReceiptText(statusLabel)}</span>
+          ${reference ? ` · ${t('Payment Reference')}: ${escapeReceiptText(reference)}` : ""}
+        </div>
+        <div class="muted" style="font-size:12px; margin-top:4px; ${failureText ? "" : "display:none;"}">
+          ${escapeReceiptText(failureText)}
         </div>
       `;
 
@@ -1987,6 +2786,8 @@ function listenStats() {
 
     snap.forEach((d) => {
       const p = d.data();
+      const status = normalizeOrderState(p.status || p.paymentStatus);
+      if (status && !["paid", "confirmed"].includes(status)) return;
       const t = Number(p.tipAmount) || 0;
       tips += t;
       sales += (Number(p.amount) || 0) + t;

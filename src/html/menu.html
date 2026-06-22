@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="../css/menu.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="../WaiterDashboard/qrcode.min.js"></script>
 
 </head>
 <body>
@@ -76,7 +77,10 @@
     <div id="qrModal" class="qr-modal">
         <div class="qr-modal-content">
             <span class="qr-close" onclick="closeQRModal()">&times;</span>
-            <div id="qr-code-display" class="qr-code-display"></div>
+            <div class="qr-code-display">
+                <div id="orderQrCode" aria-label="QR код на поръчката"></div>
+                <p id="qrScanInstruction" class="qr-scan-instruction">Сканирайте този код за да видите детайлите на поръчката</p>
+            </div>
             <div id="qrExpiryInfo" class="qr-expiry-info"></div>
         </div>
     </div>
@@ -122,9 +126,9 @@
             </div>
         </div>
     </footer>
+    <script src="../js/menu-translations.js"></script>
     <script src="../script.js"></script>
     <script src="./app.js"></script>
-    <script src="../js/script.js"></script>
     <script src="../js/category.js"></script>
     <script src="../js/cookie-consent.js"></script>
 </body>

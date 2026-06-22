@@ -14,10 +14,10 @@ export async function seedTablesAndMenu() {
 
   // Menu пример
   const menu = [
-    { id: "pizza_marg", name: "Пица Маргарита", price: 12.00, category: "Храна", station: "kitchen", active: true },
-    { id: "spaghetti", name: "Спагети Карбонара", price: 13.50, category: "Храна", station: "kitchen", active: true },
-    { id: "cola", name: "Кола 330мл", price: 3.50, category: "Напитки", station: "bar", active: true },
-    { id: "beer", name: "Бира", price: 4.00, category: "Напитки", station: "bar", active: true },
+    { id: "pizza_marg", name: "Пица Маргарита", nameEn: "Margherita Pizza", descriptionEn: "Classic pizza with tomato sauce, mozzarella and basil.", price: 12.00, category: "Храна", station: "kitchen", active: true },
+    { id: "spaghetti", name: "Спагети Карбонара", nameEn: "Spaghetti Carbonara", descriptionEn: "Classic spaghetti carbonara with creamy sauce.", price: 13.50, category: "Храна", station: "kitchen", active: true },
+    { id: "cola", name: "Кола 330мл", nameEn: "Cola 330 ml", descriptionEn: "Chilled cola soft drink.", price: 3.50, category: "Напитки", station: "bar", active: true },
+    { id: "beer", name: "Бира", nameEn: "Beer", descriptionEn: "Chilled beer.", price: 4.00, category: "Напитки", station: "bar", active: true },
   ];
 
   for (const m of menu) {
