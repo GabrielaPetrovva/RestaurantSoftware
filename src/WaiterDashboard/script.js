@@ -10,7 +10,8 @@ import {
   query, where, orderBy, limit,
   onSnapshot,
   runTransaction,
-  serverTimestamp
+  serverTimestamp,
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import {
@@ -132,11 +133,11 @@ const translations = {
     'Bank Transfer': 'Bank Transfer',
     'Payment info cash': 'Cash is offline. Confirm only after receiving the money.',
     'Payment info card': 'Real card payment through Stripe. Card data is handled securely by Stripe.',
-    'Payment info revolut': 'Real Revolut payment. The guest will complete checkout through Revolut.',
+    'Payment info revolut': 'Revolut Pay through secure Stripe Checkout.',
     'Payment info bank_transfer': 'Bank transfer payment. The order stays pending until the transfer is confirmed.',
     'Payment method info cash': 'Cash is offline. Confirm only after receiving the money.',
     'Payment method info card': 'Real card payment through Stripe. Card data is handled securely by Stripe.',
-    'Payment method info revolut': 'Real Revolut payment. The guest will complete checkout through Revolut.',
+    'Payment method info revolut': 'Revolut Pay through secure Stripe Checkout.',
     'Payment method info bank_transfer': 'Bank transfer payment. The order stays pending until the transfer is confirmed.',
     'Amount': 'Amount',
     'Tip': 'Tip',
@@ -185,6 +186,7 @@ const translations = {
     'Payment pending': 'Payment pending',
     'Payment successful': 'Payment successful',
     'Payment failed': 'Payment failed',
+    'Payment cancelled': 'Payment cancelled',
     'Payment declined': 'Payment was declined.',
     'Bank transfer instructions': 'Bank transfer instructions',
     'Reference': 'Reference',
@@ -236,11 +238,11 @@ const translations = {
   'Bank Transfer': 'Банков превод',
   'Payment info cash': 'Плащане в брой. Потвърди само след като получиш парите.',
   'Payment info card': 'Реално плащане с карта през Stripe. Данните от картата се обработват защитено от Stripe.',
-  'Payment info revolut': 'Реално плащане през Revolut. Клиентът завършва плащането в Revolut checkout.',
+  'Payment info revolut': 'Revolut Pay през защитен Stripe Checkout.',
   'Payment info bank_transfer': 'Банков превод. Поръчката остава pending, докато преводът не бъде потвърден.',
   'Payment method info cash': 'Плащане в брой. Потвърди само след като получиш парите.',
   'Payment method info card': 'Реално плащане с карта през Stripe. Данните от картата се обработват защитено от Stripe.',
-  'Payment method info revolut': 'Реално плащане през Revolut. Клиентът завършва плащането в Revolut checkout.',
+  'Payment method info revolut': 'Revolut Pay през защитен Stripe Checkout.',
   'Payment method info bank_transfer': 'Банков превод. Поръчката остава pending, докато преводът не бъде потвърден.',
   'Amount': 'Сума',
   'Tip': 'Бакшиш',
@@ -287,6 +289,7 @@ const translations = {
   'Payment pending': 'Плащането чака потвърждение',
   'Payment successful': 'Плащането е успешно',
   'Payment failed': 'Плащането е неуспешно',
+  'Payment cancelled': 'Плащането е отказано',
   'Payment declined': 'Плащането беше отказано.',
   'Bank transfer instructions': 'Инструкции за банков превод',
   'Reference': 'Референция',
@@ -517,6 +520,7 @@ let meEmp = null;
 let selectedTableId = null;
 let selectedOrderId = null;
 let currentOrder = null;
+let activeOrdersForTable = [];
 
 let currentTotal = 0;
 
@@ -642,7 +646,7 @@ function setPaymentMessage(el, message, type = "") {
 
 function getStatusClass(status) {
   const normalized = String(status || "").trim().toLowerCase();
-  if (normalized === "paid" || normalized === "succeeded" || normalized === "confirmed") return "paid";
+  if (["successful", "paid", "succeeded", "confirmed"].includes(normalized)) return "paid";
   if (["failed", "cancelled", "canceled"].includes(normalized)) return "failed";
   return normalized || "pending";
 }
@@ -876,6 +880,20 @@ function goToPaymentPage(method, context) {
 }
 
 function resetPaidOrderUi() {
+  [
+    "lastOrder",
+    "guest_cart_v1",
+    "guest_qr_state_v1",
+    "restaurantOrder",
+    "cart",
+    "cartItems",
+    "orderItems",
+    "currentOrder"
+  ].forEach((key) => {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  });
+
   selectedTableId = null;
   selectedOrderId = null;
   currentOrder = null;
@@ -1178,6 +1196,17 @@ function isClosedOrderRecord(orderData) {
   );
 }
 
+function getOrderPublicBillTokens(order) {
+  const tokens = [];
+  const addToken = (value) => {
+    const token = String(value || "").trim();
+    if (/^[A-Za-z0-9_-]{32,160}$/.test(token) && !tokens.includes(token)) tokens.push(token);
+  };
+  addToken(order?.publicBillToken);
+  (Array.isArray(order?.publicBillTokens) ? order.publicBillTokens : []).forEach(addToken);
+  return tokens;
+}
+
 function isReusableOpenOrder(orderData, tableId) {
   if (normalizeOrderId(orderData?.tableId) !== tableId) return false;
   if (isClosedOrderRecord(orderData)) return false;
@@ -1186,7 +1215,7 @@ function isReusableOpenOrder(orderData, tableId) {
   const orderStatus = normalizeOrderState(orderData?.orderStatus);
 
   if (orderStatus && orderStatus !== "open") return false;
-  if (status && !["open", "created"].includes(status)) return false;
+  if (status && !["open", "created", "active", "preparing", "ready"].includes(status)) return false;
   return true;
 }
 
@@ -1199,7 +1228,11 @@ function getTableOrderCandidateIds(tableData) {
   };
 
   pushId(tableData?.currentOrderId);
-  const activeOrders = Array.isArray(tableData?.activeOrders) ? tableData.activeOrders : [];
+  pushId(tableData?.activeOrderId);
+  const activeOrders = [
+    ...(Array.isArray(tableData?.activeOrders) ? tableData.activeOrders : []),
+    ...(Array.isArray(tableData?.activeOrderIds) ? tableData.activeOrderIds : [])
+  ];
   for (let i = activeOrders.length - 1; i >= 0; i -= 1) {
     pushId(activeOrders[i]);
   }
@@ -1244,7 +1277,7 @@ async function ensureOpenOrderForTable(tableId) {
         createdBy: meUid || null,
         source: "waiter_dashboard",
         type: "dine-in",
-        status: "open",
+        status: selected.data?.status || "open",
         orderStatus: "open",
         paymentStatus: "unpaid",
         closedAt: null,
@@ -1278,7 +1311,9 @@ async function ensureOpenOrderForTable(tableId) {
     tx.set(tableRef, {
       status: "busy",
       currentOrderId: selected.id,
-      activeOrders: [selected.id],
+      activeOrderId: selected.id,
+      activeOrders: arrayUnion(selected.id),
+      activeOrderIds: arrayUnion(selected.id),
       updatedAt: nowTs
     }, { merge: true });
 
@@ -1499,51 +1534,87 @@ async function openTable(t) {
 }
 
 /* ======================= ORDER ======================= */
-function listenOrder(orderId) {
-  if (unsubOrder) unsubOrder();
+function escapeDashboardHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
-  orderItemsEl.innerHTML = `<div class="muted">${t('Loading...')}</div>`;
-  totalValueEl.textContent = euro(0);
-  amountValueEl.textContent = euro(0);
-  currentTotal = 0;
+function selectActiveOrder(orderId) {
+  const selected = activeOrdersForTable.find((order) => order.id === orderId);
+  if (!selected) return;
+  selectedOrderId = selected.id;
+  currentOrder = selected;
+  renderActiveTableOrders();
+}
 
-  unsubOrder = onSnapshot(doc(db, "orders", orderId), (snap) => {
-    if (!snap.exists()) {
-      orderItemsEl.innerHTML = `<div class="muted">${t('Order not found.')}</div>`;
-      return;
-    }
+function renderActiveTableOrders() {
+  orderItemsEl.innerHTML = "";
 
-    currentOrder = { id: snap.id, ...snap.data() };
-    completePaymentBtn.disabled = isClosedOrderRecord(currentOrder);
-    const items = Array.isArray(currentOrder.items) ? currentOrder.items : [];
+  if (!activeOrdersForTable.length) {
+    currentOrder = null;
+    selectedOrderId = null;
+    currentTotal = 0;
+    completePaymentBtn.disabled = true;
+    totalValueEl.textContent = euro(0);
+    amountValueEl.textContent = euro(0);
+    orderItemsEl.innerHTML = `<div class="muted">${t('Empty order. Add items from menu.')}</div>`;
+    return;
+  }
 
-    orderItemsEl.innerHTML = "";
+  let selected = activeOrdersForTable.find((order) => order.id === selectedOrderId);
+  if (!selected) selected = activeOrdersForTable[activeOrdersForTable.length - 1];
+  selectedOrderId = selected.id;
+  currentOrder = selected;
+  completePaymentBtn.disabled = false;
+
+  activeOrdersForTable.forEach((order) => {
+    const isSelected = order.id === selectedOrderId;
+    const items = Array.isArray(order.items) ? order.items : [];
+    const orderTotal = items.reduce((sum, item) => {
+      return sum + (Number(item.price) || 0) * (Number(item.qty ?? item.quantity) || 0);
+    }, 0);
+
+    const group = document.createElement("section");
+    group.style.marginBottom = "14px";
+    group.style.padding = "12px";
+    group.style.border = isSelected ? "2px solid #ff8c00" : "1px solid rgba(0,0,0,0.10)";
+    group.style.borderRadius = "14px";
+    group.innerHTML = `
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:800; word-break:break-all;">Order: ${escapeDashboardHtml(order.id)}</div>
+          <div class="muted" style="font-size:12px;">Status: ${escapeDashboardHtml(order.status || 'active')} • ${euro(orderTotal)}</div>
+        </div>
+        ${isSelected ? '<span style="font-weight:700; color:#c66d00;">Selected</span>' : '<button type="button" data-select-order>Select</button>'}
+      </div>
+      <div data-order-items></div>
+    `;
+
+    group.querySelector("[data-select-order]")?.addEventListener("click", () => selectActiveOrder(order.id));
+    const groupItems = group.querySelector("[data-order-items]");
+
     if (!items.length) {
-      orderItemsEl.innerHTML = `<div class="muted">${t('Empty order. Add items from menu.')}</div>`;
-      currentTotal = 0;
-      totalValueEl.textContent = euro(0);
-      amountValueEl.textContent = euro(0);
-      return;
+      groupItems.innerHTML = `<div class="muted">${t('Empty order. Add items from menu.')}</div>`;
     }
 
-    let total = 0;
     items.forEach((it, idx) => {
       const name = it.name || it.itemId || "Item";
       const price = Number(it.price) || 0;
-      const qty = Number(it.qty) || 0;
+      const qty = Number(it.qty ?? it.quantity) || 0;
       const line = price * qty;
-      total += line;
-
       const row = document.createElement("div");
       row.style.display = "flex";
       row.style.alignItems = "center";
       row.style.gap = "10px";
       row.style.padding = "10px 0";
       row.style.borderBottom = "1px solid rgba(0,0,0,0.06)";
-
       row.innerHTML = `
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${name}</div>
+          <div style="font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeDashboardHtml(name)}</div>
           <div class="muted" style="font-size:12px;">${euro(price)} x ${qty}</div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -1552,19 +1623,45 @@ function listenOrder(orderId) {
           <button data-inc style="width:34px; height:34px; border-radius:10px;">+</button>
         </div>
         <div style="min-width:70px; text-align:right; font-weight:700;">${euro(line)}</div>
-    <button data-del style="width:34px; height:34px; border-radius:10px;">✕</button>
+        <button data-del style="width:34px; height:34px; border-radius:10px;">✕</button>
       `;
-
-      row.querySelector("[data-inc]").addEventListener("click", () => changeQty(idx, +1));
-      row.querySelector("[data-dec]").addEventListener("click", () => changeQty(idx, -1));
-      row.querySelector("[data-del]").addEventListener("click", () => removeItem(idx));
-
-      orderItemsEl.appendChild(row);
+      row.querySelector("[data-inc]").addEventListener("click", () => changeQtyForOrder(order.id, idx, +1));
+      row.querySelector("[data-dec]").addEventListener("click", () => changeQtyForOrder(order.id, idx, -1));
+      row.querySelector("[data-del]").addEventListener("click", () => removeItemForOrder(order.id, idx));
+      groupItems.appendChild(row);
     });
 
-    currentTotal = total;
-    totalValueEl.textContent = euro(total);
-    amountValueEl.textContent = euro(total);
+    orderItemsEl.appendChild(group);
+  });
+
+  const selectedItems = Array.isArray(selected.items) ? selected.items : [];
+  currentTotal = selectedItems.reduce((sum, item) => {
+    return sum + (Number(item.price) || 0) * (Number(item.qty ?? item.quantity) || 0);
+  }, 0);
+  totalValueEl.textContent = euro(currentTotal);
+  amountValueEl.textContent = euro(currentTotal);
+}
+
+function listenOrder(orderId) {
+  if (unsubOrder) unsubOrder();
+
+  orderItemsEl.innerHTML = `<div class="muted">${t('Loading...')}</div>`;
+  totalValueEl.textContent = euro(0);
+  amountValueEl.textContent = euro(0);
+  currentTotal = 0;
+
+  selectedOrderId = orderId;
+  const activeOrdersQuery = query(collection(db, "orders"), where("tableId", "==", selectedTableId));
+  unsubOrder = onSnapshot(activeOrdersQuery, (snap) => {
+    activeOrdersForTable = snap.docs
+      .map((orderSnap) => ({ id: orderSnap.id, ...orderSnap.data() }))
+      .filter((order) => isReusableOpenOrder(order, selectedTableId))
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toMillis?.() || 0;
+        const bTime = b.createdAt?.toMillis?.() || 0;
+        return aTime - bTime;
+      });
+    renderActiveTableOrders();
   }, (err) => {
     console.error(err);
     orderItemsEl.innerHTML = `<div class="muted">Order error: ${err.message}</div>`;
@@ -1572,17 +1669,25 @@ function listenOrder(orderId) {
 }
 
 async function changeQty(index, delta) {
-  if (!selectedOrderId || !currentOrder) return;
+  return changeQtyForOrder(selectedOrderId, index, delta);
+}
 
-  const items = Array.isArray(currentOrder.items) ? [...currentOrder.items] : [];
+async function changeQtyForOrder(orderId, index, delta) {
+  const order = activeOrdersForTable.find((entry) => entry.id === orderId);
+  if (!order) return;
+
+  const items = Array.isArray(order.items) ? [...order.items] : [];
   if (!items[index]) return;
 
-  const q = (Number(items[index].qty) || 0) + delta;
+  const q = (Number(items[index].qty ?? items[index].quantity) || 0) + delta;
   if (q <= 0) items.splice(index, 1);
-  else items[index].qty = q;
+  else {
+    items[index].qty = q;
+    items[index].quantity = q;
+  }
   const summary = summarizeOrderItems(items);
 
-  await updateDoc(doc(db, "orders", selectedOrderId), {
+  await updateDoc(doc(db, "orders", orderId), {
     items,
     total: summary.total,
     activeItemCount: summary.count,
@@ -1591,13 +1696,18 @@ async function changeQty(index, delta) {
 }
 
 async function removeItem(index) {
-  if (!selectedOrderId || !currentOrder) return;
+  return removeItemForOrder(selectedOrderId, index);
+}
 
-  const items = Array.isArray(currentOrder.items) ? [...currentOrder.items] : [];
+async function removeItemForOrder(orderId, index) {
+  const order = activeOrdersForTable.find((entry) => entry.id === orderId);
+  if (!order) return;
+
+  const items = Array.isArray(order.items) ? [...order.items] : [];
   items.splice(index, 1);
   const summary = summarizeOrderItems(items);
 
-  await updateDoc(doc(db, "orders", selectedOrderId), {
+  await updateDoc(doc(db, "orders", orderId), {
     items,
     total: summary.total,
     activeItemCount: summary.count,
@@ -2420,8 +2530,9 @@ async function completeCashPayment(context) {
       method,
       paymentMethod: method,
       methodLabel,
-      status: "paid",
+      status: "successful",
       paymentStatus: "paid",
+      paid: true,
       amount: context.baseAmount,
       tipAmount: context.tipAmount,
       totalAmount: context.finalTotal,
@@ -2441,6 +2552,10 @@ async function completeCashPayment(context) {
       tableId: resolvedTableId,
       status: "paid",
       paymentStatus: "paid",
+      paid: true,
+      paymentId: paymentRef.id,
+      paymentProvider: "cash",
+      paymentReference: receiptNo,
       paymentMethod: method,
       paidAt: nowTs,
       paymentPending: false,
@@ -2463,8 +2578,24 @@ async function completeCashPayment(context) {
       updatedAt: nowTs
     }, { merge: true });
 
+    getOrderPublicBillTokens(orderData).forEach((publicBillToken) => {
+      tx.set(doc(db, "public_bills", publicBillToken), {
+        tableId: resolvedTableId,
+        orderId: context.orderId,
+        items: [],
+        total: 0,
+        status: "paid",
+        paymentStatus: "paid",
+        paid: true,
+        paidAt: nowTs,
+        updatedAt: nowTs
+      }, { merge: true });
+    });
+
     tx.set(resolvedTableRef, {
       activeOrders: remainingActiveOrders,
+      activeOrderIds: remainingActiveOrders,
+      activeOrderId: remainingActiveOrders.length ? remainingActiveOrders[0] : null,
       currentOrderId: remainingActiveOrders.length ? remainingActiveOrders[0] : null,
       status: remainingActiveOrders.length ? "busy" : "free",
       updatedAt: nowTs
@@ -2507,7 +2638,10 @@ async function completeCashPayment(context) {
 async function checkOnlinePaymentStatus(endpoint, paymentId, context, method) {
   const statusData = await apiPost(endpoint, { paymentId });
   const status = String(statusData.status || statusData.payment?.status || "").toLowerCase();
-  if (status === "paid" || status === "succeeded") {
+  if (
+    statusData.payment?.paid === true ||
+    ["successful", "paid", "succeeded", "confirmed"].includes(status)
+  ) {
     await handlePaidOnlinePayment(statusData, context, method);
     return true;
   }
@@ -2720,16 +2854,35 @@ function listenPaymentsHistory() {
       const p = d.data();
       const methodKey = p.paymentMethod || p.method;
       const methodLabel = p.methodLabel || (methodKey ? getPaymentMethodLabel(methodKey) : "—");
-      const rawStatus = String(p.status || p.paymentStatus || "").toLowerCase();
-      const statusLabel = rawStatus === "paid"
+      const statusValues = [p.status, p.paymentStatus]
+        .map((value) => String(value || "").trim().toLowerCase())
+        .filter(Boolean);
+      const paymentSuccessful = p.paid === true || statusValues.some((status) =>
+        ["successful", "paid", "succeeded", "confirmed"].includes(status)
+      );
+      const paymentCancelled = statusValues.some((status) => ["cancelled", "canceled"].includes(status));
+      const paymentFailed = statusValues.includes("failed");
+      const paymentPending = statusValues.some((status) =>
+        ["pending", "processing", "requires_action", "requires_payment_method"].includes(status)
+      );
+      const rawStatus = paymentSuccessful
+        ? "successful"
+        : paymentCancelled
+          ? "cancelled"
+          : paymentFailed
+            ? "failed"
+            : paymentPending
+              ? "pending"
+              : (statusValues[0] || "");
+      const statusLabel = paymentSuccessful
         ? t('Payment successful')
-        : rawStatus === "confirmed"
-          ? t('Confirmed')
-        : rawStatus === "pending"
-          ? t('Payment pending')
-          : rawStatus === "failed" || rawStatus === "cancelled"
+        : paymentCancelled
+          ? t('Payment cancelled')
+          : paymentFailed
             ? t('Payment failed')
-            : (p.status || p.paymentStatus || "—");
+            : paymentPending
+              ? t('Payment pending')
+              : (p.status || p.paymentStatus || "—");
       const total = Number.isFinite(Number(p.totalAmount))
         ? Number(p.totalAmount)
         : (Number(p.amount) || 0) + (Number(p.tipAmount) || 0);
@@ -2787,7 +2940,8 @@ function listenStats() {
     snap.forEach((d) => {
       const p = d.data();
       const status = normalizeOrderState(p.status || p.paymentStatus);
-      if (status && !["paid", "confirmed"].includes(status)) return;
+      const successful = p.paid === true || ["successful", "paid", "succeeded", "confirmed"].includes(status);
+      if (!successful) return;
       const t = Number(p.tipAmount) || 0;
       tips += t;
       sales += (Number(p.amount) || 0) + t;

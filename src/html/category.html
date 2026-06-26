@@ -34,9 +34,10 @@
                     <img src="../images/shopping-cart.png" alt="Shopping Cart">
                     <span class="order-badge" id="order-count">0</span>
                 </div>
-                <div class="receipt-icon" id="receipt-icon" onclick="showLastOrderReceipt()" style="display: none;" title="Последна поръчка / Last Order">
-                    📄
-                </div>
+                <button id="activeOrderButton" class="active-order-button" type="button" onclick="showLastOrderReceipt()" title="Активна сметка" aria-label="Отвори активната сметка">
+                    <span class="active-order-icon" aria-hidden="true">🧾</span>
+                    <span id="activeOrderCount" class="active-order-count" data-count="0">0</span>
+                </button>
             </div>
         </div>
     </header>
@@ -82,14 +83,17 @@
     </div>
 </div>
 
-<!-- Last Order Receipt Modal -->
-<div id="receiptModal" class="receipt-modal">
+<!-- Active Firestore Order Modal -->
+<div id="activeOrderModal" class="receipt-modal active-order-modal" aria-hidden="true">
     <div class="receipt-modal-content">
-        <span class="receipt-close" onclick="closeReceiptModal()">&times;</span>
-        <h2 data-translate="receipt.title">Last Order Receipt</h2>
-        <div id="receipt-items" class="receipt-items"></div>
+        <button class="receipt-close" type="button" onclick="closeReceiptModal()" aria-label="Затвори">&times;</button>
+        <h2>Активна сметка</h2>
+        <div id="activeOrderStatus" class="active-order-status">Все още няма приета поръчка за тази маса.</div>
+        <div id="activeOrderItems" class="receipt-items">
+            <p class="active-order-empty">Все още няма приета поръчка за тази маса.</p>
+        </div>
         <div class="receipt-total">
-            <h3><span data-translate="order.total">Total</span>: <span id="receipt-total-price">0.00</span> €</h3>
+            <h3><span data-translate="order.total">Total</span>: <span id="activeOrderTotal">0.00</span> €</h3>
         </div>
     </div>
 </div>
@@ -159,7 +163,8 @@
 
 <script src="../js/menu-translations.js"></script>
 <script src="../script.js"></script>
-<script src="../js/category.js"></script>
 <script src="./app.js"></script>
+<script src="../shared/cart-orders.js"></script>
+<script src="../js/category.js"></script>
 </body>
 </html>

@@ -3,12 +3,300 @@
 // Order data storage
 let orderItems = [];
 let orderTotal = 0;
-let lastOrder = []; // Store accumulated completed orders (all items from all QR generations)
+let lastOrder = []; // In-memory view of the active Firestore bill (never the source of truth).
+let activeBillOrders = [];
+let activeBillTableId = "";
+let activeBillToken = "";
+let activeBillListeningToken = "";
+let activeBillWasPaid = false;
+let activeBillUnsubscribe = null;
 let activeModalItem = null;
 const CART_STORAGE_KEY = "guest_cart_v1";
 const QR_STATE_STORAGE_KEY = "guest_qr_state_v1";
+const ACTIVE_BILL_TOKEN_PREFIX = "activeBillToken_";
+const PENDING_BILL_TOKEN_KEY = `${ACTIVE_BILL_TOKEN_PREFIX}pending`;
 const QR_TTL_MS = 20 * 60 * 1000;
 let qrExpiryTimer = null;
+let activeCartId = "";
+let activeCartUnsubscribe = null;
+let acceptedCartHandled = false;
+let cartCreateInFlight = null;
+
+function getClientFirestore() {
+    if (window.clientDb) return window.clientDb;
+    if (window.firebase?.apps?.length) return window.firebase.firestore();
+    throw new Error("Firebase не е зареден.");
+}
+
+function isValidPublicBillToken(value) {
+    return /^[A-Za-z0-9_-]{32,160}$/.test(String(value || ""));
+}
+
+function generatePublicBillToken() {
+    if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID().replace(/-/g, "") + window.crypto.randomUUID().replace(/-/g, "");
+    }
+
+    if (window.crypto?.getRandomValues) {
+        const bytes = new Uint8Array(32);
+        window.crypto.getRandomValues(bytes);
+        return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    }
+
+    throw new Error("Secure random token generation is not available.");
+}
+
+function getPublicBillTokenStorageKey(tableId) {
+    const id = String(tableId || "").trim();
+    return id ? `${ACTIVE_BILL_TOKEN_PREFIX}${id}` : PENDING_BILL_TOKEN_KEY;
+}
+
+function getStoredPublicBillToken(tableId) {
+    try {
+        const token = localStorage.getItem(getPublicBillTokenStorageKey(tableId));
+        return isValidPublicBillToken(token) ? token : "";
+    } catch {
+        return "";
+    }
+}
+
+function persistPublicBillToken(token, tableId) {
+    const resolvedToken = String(token || "").trim();
+    if (!isValidPublicBillToken(resolvedToken)) throw new Error("Invalid public bill token.");
+
+    try {
+        localStorage.setItem(getPublicBillTokenStorageKey(tableId), resolvedToken);
+        if (tableId) localStorage.removeItem(PENDING_BILL_TOKEN_KEY);
+    } catch (error) {
+        console.warn("[public-bill] token storage failed:", error);
+    }
+    activeBillToken = resolvedToken;
+    return resolvedToken;
+}
+
+function getOrCreatePublicBillToken(tableId) {
+    const storedToken = getStoredPublicBillToken(tableId);
+    if (storedToken) return persistPublicBillToken(storedToken, tableId);
+
+    const pendingToken = tableId ? getStoredPublicBillToken("") : "";
+    if (pendingToken) return persistPublicBillToken(pendingToken, tableId);
+
+    return persistPublicBillToken(generatePublicBillToken(), tableId);
+}
+
+function getClientTableContext() {
+    const params = new URLSearchParams(window.location.search);
+    const tableId = String(
+        params.get("tableId") ||
+        params.get("table") ||
+        sessionStorage.getItem("activeTableId") ||
+        (typeof currentTableId !== "undefined" ? currentTableId : "") ||
+        (typeof selectedTableId !== "undefined" ? selectedTableId : "") ||
+        ""
+    ).trim();
+    const explicitNumber = Number(params.get("tableNumber"));
+    const idNumber = Number((tableId.match(/\d+/) || [])[0]);
+
+    return {
+        tableId,
+        tableNumber: Number.isFinite(explicitNumber) && explicitNumber > 0
+            ? explicitNumber
+            : (Number.isFinite(idNumber) && idNumber > 0 ? idNumber : null)
+    };
+}
+
+function setClientTablePointer(tableId, tableNumber = null) {
+    const resolvedTableId = String(tableId || "").trim();
+    if (!resolvedTableId) return;
+
+    activeBillTableId = resolvedTableId;
+    try {
+        sessionStorage.setItem("activeTableId", resolvedTableId);
+    } catch {}
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("tableId", resolvedTableId);
+    if (tableNumber != null && Number.isFinite(Number(tableNumber))) {
+        url.searchParams.set("tableNumber", String(tableNumber));
+    }
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function toFirestoreCartItems(items) {
+    return (Array.isArray(items) ? items : []).map((item, index) => {
+        const qty = getQrQty(item?.qty ?? item?.quantity);
+        const price = Number(item?.price || 0);
+        const menuId = getStableMenuId(item) || String(item?.id || `item_${index + 1}`);
+        return {
+            id: String(item?.id || menuId),
+            menuId,
+            itemId: String(item?.itemId || menuId),
+            name: String(item?.name || item?.title || `Item ${index + 1}`),
+            price: Number.isFinite(price) ? price : 0,
+            qty,
+            quantity: qty,
+            category: String(item?.category || item?.categoryKey || item?.type || ""),
+            station: String(item?.station || item?.targetStation || ""),
+            qrCode: String(item?.qrCode || item?.shortCode || item?.code || item?.qr || "")
+        };
+    });
+}
+
+function setActiveCartPointer(cartId) {
+    activeCartId = String(cartId || "").trim();
+    const url = new URL(window.location.href);
+    if (activeCartId) url.searchParams.set("cartId", activeCartId);
+    else url.searchParams.delete("cartId");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function stopActiveCartListener() {
+    if (typeof activeCartUnsubscribe === "function") activeCartUnsubscribe();
+    activeCartUnsubscribe = null;
+}
+
+function stopActiveBillListener() {
+    if (typeof activeBillUnsubscribe === "function") activeBillUnsubscribe();
+    activeBillUnsubscribe = null;
+    activeBillListeningToken = "";
+}
+
+function isActiveUnpaidBill(order) {
+    const status = String(order?.status || "").trim().toLowerCase();
+    const paymentStatus = String(order?.paymentStatus || "").trim().toLowerCase();
+    const orderStatus = String(order?.orderStatus || "").trim().toLowerCase();
+    return (
+        order?.paid !== true &&
+        paymentStatus !== "paid" &&
+        !["paid", "cancelled", "closed"].includes(status) &&
+        orderStatus !== "closed"
+    );
+}
+
+function updateActiveBillMemory(orders) {
+    activeBillOrders = Array.isArray(orders) ? orders : [];
+    const allItems = activeBillOrders.flatMap((order) => Array.isArray(order.items) ? order.items : []);
+    const mergedItems = window.CartOrderFlow?.mergeItems
+        ? window.CartOrderFlow.mergeItems([], allItems)
+        : allItems;
+
+    lastOrder = mergedItems.map((item) => {
+        const quantity = Number(item.qty ?? item.quantity) || 1;
+        const price = Number(item.price) || 0;
+        return {
+            ...item,
+            qty: quantity,
+            quantity,
+            price,
+            totalPrice: Math.round(price * quantity * 100) / 100
+        };
+    });
+}
+
+function getActiveOrderItemCount() {
+    return lastOrder.reduce((sum, item) => {
+        return sum + (Number(item.qty ?? item.quantity) || 0);
+    }, 0);
+}
+
+function updateActiveOrderBadge() {
+    const count = getActiveOrderItemCount();
+    const badge = document.getElementById("activeOrderCount");
+    const button = document.getElementById("activeOrderButton");
+
+    if (badge) {
+        badge.textContent = String(count);
+        badge.dataset.count = String(count);
+        badge.setAttribute("aria-label", `${count} поръчани артикула`);
+    }
+    if (button) {
+        button.title = count > 0 ? `Активна сметка (${count})` : "Няма активна сметка за тази маса";
+        button.setAttribute("aria-label", count > 0
+            ? `Отвори активната сметка, ${count} артикула`
+            : "Отвори активната сметка");
+    }
+}
+
+function listenActiveOrderForCustomerTable(tableId) {
+    const resolvedTableId = String(tableId || "").trim();
+    if (!resolvedTableId) {
+        activeBillWasPaid = false;
+        resetLastOrderReceiptUi();
+        return;
+    }
+
+    const publicBillToken = getStoredPublicBillToken(resolvedTableId);
+    if (!publicBillToken) {
+        stopActiveBillListener();
+        activeBillTableId = resolvedTableId;
+        activeBillToken = "";
+        activeBillListeningToken = "";
+        activeBillWasPaid = false;
+        resetLastOrderReceiptUi();
+        return;
+    }
+
+    if (
+        activeBillTableId === resolvedTableId &&
+        activeBillListeningToken === publicBillToken &&
+        activeBillUnsubscribe
+    ) return;
+
+    stopActiveBillListener();
+    setClientTablePointer(resolvedTableId);
+    activeBillToken = publicBillToken;
+    activeBillListeningToken = publicBillToken;
+
+    const db = getClientFirestore();
+    activeBillUnsubscribe = db.collection("public_bills")
+        .doc(publicBillToken)
+        .onSnapshot((snap) => {
+            if (!snap.exists) {
+                activeBillWasPaid = false;
+                resetLastOrderReceiptUi();
+                return;
+            }
+
+            const bill = snap.data() || {};
+            const status = String(bill.status || "").toLowerCase();
+            const paymentStatus = String(bill.paymentStatus || "").toLowerCase();
+            if (bill.paid === true || status === "paid" || paymentStatus === "paid") {
+                activeBillWasPaid = true;
+                resetLastOrderReceiptUi();
+                return;
+            }
+
+            activeBillWasPaid = false;
+            const activeBills = [{
+                id: String(bill.orderId || publicBillToken),
+                ...bill
+            }].filter(isActiveUnpaidBill);
+            updateActiveBillMemory(activeBills);
+            updateActiveOrderBadge();
+
+            if (!activeBills.length) {
+                resetLastOrderReceiptUi();
+                return;
+            }
+
+            const receiptModal = document.getElementById("activeOrderModal");
+            if (receiptModal?.classList.contains("show") || receiptModal?.style.display === "block") {
+                renderActiveBillReceipt();
+            }
+            console.log("[active-bill] Firestore update", {
+                tableId: resolvedTableId,
+                orderId: bill.orderId || "",
+                itemCount: lastOrder.length
+            });
+        }, (error) => {
+            console.error("[active-bill] listener failed:", error);
+            showOrderMessage("Активната сметка не можа да се зареди.");
+        });
+}
+
+function listenActiveBillForTable(tableId) {
+    return listenActiveOrderForCustomerTable(tableId);
+}
 
 function getQrSafeId(value) {
     return encodeURIComponent(String(value || "").trim());
@@ -1194,39 +1482,118 @@ function setRestoreQrButtonVisible(isVisible) {
     }
 }
 
-function clearCartExplicitly() {
+function clearCartUI() {
     const items = getCartItemsRef();
     if (Array.isArray(items)) items.length = 0;
 
     orderItems = [];
     orderTotal = 0;
 
-    try {
-        localStorage.removeItem(CART_STORAGE_KEY);
-        localStorage.removeItem(QR_STATE_STORAGE_KEY);
-        localStorage.removeItem("restaurantOrder");
-        localStorage.removeItem("cart");
-        localStorage.removeItem("cartItems");
-        localStorage.removeItem("orderItems");
-        localStorage.removeItem("currentOrder");
-        sessionStorage.removeItem("cart");
-        sessionStorage.removeItem("cartItems");
-        sessionStorage.removeItem("orderItems");
-        sessionStorage.removeItem("currentOrder");
-    } catch (e) {
-        console.warn("[cart] explicit clear storage failed:", e);
-    }
+    if (Array.isArray(window.cartItems)) window.cartItems.length = 0;
+    if (Array.isArray(window.cart)) window.cart.length = 0;
 
-    setRestoreQrButtonVisible(false);
     refreshCartUi();
 }
 
-function saveQrState(qrPayload, qrHtmlOrDataUrl = "") {
+function clearCartLocalStorage() {
+    const activeCartKeys = [
+        CART_STORAGE_KEY,
+        QR_STATE_STORAGE_KEY,
+        "restaurantOrder",
+        "cart",
+        "cartItems",
+        "orderItems",
+        "currentCart",
+        "currentOrder",
+        "lastOrder"
+    ];
+
+    try {
+        activeCartKeys.forEach((key) => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+        });
+    } catch (e) {
+        console.warn("[cart] storage clear failed:", e);
+    }
+
+    setRestoreQrButtonVisible(false);
+}
+
+function hideQrCode() {
+    const qrBox = document.getElementById("orderQrCode");
+    if (qrBox) qrBox.innerHTML = "";
+
+    const qrModal = document.getElementById("qrModal") || document.querySelector(".qr-modal");
+    if (qrModal) {
+        qrModal.style.display = "none";
+        qrModal.classList.remove("active", "show", "open");
+    }
+
+    if (qrExpiryTimer) clearInterval(qrExpiryTimer);
+    qrExpiryTimer = null;
+    setRestoreQrButtonVisible(false);
+}
+
+function clearCartExplicitly() {
+    clearCartUI();
+    clearCartLocalStorage();
+    hideQrCode();
+    stopActiveCartListener();
+    setActiveCartPointer("");
+}
+
+function listenToClientCart(cartId) {
+    const resolvedCartId = String(cartId || "").trim();
+    if (!resolvedCartId) return;
+
+    stopActiveCartListener();
+    activeCartId = resolvedCartId;
+    acceptedCartHandled = false;
+
+    const db = getClientFirestore();
+    activeCartUnsubscribe = db.collection("carts").doc(resolvedCartId).onSnapshot((snap) => {
+        if (!snap.exists) return;
+        const cart = snap.data() || {};
+        const status = String(cart.status || "").toLowerCase();
+
+        if (!["accepted", "cleared"].includes(status) || acceptedCartHandled) return;
+        acceptedCartHandled = true;
+
+        const acceptedTableId = String(cart.tableId || getClientTableContext().tableId || "").trim();
+        const acceptedBillToken = String(cart.publicBillToken || "").trim();
+        if (acceptedTableId) {
+            setClientTablePointer(acceptedTableId, cart.tableNumber);
+            if (isValidPublicBillToken(acceptedBillToken)) {
+                persistPublicBillToken(acceptedBillToken, acceptedTableId);
+            }
+            listenActiveBillForTable(acceptedTableId);
+        }
+
+        clearCartUI();
+        clearCartLocalStorage();
+        hideQrCode();
+        stopActiveCartListener();
+        setActiveCartPointer("");
+
+        showOrderMessage("Поръчката е приета от сервитьор.");
+        console.log("[cart] accepted by waiter", {
+            cartId: resolvedCartId,
+            orderId: cart.orderId || ""
+        });
+    }, (error) => {
+        console.error("[cart] listener failed:", error);
+        showOrderMessage("Неуспешно проследяване на QR поръчката. Опитайте отново.");
+    });
+}
+
+function saveQrState(qrPayload, qrHtmlOrDataUrl = "", cartId = "") {
     try {
         const generatedAt = Date.now();
         const state = {
             qrPayload,
             qrHtmlOrDataUrl,
+            cartId: String(cartId || ""),
             generatedAt,
             expiresAt: generatedAt + QR_TTL_MS
         };
@@ -1332,104 +1699,96 @@ function showQrExpiryInfo(expiresAt) {
     qrExpiryTimer = setInterval(tick, 1000);
 }
 
-// Generate QR code for order
-function createNewQR() {
-    const lang = localStorage.getItem('language') || 'en';
-    
-    if (orderItems.length === 0) {
-        const emptyMsg = lang === 'bg' ? 'Поръчката е празна!' : 'Order is empty!';
-        showOrderMessage(emptyMsg);
-        return;
-    }
-    
-    let qrPayload = "";
-    try {
-        const currentTable = typeof currentTableId !== "undefined" ? currentTableId : "";
-        const selectedTable = typeof selectedTableId !== "undefined" ? selectedTableId : "";
-        const noteInput =
-            document.getElementById("noteInput") ||
-            document.getElementById("orderNote") ||
-            null;
-        const menuList = getQrMenuList();
-        const menuLookup = buildMenuLookup(menuList);
-        const resolvedItems = orderItems.map((item) => resolveCartItemFromMenu(item, menuLookup));
+// Generate a Firestore cart and encode only its id in the QR code.
+async function createNewQR() {
+    if (cartCreateInFlight) return cartCreateInFlight;
 
-        console.log("[QR cart resolved items]", resolvedItems.map((x) => ({
-            name: x.name,
-            menuId: x.menuId,
-            itemId: x.itemId,
-            qrCode: x.qrCode || x.shortCode || x.code || x.qr,
-            price: x.price
-        })));
+    cartCreateInFlight = (async () => {
+        const lang = localStorage.getItem('language') || 'en';
+        const sourceItems = getCartItemsRef();
 
-        const orderForQr = {
-            tableId: currentTable || selectedTable || "",
-            items: resolvedItems,
-            note: noteInput?.value || ""
-        };
-
-        qrPayload = encodeBestCompactOrderForQr(orderForQr, menuList);
-
-        console.log("[QR-GENERATED]", {
-            format: qrPayload.startsWith("R2|") ? "R2" : "R1",
-            length: qrPayload.length,
-            payload: qrPayload
-        });
-    } catch (err) {
-        console.error("Compact QR generation failed:", err);
-        const failMsg = err?.message || (
-            lang === 'bg'
-                ? 'QR кодът не можа да се генерира. Опитай пак.'
-                : 'QR code could not be generated. Please try again.'
-        );
-        showOrderMessage(failMsg);
-        return;
-    }
-
-    // Add current order items to accumulated receipt before clearing
-    // If item already exists in lastOrder, merge quantities
-    const currentOrderCopy = JSON.parse(JSON.stringify(orderItems)); // Deep copy
-    
-    currentOrderCopy.forEach(newItem => {
-        const existingItem = lastOrder.find(item => item.name === newItem.name);
-        if (existingItem) {
-            // Item exists - add quantities and update total price
-            existingItem.quantity += newItem.quantity;
-            existingItem.totalPrice = existingItem.price * existingItem.quantity;
-        } else {
-            // New item - add to receipt
-            lastOrder.push(newItem);
+        if (!Array.isArray(sourceItems) || sourceItems.length === 0) {
+            showOrderMessage(lang === 'bg' ? 'Поръчката е празна!' : 'Order is empty!');
+            return null;
         }
-    });
-    
-    localStorage.setItem('lastOrder', JSON.stringify(lastOrder));
-    
-    // Close order summary modal
-    const orderModal = document.getElementById('orderSummaryModal');
-    if (orderModal) orderModal.style.display = 'none';
 
-    // Generate QR code in full-screen modal
-    const qrState = saveQrState(qrPayload);
-    saveCartState();
-    generateQRCodeModal(qrPayload);
-    showQrExpiryInfo(qrState?.expiresAt || Date.now() + QR_TTL_MS);
-    console.log("[QR] generated successfully", {
-        length: qrPayload.length,
-        expiresAt: qrState ? new Date(qrState.expiresAt).toLocaleTimeString() : ""
-    });
-    
-    // Show receipt button
-    const receiptIcon = document.getElementById('receipt-icon');
-    if (receiptIcon) {
-        receiptIcon.style.display = 'flex';
+        try {
+            const db = getClientFirestore();
+            const FieldValue = firebase.firestore.FieldValue;
+            const table = getClientTableContext();
+            const publicBillToken = getOrCreatePublicBillToken(table.tableId);
+            const noteInput = document.getElementById("noteInput") || document.getElementById("orderNote");
+            const menuList = getQrMenuList();
+            const menuLookup = buildMenuLookup(menuList);
+            const resolvedItems = sourceItems.map((item) => resolveCartItemFromMenu(item, menuLookup));
+            const items = toFirestoreCartItems(resolvedItems);
+            const total = Math.round(items.reduce((sum, item) => sum + item.price * item.qty, 0) * 100) / 100;
+            const cartRef = db.collection("carts").doc();
+            const cartId = cartRef.id;
+
+            await cartRef.set({
+                cartId,
+                tableId: table.tableId,
+                tableNumber: table.tableNumber,
+                publicBillToken,
+                items,
+                total,
+                note: String(noteInput?.value || ""),
+                status: "pending_scan",
+                createdAt: FieldValue.serverTimestamp(),
+                updatedAt: FieldValue.serverTimestamp(),
+                acceptedAt: null,
+                acceptedBy: null,
+                orderId: null
+            });
+
+            const qrPayload = JSON.stringify({
+                type: "cart",
+                cartId,
+                tableId: table.tableId
+            });
+
+            const orderModal = document.getElementById('orderSummaryModal');
+            if (orderModal) orderModal.style.display = 'none';
+
+            const qrState = saveQrState(qrPayload, "", cartId);
+            saveCartState();
+            setActiveCartPointer(cartId);
+            listenToClientCart(cartId);
+            if (table.tableId) listenActiveOrderForCustomerTable(table.tableId);
+            generateQRCodeModal(qrPayload);
+            showQrExpiryInfo(qrState?.expiresAt || Date.now() + QR_TTL_MS);
+
+            console.log("[QR] Firestore cart generated", {
+                cartId,
+                tableId: table.tableId,
+                itemCount: items.length,
+                total
+            });
+            return cartId;
+        } catch (err) {
+            console.error("Firestore QR cart generation failed:", err);
+            showOrderMessage(err?.message || (
+                lang === 'bg'
+                    ? 'QR поръчката не можа да се запише във Firebase. Опитай пак.'
+                    : 'The QR order could not be saved. Please try again.'
+            ));
+            return null;
+        }
+    })();
+
+    try {
+        return await cartCreateInFlight;
+    } finally {
+        cartCreateInFlight = null;
     }
 }
 
-function openSavedQrIfValid() {
+async function openSavedQrIfValid() {
     const state = loadQrState();
 
     if (!state) {
-        createNewQR();
+        await createNewQR();
         return;
     }
 
@@ -1442,6 +1801,10 @@ function openSavedQrIfValid() {
     renderQrFromPayload(state.qrPayload);
     showQrModal();
     showQrExpiryInfo(state.expiresAt);
+    if (state.cartId) {
+        setActiveCartPointer(state.cartId);
+        listenToClientCart(state.cartId);
+    }
 }
 
 async function handleGenerateQrClick() {
@@ -1451,6 +1814,10 @@ async function handleGenerateQrClick() {
         renderQrFromPayload(state.qrPayload);
         showQrModal();
         showQrExpiryInfo(state.expiresAt);
+        if (state.cartId) {
+            setActiveCartPointer(state.cartId);
+            listenToClientCart(state.cartId);
+        }
         console.log("[QR] reopened existing QR");
         return;
     }
@@ -1460,7 +1827,7 @@ async function handleGenerateQrClick() {
         showQrExpiredMessage();
     }
 
-    createNewQR();
+    await createNewQR();
 }
 
 async function generateQR() {
@@ -1478,12 +1845,13 @@ function showOrderQrError(qrContainer, message) {
 
 function updateOrderQrInstruction() {
     const instruction = document.getElementById('qrScanInstruction');
-    if (!instruction) return;
-
     const lang = localStorage.getItem('language') || 'en';
-    instruction.textContent = lang === 'bg'
-        ? 'Сканирайте този код за да видите детайлите на поръчката'
-        : 'Scan this code to view order details';
+    if (instruction) {
+        instruction.textContent = lang === 'bg'
+            ? 'Сканирайте този код за да видите детайлите на поръчката'
+            : 'Scan this code to view order details';
+    }
+
 }
 
 // Render the existing order payload as a scannable QR code.
@@ -1568,53 +1936,123 @@ if (typeof window !== "undefined") {
     window.renderOrderQr = renderOrderQr;
     window.openSavedQrIfValid = openSavedQrIfValid;
     window.clearCartExplicitly = clearCartExplicitly;
+    window.clearCartUI = clearCartUI;
+    window.clearCartLocalStorage = clearCartLocalStorage;
+    window.hideQrCode = hideQrCode;
 }
 
-// Show last order receipt
-function showLastOrderReceipt() {
-    // Load last order from localStorage if not in memory
-    if (!lastOrder) {
-        const savedLastOrder = localStorage.getItem('lastOrder');
-        if (savedLastOrder) {
-            lastOrder = JSON.parse(savedLastOrder);
-        }
+function escapeReceiptHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function getCustomerActiveOrderStatusLabel(lang) {
+    if (activeBillWasPaid) return lang === 'bg' ? 'Сметката е платена.' : 'The bill is paid.';
+    if (!activeBillOrders.length) {
+        return lang === 'bg'
+            ? 'Все още няма приета поръчка за тази маса.'
+            : 'There is no accepted order for this table yet.';
     }
-    
-    if (!lastOrder || lastOrder.length === 0) {
-        const lang = localStorage.getItem('language') || 'en';
-        const noOrderMsg = lang === 'bg' ? 'Няма запазена поръчка' : 'No saved order';
-        showOrderMessage(noOrderMsg);
+
+    const statuses = activeBillOrders.map((order) => String(order.status || '').toLowerCase());
+    if (statuses.includes('ready')) return lang === 'bg' ? 'Готова' : 'Ready';
+    if (statuses.some((status) => ['preparing', 'in_progress', 'processing'].includes(status))) {
+        return lang === 'bg' ? 'В процес' : 'In progress';
+    }
+    return lang === 'bg' ? 'Неплатена' : 'Unpaid';
+}
+
+function renderActiveBillReceipt() {
+    const receiptModal = document.getElementById('activeOrderModal');
+    const receiptItems = document.getElementById('activeOrderItems');
+    const receiptTotal = document.getElementById('activeOrderTotal');
+    const statusElement = document.getElementById('activeOrderStatus');
+    if (!receiptModal || !receiptItems || !receiptTotal) return;
+
+    const lang = localStorage.getItem('language') || 'en';
+    const title = receiptModal.querySelector('h2');
+    if (title) title.textContent = lang === 'bg' ? 'Активна сметка' : 'Active bill';
+    if (statusElement) statusElement.textContent = getCustomerActiveOrderStatusLabel(lang);
+
+    let meta = document.getElementById('receipt-active-meta');
+    if (!meta) {
+        meta = document.createElement('div');
+        meta.id = 'receipt-active-meta';
+        meta.className = 'receipt-active-meta';
+        title?.insertAdjacentElement('afterend', meta);
+    }
+    meta.textContent = activeBillOrders.map((order) => {
+        return `${order.id} • ${order.status || 'active'}`;
+    }).join(' | ');
+
+    if (!activeBillOrders.length || !lastOrder.length) {
+        const emptyText = activeBillWasPaid
+            ? (lang === 'bg' ? 'Сметката е платена.' : 'The bill is paid.')
+            : (lang === 'bg'
+                ? 'Все още няма приета поръчка за тази маса.'
+                : 'There is no accepted order for this table yet.');
+        receiptItems.innerHTML = `<p class="active-order-empty">${emptyText}</p>`;
+        receiptTotal.textContent = '0.00';
+        meta.textContent = '';
         return;
     }
-    
-    const receiptModal = document.getElementById('receiptModal');
-    const receiptItems = document.getElementById('receipt-items');
-    const receiptTotal = document.getElementById('receipt-total-price');
-    
-    // Calculate total from last order
-    const total = lastOrder.reduce((sum, item) => sum + item.totalPrice, 0);
-    
-    // Display receipt items (read-only)
+
+    const total = lastOrder.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
     receiptItems.innerHTML = lastOrder.map(item => `
         <div class="receipt-item">
-            <div class="receipt-item-name">${getOrderItemDisplayName(item)}</div>
+            <div class="receipt-item-name">
+                <div>${escapeReceiptHtml(getOrderItemDisplayName(item))}</div>
+                <div class="receipt-item-unit">${Number(item.price || 0).toFixed(2)} € / ${lang === 'bg' ? 'бр.' : 'unit'}</div>
+            </div>
             <div class="receipt-item-quantity">x${item.quantity}</div>
-            <div class="receipt-item-price">${item.totalPrice.toFixed(2)} €</div>
+            <div class="receipt-item-price">${Number(item.totalPrice || 0).toFixed(2)} €</div>
         </div>
     `).join('');
-    
     receiptTotal.textContent = total.toFixed(2);
-    
-    // Show modal
+}
+
+// Show the active Firestore bill next to the temporary cart.
+function showLastOrderReceipt() {
+    const receiptModal = document.getElementById('activeOrderModal');
+    if (!receiptModal) return;
+    renderActiveBillReceipt();
     receiptModal.style.display = 'block';
     receiptModal.classList.add('show');
+    receiptModal.setAttribute('aria-hidden', 'false');
 }
 
 // Close receipt modal
 function closeReceiptModal() {
-    const receiptModal = document.getElementById('receiptModal');
+    const receiptModal = document.getElementById('activeOrderModal');
+    if (!receiptModal) return;
     receiptModal.style.display = 'none';
     receiptModal.classList.remove('show');
+    receiptModal.setAttribute('aria-hidden', 'true');
+}
+
+function resetLastOrderReceiptUi() {
+    updateActiveBillMemory([]);
+    updateActiveOrderBadge();
+    renderActiveBillReceipt();
+}
+
+function clearLastOrderReceipt() {
+    try {
+        localStorage.removeItem('lastOrder');
+    } catch (error) {
+        console.warn('[receipt] Could not clear lastOrder:', error);
+    }
+    if (!activeBillOrders.length) resetLastOrderReceiptUi();
+}
+
+if (typeof window !== 'undefined') {
+    window.clearLastOrderReceipt = clearLastOrderReceipt;
+    window.listenActiveBillForTable = listenActiveBillForTable;
+    window.listenActiveOrderForCustomerTable = listenActiveOrderForCustomerTable;
 }
 
 // Show order message
@@ -1775,6 +2213,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     const qrState = loadQrState();
+    const urlCartId = new URLSearchParams(window.location.search).get("cartId");
     if (qrState && isQrStateExpired(qrState)) {
         clearQrState();
         console.log("[QR] saved QR expired after refresh; cart remains.");
@@ -1786,20 +2225,25 @@ window.addEventListener('DOMContentLoaded', function() {
     } else {
         setRestoreQrButtonVisible(false);
     }
-    
-    // Check if last order exists and show receipt button
-    const savedLastOrder = localStorage.getItem('lastOrder');
-    if (savedLastOrder) {
-        const parsedOrder = JSON.parse(savedLastOrder);
-        // Ensure it's an array (handle both old format and new format)
-        lastOrder = Array.isArray(parsedOrder) ? parsedOrder : (parsedOrder ? [parsedOrder] : []);
-        
-        if (lastOrder.length > 0) {
-            const receiptIcon = document.getElementById('receipt-icon');
-            if (receiptIcon) {
-                receiptIcon.style.display = 'flex';
-            }
+
+    const cartIdToWatch = String(urlCartId || qrState?.cartId || "").trim();
+    if (cartIdToWatch) {
+        activeCartId = cartIdToWatch;
+        try {
+            listenToClientCart(cartIdToWatch);
+        } catch (error) {
+            console.error("[cart] listener initialization failed:", error);
         }
+    }
+    const tableContext = getClientTableContext();
+    if (tableContext.tableId) {
+        try {
+            listenActiveBillForTable(tableContext.tableId);
+        } catch (error) {
+            console.error("[active-bill] listener initialization failed:", error);
+        }
+    } else {
+        resetLastOrderReceiptUi();
     }
     
     // Apply translations to nutrition modal if it exists
@@ -1810,6 +2254,18 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 }, { once: true });
 
+window.addEventListener("pagehide", () => {
+    stopActiveCartListener();
+    stopActiveBillListener();
+});
+window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    const tableId = getClientTableContext().tableId;
+    if (tableId) listenActiveBillForTable(tableId);
+    const cartId = String(new URLSearchParams(window.location.search).get("cartId") || loadQrState()?.cartId || "").trim();
+    if (cartId) listenToClientCart(cartId);
+});
+
 // Close modal when clicking outside
 if (!window.__MENU_MODAL_CLOSE_BOUND__) {
 window.__MENU_MODAL_CLOSE_BOUND__ = true;
@@ -1818,7 +2274,7 @@ window.addEventListener('click', function(event) {
     const orderModal = document.getElementById('orderSummaryModal');
     const nutritionModal = document.getElementById('nutritionModal');
     const qrModal = document.getElementById('qrModal');
-    const receiptModal = document.getElementById('receiptModal');
+    const receiptModal = document.getElementById('activeOrderModal');
     
     if (event.target === orderModal) {
         orderModal.style.display = 'none';
@@ -1843,7 +2299,7 @@ document.addEventListener('keydown', function(e) {
         const orderModal = document.getElementById('orderSummaryModal');
         const nutritionModal = document.getElementById('nutritionModal');
         const qrModal = document.getElementById('qrModal');
-        const receiptModal = document.getElementById('receiptModal');
+        const receiptModal = document.getElementById('activeOrderModal');
         
         const qrModalIsOpen = qrModal && (
             qrModal.style.display === 'flex' ||

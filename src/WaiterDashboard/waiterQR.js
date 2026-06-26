@@ -1695,6 +1695,9 @@
     return {
       source,
       docId,
+      cartId: source === "carts" ? docId : cleanId(payload?.cartId || data?.cartId),
+      orderId: cleanId(payload?.orderId || data?.orderId),
+      cartStatus: cleanId(payload?.status || data?.status).toLowerCase(),
       tableId: cleanId(payload?.tableId || data?.tableId || data?.table || data?.t),
       restaurantId: cleanId(payload?.restaurantId || payload?.rid || data?.restaurantId || data?.rid || data?.restaurant),
       data: payload || data || {},
@@ -1891,6 +1894,15 @@
         renderResolved();
         setStatus("вќЊ РќРµ РЅР°РјРµСЂРёС… order/cart РґРѕРєСѓРјРµРЅС‚ РїРѕ С‚РѕР·Рё QR.", "err");
         showDebug("resolveFromQR(): " + JSON.stringify({ plan, found: false }, null, 2));
+        return;
+      }
+
+      if (r.source === "carts" && (r.orderId || ["accepted", "cleared"].includes(r.cartStatus))) {
+        resolved = null;
+        if (decodedBox) decodedBox.textContent = "(empty)";
+        renderResolved();
+        setStatus("Тази QR поръчка вече е приета.", "err");
+        if (msgEl) msgEl.textContent = "Тази QR поръчка вече е приета.";
         return;
       }
 
@@ -2207,6 +2219,37 @@
         totalPrice: i.totalPrice
       })));
 
+      if (resolved.source === "carts" && resolved.cartId) {
+        if (!window.CartOrderFlow?.acceptCart) {
+          throw new Error("CartOrderFlow is not loaded.");
+        }
+
+        const user = auth.currentUser;
+        const accepted = await window.CartOrderFlow.acceptCart({
+          db: sendDb,
+          FieldValue,
+          cartId: resolved.cartId,
+          selectedTableId: tableId,
+          waiter: {
+            uid: user?.uid || "",
+            name: user?.displayName || user?.email || "Waiter"
+          },
+          items: resolvedItems,
+          note: String(resolved?.note || "")
+        });
+
+        resetUI();
+        if (accepted.alreadyAccepted) {
+          setStatus("Тази QR поръчка вече е приета.", "err");
+          msgEl.textContent = "Тази QR поръчка вече е приета.";
+        } else {
+          setStatus("Поръчката е приета ✅", "ok");
+          msgEl.textContent = "Поръчката е приета и изпратена към активните поръчки.";
+          console.log("[waiter] Firestore cart accepted", accepted);
+        }
+        return;
+      }
+
       if (SAFE_MODE) {
         await sendDb.collection(SCANS_COLLECTION).add({
           createdAt: FieldValue.serverTimestamp(),
@@ -2325,8 +2368,10 @@
       await tableRef.set({
         status: "busy",
         currentOrderId: orderId,
+        activeOrderId: orderId,
         updatedAt: FieldValue.serverTimestamp(),
-        activeOrders: FieldValue.arrayUnion(orderId)
+        activeOrders: FieldValue.arrayUnion(orderId),
+        activeOrderIds: FieldValue.arrayUnion(orderId)
       }, { merge: true });
 
       resetUI();

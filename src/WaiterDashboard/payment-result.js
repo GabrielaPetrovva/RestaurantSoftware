@@ -46,7 +46,9 @@ const text = {
     "Not signed in.": "Not signed in.",
     "Missing payment details.": "Missing payment details.",
     "Confirmed by payment provider.": "Confirmed by payment provider.",
-    "No paid confirmation yet.": "No paid confirmation yet."
+    "No paid confirmation yet.": "No paid confirmation yet.",
+    "Order marked paid.": "The order is marked as paid.",
+    "Payment status update pending.": "Payment succeeded, but the system is still updating its status."
   },
   bg: {
     "Payment successful": "Плащането е успешно",
@@ -62,7 +64,9 @@ const text = {
     "Not signed in.": "Не сте влезли в профил.",
     "Missing payment details.": "Липсват данни за плащане.",
     "Confirmed by payment provider.": "Потвърдено от payment provider.",
-    "No paid confirmation yet.": "Още няма paid потвърждение."
+    "No paid confirmation yet.": "Още няма потвърждение за плащането.",
+    "Order marked paid.": "Поръчката е маркирана като платена.",
+    "Payment status update pending.": "Плащането е успешно, но системата още обновява статуса."
   }
 };
 
@@ -80,10 +84,37 @@ const tableId = String(params.get("tableId") || "").trim();
 const stripeSessionId = String(params.get("session_id") || params.get("sessionId") || "").trim();
 let paymentId = String(params.get("paymentId") || "").trim();
 
+const COMPLETED_GUEST_ORDER_STORAGE_KEYS = [
+  "lastOrder",
+  "guest_cart_v1",
+  "guest_qr_state_v1",
+  "restaurantOrder",
+  "cart",
+  "cartItems",
+  "orderItems",
+  "currentOrder"
+];
+let completedGuestOrderStorageCleared = false;
+
 document.documentElement.lang = currentLang === "bg" ? "bg" : "en";
 
 function t(key) {
   return text[currentLang]?.[key] || text.en[key] || key;
+}
+
+function clearCompletedGuestOrderStorage() {
+  if (completedGuestOrderStorageCleared) return;
+
+  try {
+    COMPLETED_GUEST_ORDER_STORAGE_KEYS.forEach((key) => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+    completedGuestOrderStorageCleared = true;
+    console.log("[payment] Completed guest order removed from browser storage.");
+  } catch (error) {
+    console.warn("[payment] Could not clear completed guest order storage:", error);
+  }
 }
 
 function waitForAuthUser() {
@@ -136,6 +167,38 @@ async function apiPost(path, body) {
     throw new Error(data.error || data.message || `API error ${res.status}`);
   }
 
+  return data;
+}
+
+async function apiGet(path) {
+  const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
+  const res = await fetch(apiUrl(cleanPath), { method: "GET" });
+  const textBody = await res.text();
+  let data = {};
+
+  try {
+    data = textBody ? JSON.parse(textBody) : {};
+  } catch {
+    data = { raw: textBody };
+  }
+
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `API error ${res.status}`);
+  }
+
+  return data;
+}
+
+async function confirmStripeSessionFromSuccessPage() {
+  if (!stripeSessionId) return null;
+
+  const data = await apiGet(
+    `/api/payments/confirm-session?session_id=${encodeURIComponent(stripeSessionId)}`
+  );
+  paymentId = data.paymentId || data.payment?.paymentId || data.payment?.id || paymentId;
+  if (data.ok === true && data.status === "successful") {
+    clearCompletedGuestOrderStorage();
+  }
   return data;
 }
 
@@ -304,8 +367,10 @@ async function checkStatus() {
   );
   paymentId = data.paymentId || data.payment?.paymentId || paymentId;
   const status = String(data.status || data.paymentStatus || data.payment?.status || "").toLowerCase();
+  const isSuccessful = data.payment?.paid === true || ["successful", "paid", "succeeded", "confirmed"].includes(status);
 
-  if (status === "paid" || status === "succeeded") {
+  if (isSuccessful) {
+    clearCompletedGuestOrderStorage();
     const resolvedOrderId = data.orderId || data.payment?.orderId || orderId;
     const orderData = await loadOrderForReceipt(resolvedOrderId) || data.order || null;
     renderElectronicReceipt(data, orderData);
@@ -314,12 +379,12 @@ async function checkStatus() {
     const paidCurrency = data.currency || paidPayment.currency || "";
     setResult(
       t("Payment successful"),
-      t("Confirmed by payment provider."),
+      t("Order marked paid."),
       `${provider || data.provider || paidPayment.provider || ""} ${paidTotal ? Number(paidTotal).toFixed(2) : ""} ${paidCurrency}`.trim(),
       "ok"
     );
     if (printReceiptBtn) printReceiptBtn.hidden = false;
-    return;
+    return "successful";
   }
 
   if (receiptMount) {
@@ -328,11 +393,18 @@ async function checkStatus() {
   }
 
   if (status === "failed" || status === "cancelled" || status === "canceled") {
-    setResult(t("Payment failed"), t("Order is still open."), t("No paid confirmation yet."), "err");
-    return;
+    const isCancelled = status === "cancelled" || status === "canceled";
+    setResult(
+      t(isCancelled ? "Payment cancelled" : "Payment failed"),
+      t("Order is still open."),
+      t("No paid confirmation yet."),
+      "err"
+    );
+    return isCancelled ? "cancelled" : "failed";
   }
 
   setResult(t("Payment pending"), t("No paid confirmation yet."), t("Payment pending"), "pending");
+  return "pending";
 }
 
 async function init() {
@@ -357,7 +429,43 @@ async function init() {
 
     if (pageType !== "cancel") {
       setBusy(true);
-      await checkStatus();
+      let confirmationFailed = false;
+      let confirmationResult = null;
+
+      if (stripeSessionId) {
+        try {
+          confirmationResult = await confirmStripeSessionFromSuccessPage();
+        } catch (err) {
+          confirmationFailed = true;
+          console.warn("Stripe success fallback confirmation failed:", err);
+        }
+      }
+
+      let resolvedStatus;
+      try {
+        resolvedStatus = await checkStatus();
+      } catch (err) {
+        if (confirmationResult?.ok === true && confirmationResult.status === "successful") {
+          clearCompletedGuestOrderStorage();
+          setResult(
+            t("Payment successful"),
+            t("Order marked paid."),
+            t("Order marked paid."),
+            "ok"
+          );
+          return;
+        }
+        throw err;
+      }
+
+      if (confirmationFailed && resolvedStatus === "pending") {
+        setResult(
+          t("Payment successful"),
+          t("Payment status update pending."),
+          t("Payment status update pending."),
+          "pending"
+        );
+      }
     }
   } catch (err) {
     setResult(

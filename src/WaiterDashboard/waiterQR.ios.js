@@ -1135,7 +1135,53 @@
       if (msgEl) msgEl.textContent = "";
 
       try {
-        const parsed = parseOrderFromQR(decodedText);
+        const cartReference = window.CartOrderFlow?.parseCartReference(decodedText);
+        let parsed = null;
+
+        if (cartReference?.cartId) {
+          const cartSnap = await db.collection("carts").doc(cartReference.cartId).get();
+          if (!cartSnap.exists) {
+            scannedOrder = null;
+            renderOrder();
+            setStatus("QR кошницата не е намерена.", "err");
+            return;
+          }
+
+          const cart = cartSnap.data() || {};
+          const cartStatus = String(cart.status || "").toLowerCase();
+          if (cart.orderId || cartStatus === "accepted" || cartStatus === "cleared") {
+            scannedOrder = null;
+            decodedBox.textContent = "(empty)";
+            renderOrder();
+            setStatus("Тази QR поръчка вече е приета.", "err");
+            if (msgEl) msgEl.textContent = "Тази QR поръчка вече е приета.";
+            return;
+          }
+
+          if (!["draft", "pending_scan"].includes(cartStatus)) {
+            scannedOrder = null;
+            renderOrder();
+            setStatus(`QR поръчката не е активна (${cartStatus || "без статус"}).`, "err");
+            return;
+          }
+
+          if (!Array.isArray(cart.items) || !cart.items.length) {
+            scannedOrder = null;
+            renderOrder();
+            setStatus("QR кошницата няма ястия.", "err");
+            return;
+          }
+
+          parsed = {
+            ...cart,
+            source: "carts",
+            docId: cartReference.cartId,
+            cartId: cartReference.cartId,
+            tableId: cart.tableId || cartReference.tableId || ""
+          };
+        } else {
+          parsed = parseOrderFromQR(decodedText);
+        }
 
         if (!parsed) {
           setStatus("QR payload cannot be converted to order.", "err");
@@ -1143,6 +1189,11 @@
         }
 
         scannedOrder = await hydrateScannedOrderItemsFromMenu(parsed);
+        const scannedTableId = String(scannedOrder?.tableId || "").trim();
+        if (scannedTableId) {
+          const hasTable = Array.from(tableSelect.options).some((option) => option.value === scannedTableId);
+          if (hasTable) tableSelect.value = scannedTableId;
+        }
         console.log("[qr-items-normalized]", normalizeItems(scannedOrder.items || scannedOrder.order?.items || []));
         renderOrder();
         if (hasUnresolvedQrItems(scannedOrder)) {
@@ -2131,6 +2182,45 @@
         })));
         const scannedNote = String(scannedOrder?.note || "");
 
+        if (scannedOrder?.source === "carts" && scannedOrder?.cartId) {
+          if (!window.CartOrderFlow?.acceptCart) {
+            throw new Error("CartOrderFlow is not loaded.");
+          }
+
+          const waiterName = String(
+            meProfile?.name ||
+            meProfile?.fullName ||
+            meProfile?.displayName ||
+            user.displayName ||
+            user.email ||
+            "Waiter"
+          ).trim();
+          const accepted = await window.CartOrderFlow.acceptCart({
+            db,
+            FieldValue,
+            cartId: scannedOrder.cartId,
+            selectedTableId: tableId,
+            waiter: { uid: meUid, name: waiterName },
+            items: resolvedItems,
+            note: scannedNote
+          });
+
+          scannedOrder = null;
+          decodedBox.textContent = "(empty)";
+          renderOrder();
+          updateSendButton();
+
+          if (accepted.alreadyAccepted) {
+            setStatus("Тази QR поръчка вече е приета.", "err");
+            msgEl.textContent = "Тази QR поръчка вече е приета.";
+          } else {
+            setStatus("Поръчката е приета ✅", "ok");
+            msgEl.textContent = "Поръчката е приета и изпратена към активните поръчки.";
+            console.log("[waiter] Firestore cart accepted", accepted);
+          }
+          return;
+        }
+
         const tableRef = db.collection("tables").doc(tableId);
         const tableSnap = await tableRef.get();
         if (!tableSnap.exists) {
@@ -2186,8 +2276,10 @@
         await tableRef.set({
           status: "busy",
           currentOrderId: orderId,
+          activeOrderId: orderId,
           updatedAt: FieldValue.serverTimestamp(),
-          activeOrders: FieldValue.arrayUnion(orderId)
+          activeOrders: FieldValue.arrayUnion(orderId),
+          activeOrderIds: FieldValue.arrayUnion(orderId)
         }, { merge: true });
 
         console.log("[waiter] sent order", orderId, { items: resolvedItems.length });

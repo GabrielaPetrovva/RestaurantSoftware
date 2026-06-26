@@ -28,6 +28,9 @@ function paymentApiPath(path) {
   if (cleanPath === "/api/payments/stripe/create-checkout-session") {
     return "/api/public/payments/stripe/create-checkout-session";
   }
+  if (cleanPath === "/api/payments/revolut/create-order") {
+    return "/api/public/payments/revolut/create-order";
+  }
   if (cleanPath === "/api/payments/check") {
     return "/api/public/payments/check";
   }
@@ -52,7 +55,7 @@ const text = {
     "Revolut Payment": "Revolut Payment",
     "Bank Transfer Payment": "Bank Transfer",
     "You will be redirected to secure Stripe Checkout.": "You will be redirected to secure Stripe Checkout.",
-    "You will be redirected to Revolut Checkout.": "You will be redirected to Revolut Checkout.",
+    "You will be redirected to Revolut Checkout.": "You will be redirected to secure Stripe Checkout with Revolut Pay.",
     "Generate a reference and make the transfer from your bank app.": "Generate a reference and make the transfer from your bank app.",
     "Continue to card payment": "Continue to card payment",
     "Continue to Revolut": "Continue to Revolut",
@@ -92,7 +95,7 @@ const text = {
     "Revolut Payment": "Плащане с Revolut",
     "Bank Transfer Payment": "Банков превод",
     "You will be redirected to secure Stripe Checkout.": "Ще бъдете пренасочени към защитена Stripe страница.",
-    "You will be redirected to Revolut Checkout.": "Ще бъдете пренасочени към Revolut Checkout.",
+    "You will be redirected to Revolut Checkout.": "Ще бъдете пренасочени към защитен Stripe Checkout с Revolut Pay.",
     "Generate a reference and make the transfer from your bank app.": "Генерирай референция и плати през банковото приложение.",
     "Continue to card payment": "Продължи към плащане с карта",
     "Continue to Revolut": "Продължи към Revolut",
@@ -448,7 +451,7 @@ async function checkPaymentStatus() {
     const data = await apiPost("/api/payments/check", activePaymentId ? { paymentId: activePaymentId } : { orderId });
     activePaymentId = data.paymentId || data.payment?.paymentId || activePaymentId;
     const status = String(data.status || data.paymentStatus || data.payment?.status || "").toLowerCase();
-    if (status === "paid" || status === "succeeded") {
+    if (status === "successful" || status === "paid" || status === "succeeded" || data.payment?.paid === true) {
       setStatus(t("Payment successful"), "ok");
     } else if (status === "failed" || status === "cancelled" || status === "canceled") {
       setStatus(t("Payment failed"), "err");

@@ -1,11 +1,11 @@
 // 1️⃣ Инициализация на Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyBESLv5HFSw8 FmhFx3n44gKxQC7XbibY28", 
+    apiKey: "AIzaSyBE5Lv5HfSw8FmhFx3n44gKxQC7XbibY28", 
     authDomain: "reustarant-software.firebaseapp.com",
     projectId:"reustarant-software",
     storageBucket: "reustarant-software.firebasestorage.app", 
     messagingSenderId: "910706453590",
-    appId: "1:910706453590: web: f952cc3f40f7bef2009ff7"
+    appId: "1:910706453590:web:f952cc3f40f7bef2009ff7"
     };
   
 // --- Firebase init (предполага, че firebaseConfig вече е дефиниран) ---
@@ -13,6 +13,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
+window.clientDb = db;
 
 // !!! СМЕНИ ако колекцията ти е с друго име (на снимката е menu_cat...):
 const CATEGORIES_COLLECTION = "menu_categories";
@@ -616,8 +617,15 @@ async function renderCategoriesPage() {
   cats.forEach((cat, idx) => {
     const card = document.createElement("div");
     card.className = "menu-card";
-    card.onclick = () =>
-      (window.location.href = `category.html?category=${encodeURIComponent(cat.key)}`);
+    card.onclick = () => {
+      const params = new URLSearchParams({ category: cat.key });
+      const currentParams = new URLSearchParams(window.location.search);
+      const tableId = currentParams.get("tableId") || sessionStorage.getItem("activeTableId") || "";
+      const tableNumber = currentParams.get("tableNumber") || "";
+      if (tableId) params.set("tableId", tableId);
+      if (tableNumber) params.set("tableNumber", tableNumber);
+      window.location.href = `category.html?${params.toString()}`;
+    };
 
     // Translate category name
     const catKey = cat.key.toLowerCase();
